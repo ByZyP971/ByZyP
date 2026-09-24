@@ -666,6 +666,16 @@
   .auth-box .primary-btn, .auth-box .ghost-btn{ width:100%; }
   .auth-msg{ font-size:12.5px; color:var(--gold); margin-top:12px; text-align:center; line-height:1.5; min-height:18px; }
   .prof-tools{ display:flex; flex-direction:column; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+
+  .nt-status{ font-size:13.5px; color:var(--text-dim); margin-bottom:12px; line-height:1.5; }
+  .nt-status b{ color:var(--accent); }
+  .nt-code{ width:100%; margin-top:8px; background:var(--bg-card-2); border:1px solid var(--line); border-radius:10px; color:var(--text-dim);
+    font-family:var(--mono); font-size:10.5px; padding:10px; resize:none; }
+
+  /* brand uses the app icon */
+  .brand-mark{ background:url(icon.png) center/cover no-repeat !important; }
+  .brand-mark::after{ content:none !important; }
+  .sp-core, .auth-logo{ background:url(icon.png) center/cover no-repeat !important; color:transparent !important; border-radius:22px !important; }
 </style>
 </head>
 <body>
@@ -1137,6 +1147,19 @@
             <div class="hint" id="toolsMsg" style="margin-top:0;"></div>
           </div>
         </div>
+      </div>
+
+      <div class="card" id="notifCard">
+        <div class="card-title">Notificări</div>
+        <div class="nt-status" id="ntStatus">Se verifică…</div>
+        <button class="primary-btn" id="ntEnable" style="display:none;">🔔 Activează notificările</button>
+        <button class="ghost-btn" id="ntTest" style="display:none;">Trimite o notificare de test pe telefon</button>
+        <div id="ntSubWrap" style="display:none;margin-top:12px;">
+          <div class="hint" style="margin-top:0;">Codul telefonului tău (îl pui o singură dată în GitHub, la secretul <b>PUSH_SUB</b>):</div>
+          <textarea id="ntSub" readonly rows="4" class="nt-code"></textarea>
+          <button class="ghost-btn" id="ntCopy">📋 Copiază codul</button>
+        </div>
+        <div class="hint" id="ntHint"></div>
       </div>
 
       <div class="card">
@@ -2994,6 +3017,60 @@
     if(window.claude && typeof window.claude.use === 'function') init(); else startLocalFallback();
   }
   if(window.__byzypAuthed) boot(); else window.addEventListener('byzyp-auth', boot, { once:true });
+})();
+</script>
+<script>
+/* ===== By ZyP · notifications (service worker + web push) ===== */
+(function(){
+  var VAPID_PUBLIC = 'BEbAlapGPODbyKuDao4BL5sEJyF3m3ax0rr2BTNTqD2pzMEivOj-3BqgZL2Y2FjYd0uha2TgsUW1EIteOKnH9ns';
+  var st = document.getElementById('ntStatus'), en = document.getElementById('ntEnable'), te = document.getElementById('ntTest');
+  var wrap = document.getElementById('ntSubWrap'), ta = document.getElementById('ntSub'), hint = document.getElementById('ntHint');
+  if(!st) return;
+  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  var iOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  function b64ToU8(b){ var pad = '='.repeat((4 - b.length % 4) % 4); var raw = atob((b + pad).replace(/-/g,'+').replace(/_/g,'/')); var a = new Uint8Array(raw.length); for(var i=0;i<raw.length;i++) a[i] = raw.charCodeAt(i); return a; }
+  var reg = null;
+  function showSub(sub){
+    if(!sub) return;
+    ta.value = JSON.stringify(sub);
+    wrap.style.display = 'block';
+    try{ if(window.__byzypDb) window.__byzypDb.doc('settings/push').set({ sub: JSON.parse(ta.value), at: new Date().toISOString() }); }catch(e){}
+  }
+  function refresh(){
+    if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)){
+      st.innerHTML = iOS && !standalone
+        ? 'Pe iPhone, notificările merg doar din aplicația de pe <b>ecranul principal</b>. În Safari: Share ⬆️ → „Adaugă pe ecranul principal”, apoi deschide By ZyP de acolo.'
+        : 'Browserul acesta nu suportă notificări. Pe iPhone ai nevoie de iOS 16.4+ și aplicația adăugată pe ecranul principal.';
+      return;
+    }
+    if(Notification.permission === 'denied'){ st.innerHTML = 'Notificările sunt blocate. Setări iPhone → Notificări → By ZyP → Permite.'; return; }
+    navigator.serviceWorker.ready.then(function(r){ reg = r; return r.pushManager.getSubscription(); }).then(function(sub){
+      if(sub && Notification.permission === 'granted'){
+        st.innerHTML = '<b>✅ Notificările sunt active</b> pe acest telefon.';
+        en.style.display = 'none'; te.style.display = 'block'; showSub(sub);
+        hint.textContent = 'Primești motivare la 08:30, 14:30 și 21:30 și un avertisment cu ~10 minute înainte de fiecare știre roșie (după ce pui codul în GitHub).';
+      } else {
+        st.textContent = 'Notificările nu sunt pornite încă.';
+        en.style.display = 'block'; te.style.display = 'none';
+      }
+    });
+  }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(refresh).catch(function(e){ st.textContent = 'Nu s-a putut porni serviciul de notificări: ' + e.message; });
+  } else refresh();
+  en.addEventListener('click', function(){
+    Notification.requestPermission().then(function(p){
+      if(p !== 'granted'){ refresh(); return; }
+      return navigator.serviceWorker.ready.then(function(r){ return r.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC) }); })
+        .then(function(sub){ showSub(sub); refresh(); if(reg) reg.showNotification('By ZyP 🔔', { body:'Notificările sunt pornite!', icon:'icon.png' }); });
+    }).catch(function(e){ st.textContent = 'Eroare: ' + e.message; });
+  });
+  te.addEventListener('click', function(){ if(reg) reg.showNotification('By ZyP ✅', { body:'Așa arată o notificare de la aplicația ta.', icon:'icon.png' }); });
+  document.getElementById('ntCopy').addEventListener('click', function(){
+    var done = function(){ document.getElementById('ntCopy').textContent = '✓ Copiat'; };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, function(){ ta.select(); document.execCommand('copy'); done(); });
+    else { ta.select(); document.execCommand('copy'); done(); }
+  });
 })();
 </script>
 </body>
