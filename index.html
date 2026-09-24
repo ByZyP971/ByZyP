@@ -784,6 +784,22 @@
   .hist-r .d{ color:var(--text-dim); font-family:var(--mono); font-size:11px; }
   .hist-r .st2{ font-weight:700; font-size:11.5px; }
   .hs-win{ color:var(--accent); } .hs-loss{ color:var(--danger); } .hs-open{ color:var(--gold); } .hs-none{ color:var(--text-faint); }
+
+  /* ===== gold tab ===== */
+  .gs-nav{ display:flex; gap:6px; overflow-x:auto; padding:2px 2px 10px; margin:0 -2px 4px; scrollbar-width:none;
+    position:sticky; top:calc(env(safe-area-inset-top,0px) + 74px); z-index:5; background:linear-gradient(var(--bg) 80%, transparent); }
+  .gs-nav::-webkit-scrollbar{ display:none; }
+  .gs-nav button{ flex:none; background:var(--bg-card-2); border:1px solid var(--line); color:var(--text-dim); border-radius:20px;
+    padding:9px 14px; font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .gs-nav button.on{ background:var(--gold); border-color:var(--gold); color:#1A1200; box-shadow:0 0 14px -4px var(--gold); }
+  .tv-full{ height:68vh; min-height:420px; width:100%; }
+  .tv-full .tradingview-widget-container, .tv-full .tradingview-widget-container__widget{ height:100% !important; width:100% !important; }
+  .gs-live{ overflow:hidden; border-radius:18px; }
+  .gold-mini .gm-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .gold-mini .gm-p{ font-family:var(--mono); font-size:24px; font-weight:700; }
+  .gold-mini .gm-v{ font-family:var(--mono); font-weight:800; font-size:14px; }
+  .gold-mini .gm-v.BUY{ color:var(--accent); } .gold-mini .gm-v.SELL{ color:var(--danger); } .gold-mini .gm-v.AȘTEAPTĂ{ color:var(--gold); }
+  #goldBox > .card{ margin-bottom:14px; }
 </style>
 </head>
 <body>
@@ -1151,9 +1167,9 @@
         <a class="ghost-btn news-link" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">Deschide Forex Factory ↗</a>
       </div>
 
-      <div class="card gold-card" data-seg-card="trading">
-        <div class="card-title">Analiză XAUUSD</div>
-        <div id="goldBox"><div class="hint" style="margin-top:0;">Se încarcă analiza…</div></div>
+      <div class="card gold-card gold-mini" data-seg-card="trading" id="goldMini">
+        <div class="card-title">XAUUSD</div>
+        <div class="hint" style="margin-top:0;">Se încarcă analiza…</div>
       </div>
 
       <div class="card" data-seg-card="trading">
@@ -1230,6 +1246,22 @@
         <div id="investHistory"></div>
         <div class="hint">Revino în chat pentru o analiză a pieței înainte să aloci suma din fiecare lună.</div>
       </div>
+    </section>
+
+    <section class="view" id="view-gold">
+      <div class="card gold-card" id="goldTop"><div class="hint" style="margin-top:0;">Se încarcă analiza XAUUSD…</div></div>
+      <div class="gs-nav" id="goldSeg">
+        <button data-gs="plan" class="on">🧭 Plan</button>
+        <button data-gs="live">📡 Live</button>
+        <button data-gs="chart">📐 Analiză</button>
+        <button data-gs="strat">🧪 Strategii</button>
+        <button data-gs="risk">🛡️ Risc</button>
+        <button data-gs="hist">📜 Istoric</button>
+      </div>
+      <div class="card gs-live" data-gsp="live" style="display:none;padding:0;">
+        <div class="tv-full" id="goldLive"></div>
+      </div>
+      <div id="goldBox"></div>
     </section>
 
     <!-- PROFILE -->
@@ -1310,6 +1342,7 @@
       <button class="tab" data-view="sport"><span class="ic">🏃</span>Sport</button>
       <button class="tab" data-view="food"><span class="ic">🍳</span>Mâncare</button>
       <button class="tab" data-view="money"><span class="ic">📈</span>Bani</button>
+      <button class="tab" data-view="gold"><span class="ic">🥇</span>Aur</button>
       <button class="tab" data-view="profile"><span class="ic">👤</span>Profil</button>
     </div>
   </nav>
@@ -2745,6 +2778,40 @@
 
   /* ===== XAUUSD analysis ===== */
   var gold = null, goldRisk = 1, goldSide = null, goldOpen = {}, goldBal = null, goldChart = 'a', goldChartSide = null;
+  var goldSeg = 'plan', goldLiveLoaded = false;
+  try{ goldSeg = localStorage.getItem('byzyp_gseg') || 'plan'; }catch(e){}
+  function loadGoldLive(){
+    if(goldLiveLoaded) return; goldLiveLoaded = true;
+    var el = document.getElementById('goldLive'); if(!el) return;
+    var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    el.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div></div>';
+    var sc = document.createElement('script');
+    sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'; sc.async = true;
+    sc.innerHTML = JSON.stringify({ autosize:true, symbol:'OANDA:XAUUSD', interval:'15', timezone:'Etc/UTC', theme: dark ? 'dark' : 'light', style:'1', locale:'ro',
+      allow_symbol_change:true, hide_side_toolbar:false, withdateranges:true, details:false, calendar:false,
+      studies:['STD;EMA','STD;RSI'], support_host:'https://www.tradingview.com' });
+    el.firstChild.appendChild(sc);
+  }
+  function applyGoldSeg(){
+    document.querySelectorAll('#goldSeg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-gs') === goldSeg); });
+    document.querySelectorAll('[data-gsp]').forEach(function(c){ c.style.display = c.getAttribute('data-gsp') === goldSeg ? '' : 'none'; });
+    if(goldSeg === 'live' && document.getElementById('view-gold').classList.contains('active')) loadGoldLive();
+  }
+  document.querySelectorAll('#goldSeg button').forEach(function(b){ b.addEventListener('click', function(){
+    goldSeg = b.getAttribute('data-gs'); try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){}
+    applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart();
+  }); });
+  document.querySelectorAll('.tab[data-view="gold"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart(); }, 30); }); });
+  function renderGoldMini(){
+    var m = document.getElementById('goldMini'); if(!m || !gold) return;
+    var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
+    m.innerHTML = '<div class="card-title">XAUUSD · Aur</div><div class="gm-row"><div><div class="gm-p">' + f2(g.price) + '</div>' +
+      '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%)</div></div>' +
+      '<div style="text-align:right"><div class="gm-v ' + c.verdict + '">' + (c.verdict === 'BUY' ? '🟢 BUY' : c.verdict === 'SELL' ? '🔴 SELL' : '⏳ AȘTEAPTĂ') + '</div>' +
+      '<div class="gd-sub">' + (g.strategies ? g.strategies.length + ' strategii' : '') + '</div></div></div>' +
+      '<button class="primary-btn" id="gmOpen" style="margin-top:12px;">Deschide analiza completă →</button>';
+    document.getElementById('gmOpen').addEventListener('click', function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); try{ window.scrollTo(0,0); }catch(e){} });
+  }
   function drawGoldChart(){
     var wrap = document.getElementById('chWrap'); if(!wrap || !gold) return;
     if(goldChart === 'tv'){
@@ -2837,7 +2904,7 @@
   function loadGold(){
     fetch('xauusd.json?t=' + Date.now(), { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
       .then(function(j){ gold = j; renderGold(); })
-      .catch(function(){ var b = document.getElementById('goldBox'); if(b && !gold) b.innerHTML = '<div class="hint" style="margin-top:0;">Analiza apare după prima rulare automată pe GitHub (în cel mult o oră).</div>'; });
+      .catch(function(){ var b = document.getElementById('goldBox'); if(b && !gold){ var tp = document.getElementById('goldTop'); if(tp) tp.innerHTML = '<div class="hint" style="margin-top:0;">Analiza apare după prima rulare automată pe GitHub.</div>'; } });
   }
   function renderGold(){
     var box = document.getElementById('goldBox'); if(!box || !gold) return;
@@ -2848,6 +2915,7 @@
       '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
       '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
 
+    html += '\u0001head\u0002';
     // USD red news soon
     var evs = (newsData && newsData.events) ? newsData.events : [];
     var now = Date.now();
@@ -2855,6 +2923,7 @@
       .sort(function(a,b){ return new Date(a.t) - new Date(b.t); })[0];
     if(hot){ var ht = new Date(hot.t); html += '<div class="gd-alert">⚠️ <b>Știre roșie USD</b> la ' + hhmm(ht) + ': ' + hot.title + '. Aurul se poate mișca brusc cu zeci de dolari. Mulți traderi nu deschid poziții cu 30 min înainte și după.</div>'; }
 
+    html += '\u0001nar\u0002';
     // plain-language explanation + plan
     if(g.story){
       html += '<div class="nar"><h4>📖 Ce s-a întâmplat</h4>' + g.story.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>';
@@ -2863,9 +2932,9 @@
     }
 
     // chart: own analysis chart + live TradingView
-    html += '<div class="ch-tabs"><button class="ch-tab' + (goldChart==='a'?' active':'') + '" data-ch="a">📐 Graficul analizei</button><button class="ch-tab' + (goldChart==='tv'?' active':'') + '" data-ch="tv">📡 Live (TradingView)</button></div>' +
-      '<div class="ch-wrap" id="chWrap"></div>';
+    html += '\u0001chart\u0002<div class="ch-wrap" id="chWrap" style="margin-top:0;"></div>';
 
+    html += '\u0001conf\u0002';
     // confluence + multi-timeframe + session
     if(g.confluence){
       var c = g.confluence, tw = Math.max(1, c.total), wait = tw - c.buy - c.sell;
@@ -2882,6 +2951,7 @@
     }
     if(g.session){ html += '<div class="sess">🕒 Sesiune (la ultima actualizare): <b>' + g.session.active.join(' + ') + '</b>. ' + g.session.note + '</div>'; }
 
+    html += '\u0001strat\u0002';
     // scenarios (main first)
     var sc = g.scenarios.slice().sort(function(a,b){ return (b.main?1:0) - (a.main?1:0); });
     html += '<div class="gd-sec">Scenarii de azi</div>';
@@ -2895,6 +2965,7 @@
         '<div class="sc-c">' + x.cond + ' ' + x.inval + ' La TP1 poți închide jumătate și muta SL-ul la intrare.</div></div>';
     });
 
+    html += '\u0001strat\u0002';
     // strategies
     if(g.strategies && g.strategies.length){
       html += '<div class="gd-sec">Toate strategiile · atinge pentru detalii</div>';
@@ -2907,6 +2978,7 @@
       });
     }
 
+    html += '\u0001risk\u0002';
     // risk calculator
     if(!goldSide) goldSide = (sc[0] && sc[0].side) || 'BUY';
     var bal = curBalance();
@@ -2916,6 +2988,7 @@
       '<div class="field-row"><label>Scenariu</label><select id="rcSide"><option value="BUY"' + (goldSide==='BUY'?' selected':'') + '>BUY</option><option value="SELL"' + (goldSide==='SELL'?' selected':'') + '>SELL</option></select></div>' +
       '<div class="rc-out" id="rcOut"></div></div>';
 
+    html += '\u0001chart\u0002';
     // levels ladder
     var L = [
       { k:'R2', v:g.levels.R2, c:'res' }, { k:'R1', v:g.levels.R1, c:'res' }, { k:'PIVOT', v:g.pivots.P, c:'' },
@@ -2930,7 +3003,9 @@
       '<div><b>' + g.rsi + '</b><span>RSI 14</span></div><div><b>' + f2(g.atr) + '</b><span>ATR 14 ($/zi)</span></div><div><b>' + f2(g.dayHigh - g.dayLow) + '</b><span>RANGE AZI</span></div></div>' +
       '<ul class="gd-notes">' + g.notes.map(function(n){ return '<li>' + n + '</li>'; }).join('') + '</ul>';
 
+    html += '\u0001avoid\u0002';
     if(g.avoid){ html += '<div class="nar avoid"><h4>⛔ Ce să eviți</h4>' + g.avoid.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>'; }
+    html += '\u0001hist\u0002';
     if(g.history && g.history.length){
       var tr = g.track || {};
       var cls = function(st){ return /TP/.test(st) ? 'hs-win' : /SL/.test(st) ? 'hs-loss' : /desfășurare|așteaptă/.test(st) ? 'hs-open' : 'hs-none'; };
@@ -2941,12 +3016,23 @@
           return '<div class="hist-r"><span class="d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · ' + (h.side === 'AȘTEAPTĂ' ? '—' : h.side + ' ' + f2(h.entry)) + '</span><span class="st2 ' + cls(h.status) + '">' + ico(h.status) + ' ' + h.status + '</span></div>'; }).join('') +
         '<div class="hint">Verificat automat pe lumânările zilnice, după publicarea fiecărui plan. Rezultatele trecute nu garantează rezultate viitoare.</div></div>';
     }
+    html += '\u0001foot\u0002';
     html += '<div class="hint">Analiză automată pe reguli: 10 strategii (trend EMA, suport/rezistență, breakout, RSI, MACD, Bollinger, Fibonacci, pivot, Fair Value Gap, aliniere timeframe-uri), actualizată din oră în oră · ' + g.source + ' · ' +
       upd.getDate() + ' ' + monthShort[upd.getMonth()] + ' ' + hhmm(upd) + '. Nu e sfat financiar: e un punct de plecare. Confirmă pe grafic și decide tu. Prețul brokerului poate diferi cu câțiva dolari.</div>';
-    box.innerHTML = html;
-    box.querySelectorAll('.ch-tab').forEach(function(t){ t.addEventListener('click', function(){ goldChart = t.getAttribute('data-ch');
-      box.querySelectorAll('.ch-tab').forEach(function(x){ x.classList.toggle('active', x === t); }); drawGoldChart(); }); });
-    drawGoldChart();
+    var parts = html.split(/\u0001(\w+)\u0002/), B = { top:'' }, key = 'top';
+    for(var pi=0; pi<parts.length; pi++){ if(pi % 2 === 1){ key = parts[pi]; } else { B[key] = (B[key] || '') + parts[pi]; } }
+    var top = document.getElementById('goldTop');
+    if(top) top.innerHTML = (B.top || '') + (B.head || '');
+    var sec = function(k, inner){ return '<div class="card" data-gsp="' + k + '">' + inner + '</div>'; };
+    box.innerHTML =
+      sec('plan', (B.conf || '') + (B.nar || '') + (B.avoid || '') + (B.foot || '')) +
+      sec('chart', '<div class="card-title">Graficul analizei · D1</div>' + (B.chart || '')) +
+      sec('strat', (B.strat || '')) +
+      sec('risk', (B.risk || '')) +
+      sec('hist', (B.hist || '<div class="hint" style="margin-top:0;">Istoricul apare după primele zile de analiză.</div>'));
+    applyGoldSeg();
+    goldChart = 'a'; drawGoldChart();
+    renderGoldMini();
     box.querySelectorAll('.st-h').forEach(function(h){ h.addEventListener('click', function(){ var st = h.parentNode; st.classList.toggle('open'); var nm = st.querySelector('.st-n').textContent; goldOpen[nm] = st.classList.contains('open'); }); });
 
     function calc(){
