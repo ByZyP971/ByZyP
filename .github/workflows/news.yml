@@ -1,0 +1,23 @@
+name: Actualizare stiri
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descarca calendarul Forex Factory
+        run: |
+          curl -fsSL -A "Mozilla/5.0" "https://nfs.faireconomy.media/ff_calendar_thisweek.json" -o news.tmp
+          python3 -c "import json; d=json.load(open('news.tmp')); assert isinstance(d, list) and len(d) > 0"
+          mv news.tmp news.json
+      - name: Salveaza in site
+        run: |
+          git config user.name "byzyp-bot"
+          git config user.email "byzyp-bot@users.noreply.github.com"
+          git add news.json
+          git diff --cached --quiet || (git commit -m "Actualizare stiri" && git push)
