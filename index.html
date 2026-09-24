@@ -1224,14 +1224,20 @@
       else if(p.new){ put(p.new.col, p.new.id, p.new.data); }
     }).subscribe();
 
+    function mapFF(arr){
+      return (arr || []).filter(function(e){ return e && e.impact && e.impact !== 'Holiday'; }).map(function(e){
+        return { title:e.title, c:e.country, t:e.date, i:e.impact, f:e.forecast || '', p:e.previous || '' }; });
+    }
+    function getJSON(url){ return fetch(url, { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error(url + ' ' + r.status); return r.json(); }); }
     function newsSnapshot(next){
-      function fromCache(){ next(snapDoc('news','current')); }
-      fetch(FF_URL, { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error('ff ' + r.status); return r.json(); }).then(function(arr){
-        var ev = (arr || []).filter(function(e){ return e.impact && e.impact !== 'Holiday'; }).map(function(e){
-          return { title:e.title, c:e.country, t:e.date, i:e.impact, f:e.forecast || '', p:e.previous || '' }; });
-        var now = new Date();
-        next({ id:'current', exists:true, data:function(){ return { updated: now.getDate() + '.' + (now.getMonth()+1) + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ' (automat)', source:'Forex Factory', events: clone(ev) }; } });
-      }).catch(function(e){ console.warn('news fetch failed, using saved copy', e); whenLoaded(fromCache); });
+      function deliver(arr, label){
+        var ev = mapFF(arr); if(!ev.length) throw new Error('empty');
+        next({ id:'current', exists:true, data:function(){ return { updated: label, source:'Forex Factory', events: clone(ev) }; } });
+      }
+      // 1) copy kept next to the site (refreshed by GitHub every 3h) → 2) Forex Factory directly → 3) saved copy
+      getJSON('news.json?t=' + Date.now()).then(function(arr){ deliver(arr, 'automat, la fiecare 3 ore'); })
+        .catch(function(){ return getJSON(FF_URL).then(function(arr){ deliver(arr, 'direct de pe Forex Factory'); }); })
+        .catch(function(e){ console.warn('news unavailable', e); whenLoaded(function(){ next(snapDoc('news','current')); }); });
     }
 
     function docRef(path){
@@ -1245,7 +1251,7 @@
         delete:function(){ put(col, id, null);
           return sb.from('docs').delete().match({ user_id:uid, col:col, id:id }).then(function(r){ if(r.error) throw r.error; }); },
         onSnapshot:function(next){
-          if(path === 'news/current'){ newsSnapshot(next); var iv = setInterval(function(){ newsSnapshot(next); }, 3*3600*1000); return function(){ clearInterval(iv); }; }
+          if(path === 'news/current'){ newsSnapshot(next); var iv = setInterval(function(){ newsSnapshot(next); }, 30*60*1000); return function(){ clearInterval(iv); }; }
           (docL[path] = docL[path] || []).push(next);
           whenLoaded(function(){ next(snapDoc(col, id)); });
           return function(){ docL[path] = (docL[path] || []).filter(function(f){ return f !== next; }); };
@@ -2576,7 +2582,7 @@
       list.innerHTML = html;
     }
     var meta = document.getElementById('newsMeta');
-    meta.textContent = newsData.updated ? ('Sursa: Forex Factory · încărcat ' + newsData.updated + ' · ore afișate pe fusul orar al telefonului. Orele se pot schimba — verifică pe site înainte de o tranzacție.') : '';
+    meta.textContent = newsData.updated ? ('Sursa: Forex Factory · actualizat ' + newsData.updated + ' · ore pe fusul orar al telefonului. Verifică pe site înainte de o tranzacție importantă.') : '';
 
     // alert on Azi tab: high impact within 60 min
     var al = document.getElementById('newsAlert');
