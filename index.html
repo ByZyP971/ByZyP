@@ -728,6 +728,62 @@
   .rc-out b{ color:var(--text); font-family:var(--mono); }
   .rc-lot{ font-family:var(--mono); font-size:24px; font-weight:700; color:var(--gold); }
   .rc-warn{ color:var(--danger); font-weight:600; }
+
+  .cf{ margin-top:14px; padding:14px; border-radius:14px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .cf-top{ display:flex; justify-content:space-between; align-items:center; }
+  .cf-l{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--text-faint); text-transform:uppercase; }
+  .cf-v{ font-family:var(--mono); font-size:20px; font-weight:800; margin-top:3px; }
+  .cf-v.BUY{ color:var(--accent); } .cf-v.SELL{ color:var(--danger); } .cf-v.AȘTEAPTĂ{ color:var(--gold); }
+  .cf-bar{ display:flex; height:10px; border-radius:6px; overflow:hidden; margin-top:10px; background:var(--line); }
+  .cf-bar i{ display:block; height:100%; } .cf-bar .b{ background:var(--accent); } .cf-bar .w{ background:var(--line); } .cf-bar .s{ background:var(--danger); }
+  .cf-leg{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:var(--text-dim); margin-top:6px; }
+  .mtf{ display:flex; gap:6px; margin-top:10px; }
+  .mtf div{ flex:1; text-align:center; padding:8px 4px; border-radius:10px; background:var(--bg-card-2); border:1px solid var(--line); font-family:var(--mono); font-size:11px; }
+  .mtf b{ display:block; font-size:15px; margin-top:2px; }
+  .mtf .UP b{ color:var(--accent); } .mtf .DOWN b{ color:var(--danger); } .mtf .MIX b{ color:var(--gold); }
+  .sess{ margin-top:8px; font-size:11.5px; color:var(--text-dim); } .sess b{ color:var(--text); }
+  .st{ border-radius:13px; background:var(--bg-card-2); border:1px solid var(--line); margin-bottom:6px; overflow:hidden; }
+  .st-h{ display:flex; align-items:center; gap:10px; padding:11px 12px; cursor:pointer; }
+  .st-v{ font-family:var(--mono); font-size:10.5px; font-weight:800; padding:4px 7px; border-radius:7px; min-width:62px; text-align:center; }
+  .st-v.BUY{ color:var(--accent-ink); background:var(--accent); } .st-v.SELL{ color:#2A0D08; background:var(--danger); }
+  .st-v.NEUTRU, .st-v.AȘTEAPTĂ{ color:var(--gold); background:color-mix(in srgb, var(--gold) 14%, transparent); }
+  .st-n{ flex:1; font-size:13px; font-weight:600; }
+  .st-dots{ font-size:9px; letter-spacing:1px; color:var(--gold); }
+  .st-b{ display:none; padding:0 12px 12px; font-size:12px; color:var(--text-dim); line-height:1.5; }
+  .st.open .st-b{ display:block; }
+  .st-lv{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-top:8px; }
+  .st-lv div{ text-align:center; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; padding:6px 2px; }
+  .st-lv b{ display:block; font-family:var(--mono); font-size:11.5px; color:var(--text); } .st-lv span{ font-size:9px; color:var(--text-faint); font-family:var(--mono); }
+  .st-lv .slv b{ color:var(--danger); } .st-lv .tpv b{ color:var(--accent); }
+
+  .ch-tabs{ display:flex; gap:4px; padding:3px; background:var(--bg-card-2); border:1px solid var(--line); border-radius:11px; margin-top:14px; }
+  .ch-tab{ flex:1; background:none; border:none; color:var(--text-dim); font-family:inherit; font-size:12px; font-weight:600; padding:8px 4px; border-radius:8px; cursor:pointer; }
+  .ch-tab.active{ background:var(--bg-raised); color:var(--gold); box-shadow:0 0 0 1px color-mix(in srgb, var(--gold) 35%, transparent); }
+  .ch-wrap{ margin-top:8px; border-radius:12px; background:var(--bg-card-2); border:1px solid var(--line); overflow:hidden; }
+  .ch-wrap svg{ display:block; width:100%; height:auto; }
+  .ch-leg{ display:flex; flex-wrap:wrap; gap:10px; padding:8px 10px; font-family:var(--mono); font-size:10px; color:var(--text-faint); border-top:1px solid var(--line); }
+  .ch-leg i{ display:inline-block; width:12px; height:3px; border-radius:2px; vertical-align:middle; margin-right:4px; }
+  .ch-scn{ display:flex; gap:4px; padding:8px 10px 0; }
+  .ch-scn button{ flex:1; background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:8px; padding:6px; font-size:11px; font-family:var(--mono); cursor:pointer; }
+  .ch-scn button.on{ border-color:var(--gold); color:var(--gold); }
+  .tv-box{ height:420px; }
+
+  .nar{ margin-top:14px; padding:14px; border-radius:14px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .nar h4{ margin:0 0 8px; font-size:13px; font-weight:800; }
+  .nar p{ margin:0 0 7px; font-size:12.8px; line-height:1.55; color:var(--text-dim); }
+  .nar p:last-child{ margin-bottom:0; }
+  .nar.plan{ border-color:color-mix(in srgb, var(--gold) 50%, transparent); background:color-mix(in srgb, var(--gold) 7%, var(--bg-card-2)); }
+  .nar.plan p:first-of-type{ color:var(--text); font-weight:700; }
+  .nar.avoid{ border-color:color-mix(in srgb, var(--danger) 40%, transparent); }
+  .nar.avoid p::before{ content:'✕ '; color:var(--danger); font-weight:800; }
+  .hist-sum{ display:flex; gap:6px; margin-bottom:8px; }
+  .hist-sum div{ flex:1; text-align:center; background:var(--bg-card); border:1px solid var(--line); border-radius:10px; padding:8px 4px; }
+  .hist-sum b{ display:block; font-family:var(--mono); font-size:16px; } .hist-sum span{ font-size:9.5px; color:var(--text-faint); font-family:var(--mono); }
+  .hist-r{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid var(--line); font-size:12px; }
+  .hist-r:first-of-type{ border-top:none; }
+  .hist-r .d{ color:var(--text-dim); font-family:var(--mono); font-size:11px; }
+  .hist-r .st2{ font-weight:700; font-size:11.5px; }
+  .hs-win{ color:var(--accent); } .hs-loss{ color:var(--danger); } .hs-open{ color:var(--gold); } .hs-none{ color:var(--text-faint); }
 </style>
 </head>
 <body>
@@ -2676,7 +2732,6 @@
       } else { al.style.display = 'none'; }
     }
     if(typeof renderPlanTiles === 'function') renderPlanTiles();
-    if(typeof renderGold === 'function') renderGold();
   }
   document.querySelectorAll('.news-f').forEach(function(b){
     b.addEventListener('click', function(){
@@ -2689,7 +2744,90 @@
   setInterval(tickNews, 1000);
 
   /* ===== XAUUSD analysis ===== */
-  var gold = null, goldRisk = 1, goldSide = null;
+  var gold = null, goldRisk = 1, goldSide = null, goldOpen = {}, goldBal = null, goldChart = 'a', goldChartSide = null;
+  function drawGoldChart(){
+    var wrap = document.getElementById('chWrap'); if(!wrap || !gold) return;
+    if(goldChart === 'tv'){
+      if(wrap.getAttribute('data-tv') === '1') return;
+      wrap.setAttribute('data-tv','1');
+      var dark = !document.documentElement.getAttribute('data-theme') || document.documentElement.getAttribute('data-theme') !== 'light';
+      wrap.innerHTML = '<div class="tradingview-widget-container tv-box"><div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div></div>';
+      var sc = document.createElement('script');
+      sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'; sc.async = true;
+      sc.innerHTML = JSON.stringify({ autosize:true, symbol:'OANDA:XAUUSD', interval:'60', timezone:'Etc/UTC', theme: dark ? 'dark' : 'light', style:'1', locale:'ro',
+        allow_symbol_change:true, hide_side_toolbar:false, withdateranges:true, studies:['STD;EMA','STD;RSI'], support_host:'https://www.tradingview.com' });
+      wrap.firstChild.appendChild(sc);
+      return;
+    }
+    wrap.removeAttribute('data-tv');
+    var g = gold, C = g.candles || [];
+    if(!C.length){ wrap.innerHTML = '<div class="hint" style="padding:12px;margin:0;">Graficul apare la următoarea actualizare automată.</div>'; return; }
+    C = C.slice(-60);
+    var e20 = (g.ema20s || []).slice(-60), e50 = (g.ema50s || []).slice(-60);
+    var side = goldChartSide || (g.scenarios.filter(function(x){ return x.main; })[0] || g.scenarios[0]).side;
+    var sc2 = g.scenarios.filter(function(x){ return x.side === side; })[0];
+    var W = 360, H = 230, padL = 4, padR = 64, padT = 10, padB = 18;
+    var lo = Infinity, hi = -Infinity;
+    C.forEach(function(k){ lo = Math.min(lo, k[3]); hi = Math.max(hi, k[2]); });
+    [g.levels.R1, g.levels.S1, sc2.sl, sc2.tp1].forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); });
+    var pad = (hi - lo) * 0.04; lo -= pad; hi += pad;
+    var cw = (W - padL - padR) / C.length;
+    var X = function(i){ return padL + i * cw + cw / 2; };
+    var Y = function(v){ return padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo)); };
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">';
+    // grid
+    for(var gi=0; gi<=4; gi++){ var gv = lo + (hi - lo) * gi / 4, gy = Y(gv).toFixed(1);
+      svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="var(--line)" stroke-width="0.5"/>'; }
+    // entry zone band
+    var zy1 = Y(sc2.zone[1]), zy2 = Y(sc2.zone[0]);
+    svg += '<rect x="' + padL + '" y="' + zy1.toFixed(1) + '" width="' + (W - padL - padR) + '" height="' + Math.max(1, zy2 - zy1).toFixed(1) + '" fill="var(--gold)" opacity="0.13"/>';
+    // horizontal levels
+    var labels = [];
+    function hline(v, col, dash, label, strong){
+      var y = Y(v).toFixed(1);
+      svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y + '" y2="' + y + '" stroke="' + col + '" stroke-width="' + (strong ? 1.1 : 0.7) + '"' + (dash ? ' stroke-dasharray="4 3"' : '') + ' opacity="0.9"/>';
+      var same = labels.filter(function(l){ return Math.abs(l.v - v) < (hi - lo) * 0.004; })[0];
+      if(same){ same.t = label + '·' + same.t; if(strong){ same.col = col; } }
+      else labels.push({ v:v, y:+y, t:label, col:col, strong:strong });
+    }
+    function drawLabels(){
+      labels.sort(function(a,b){ return a.y - b.y; });
+      var gap = 11.5;
+      for(var i=1;i<labels.length;i++){ if(labels[i].y - labels[i-1].y < gap) labels[i].y = labels[i-1].y + gap; }
+      for(var j=labels.length-1;j>=0;j--){ var maxY = H - padB - 2 - (labels.length - 1 - j) * gap; if(labels[j].y > maxY) labels[j].y = maxY; if(j>0 && labels[j].y - labels[j-1].y < gap) labels[j-1].y = labels[j].y - gap; }
+      labels.forEach(function(l){
+        svg += '<rect x="' + (W - padR + 1) + '" y="' + (l.y - 5.5).toFixed(1) + '" width="' + (padR - 2) + '" height="11" rx="2" fill="' + l.col + '" opacity="0.22"/>' +
+          '<text x="' + (W - padR + 3.5) + '" y="' + (l.y + 3).toFixed(1) + '" font-size="' + (l.t.length > 9 ? 6.4 : 7.5) + '" font-weight="700" fill="' + l.col + '" font-family="monospace">' + l.t + ' ' + l.v.toFixed(0) + '</text>';
+      });
+    }
+    hline(g.levels.R2, 'var(--danger)', true, 'R2'); hline(g.levels.R1, 'var(--danger)', true, 'R1');
+    hline(g.levels.S1, 'var(--accent)', true, 'S1'); hline(g.levels.S2, 'var(--accent)', true, 'S2');
+    hline(sc2.tp2, '#3DE0C4', false, 'TP2', true); hline(sc2.tp1, '#3DE0C4', false, 'TP1', true);
+    hline(sc2.sl, '#FF4D4D', false, 'SL', true); hline(sc2.entry, 'var(--gold)', false, 'IN', true);
+    // EMAs
+    function pathOf(arr, col){ var d = ''; arr.forEach(function(v, i){ if(v == null) return; d += (d ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); });
+      return '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="1.1" opacity="0.85"/>'; }
+    svg += pathOf(e50, 'var(--gold)') + pathOf(e20, '#6C8CFF');
+    // candles
+    C.forEach(function(k, i){
+      var up = k[4] >= k[1], col = up ? 'var(--accent)' : 'var(--danger)', x = X(i);
+      var yo = Y(k[1]), yc = Y(k[4]);
+      svg += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + Y(k[2]).toFixed(1) + '" y2="' + Y(k[3]).toFixed(1) + '" stroke="' + col + '" stroke-width="0.8"/>' +
+        '<rect x="' + (x - cw * 0.34).toFixed(1) + '" y="' + Math.min(yo, yc).toFixed(1) + '" width="' + (cw * 0.68).toFixed(1) + '" height="' + Math.max(0.8, Math.abs(yc - yo)).toFixed(1) + '" fill="' + col + '"/>';
+    });
+    // last price marker
+    var lp = Y(g.price).toFixed(1);
+    svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + lp + '" y2="' + lp + '" stroke="var(--text)" stroke-width="0.5" stroke-dasharray="1 2"/>';
+    // date labels
+    [0, Math.floor(C.length / 2), C.length - 1].forEach(function(i){ var dd = new Date(C[i][0] + 'T00:00:00');
+      svg += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 5) + '" font-size="7.5" fill="var(--text-faint)" text-anchor="' + (i === 0 ? 'start' : i === C.length - 1 ? 'end' : 'middle') + '" font-family="monospace">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + '</text>'; });
+    labels.push({ v:g.price, y:+lp, t:'ACUM', col:'var(--text)' });
+    drawLabels();
+    svg += '</svg>';
+    wrap.innerHTML = '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>' + svg +
+      '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>60 zile · D1</span></div>';
+    wrap.querySelectorAll('.ch-scn button').forEach(function(b){ b.addEventListener('click', function(){ goldChartSide = b.getAttribute('data-s'); drawGoldChart(); }); });
+  }
   try{ goldRisk = parseFloat(localStorage.getItem('byzyp_gold_risk')) || 1; }catch(e){}
   function f2(n){ return Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
   function curBalance(){
@@ -2717,6 +2855,33 @@
       .sort(function(a,b){ return new Date(a.t) - new Date(b.t); })[0];
     if(hot){ var ht = new Date(hot.t); html += '<div class="gd-alert">⚠️ <b>Știre roșie USD</b> la ' + hhmm(ht) + ': ' + hot.title + '. Aurul se poate mișca brusc cu zeci de dolari. Mulți traderi nu deschid poziții cu 30 min înainte și după.</div>'; }
 
+    // plain-language explanation + plan
+    if(g.story){
+      html += '<div class="nar"><h4>📖 Ce s-a întâmplat</h4>' + g.story.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>';
+      html += '<div class="nar"><h4>📍 Unde suntem acum</h4>' + g.where.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>';
+      html += '<div class="nar plan"><h4>🧭 Ce ar trebui să faci, pas cu pas</h4>' + g.plan.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>';
+    }
+
+    // chart: own analysis chart + live TradingView
+    html += '<div class="ch-tabs"><button class="ch-tab' + (goldChart==='a'?' active':'') + '" data-ch="a">📐 Graficul analizei</button><button class="ch-tab' + (goldChart==='tv'?' active':'') + '" data-ch="tv">📡 Live (TradingView)</button></div>' +
+      '<div class="ch-wrap" id="chWrap"></div>';
+
+    // confluence + multi-timeframe + session
+    if(g.confluence){
+      var c = g.confluence, tw = Math.max(1, c.total), wait = tw - c.buy - c.sell;
+      var cvText = c.verdict === 'BUY' ? 'Mai multe strategii spun CUMPĂRARE' : c.verdict === 'SELL' ? 'Mai multe strategii spun VÂNZARE' : 'Strategiile nu sunt de acord: răbdare';
+      html += '<div class="cf"><div class="cf-top"><div><div class="cf-l">Verdictul celor ' + g.strategies.length + ' strategii</div><div class="cf-v ' + c.verdict + '">' + (c.verdict === 'AȘTEAPTĂ' ? '⏳ AȘTEAPTĂ' : (c.verdict === 'BUY' ? '🟢 BUY' : '🔴 SELL')) + '</div></div>' +
+        '<div style="text-align:right;font-size:11.5px;color:var(--text-dim);max-width:52%;">' + cvText + '</div></div>' +
+        '<div class="cf-bar"><i class="b" style="width:' + (c.buy/tw*100) + '%"></i><i class="w" style="width:' + (wait/tw*100) + '%"></i><i class="s" style="width:' + (c.sell/tw*100) + '%"></i></div>' +
+        '<div class="cf-leg"><span>BUY ' + c.buyN + '</span><span>neutre ' + c.waitN + '</span><span>SELL ' + c.sellN + '</span></div></div>';
+    }
+    if(g.mtf){
+      var arrow = function(d){ return d === 'UP' ? '▲' : d === 'DOWN' ? '▼' : '◆'; };
+      html += '<div class="mtf">' + ['D1','H4','H1'].map(function(k){ var m = g.mtf[k]; if(!m) return '<div><span style="color:var(--text-faint)">' + k + '</span><b style="color:var(--text-faint)">–</b></div>';
+        return '<div class="' + m.dir + '"><span style="color:var(--text-faint)">' + k + '</span><b>' + arrow(m.dir) + ' ' + (m.dir === 'UP' ? 'SUS' : m.dir === 'DOWN' ? 'JOS' : 'MIXT') + '</b></div>'; }).join('') + '</div>';
+    }
+    if(g.session){ html += '<div class="sess">🕒 Sesiune (la ultima actualizare): <b>' + g.session.active.join(' + ') + '</b>. ' + g.session.note + '</div>'; }
+
     // scenarios (main first)
     var sc = g.scenarios.slice().sort(function(a,b){ return (b.main?1:0) - (a.main?1:0); });
     html += '<div class="gd-sec">Scenarii de azi</div>';
@@ -2730,11 +2895,23 @@
         '<div class="sc-c">' + x.cond + ' ' + x.inval + ' La TP1 poți închide jumătate și muta SL-ul la intrare.</div></div>';
     });
 
+    // strategies
+    if(g.strategies && g.strategies.length){
+      html += '<div class="gd-sec">Toate strategiile · atinge pentru detalii</div>';
+      g.strategies.forEach(function(x, i){
+        var dots = ''; for(var k=0;k<3;k++) dots += k < x.strength ? '●' : '○';
+        var lv = x.entry != null ? '<div class="st-lv"><div><b>' + f2(x.entry) + '</b><span>INTRARE</span></div><div class="slv"><b>' + f2(x.sl) + '</b><span>SL</span></div><div class="tpv"><b>' + f2(x.tp1) + '</b><span>TP1</span></div><div class="tpv"><b>' + f2(x.tp2) + '</b><span>TP2</span></div></div>' +
+          '<div style="margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--text-faint);">R:R până la TP1 1:' + x.rr + '</div>' : '';
+        html += '<div class="st' + (goldOpen[x.name] ? ' open' : '') + '" data-i="' + i + '"><div class="st-h"><span class="st-v ' + x.verdict + '">' + x.verdict + '</span><span class="st-n">' + x.name + '</span><span class="st-dots" title="putere">' + dots + '</span></div>' +
+          '<div class="st-b">' + x.why + (x.info ? ' <i>' + x.info + '</i>' : '') + lv + '</div></div>';
+      });
+    }
+
     // risk calculator
     if(!goldSide) goldSide = (sc[0] && sc[0].side) || 'BUY';
     var bal = curBalance();
     html += '<div class="gd-sec">Calculator de risc</div><div class="rc">' +
-      '<div class="field-row"><label>Sold cont ($)</label><input type="number" id="rcBal" inputmode="decimal" value="' + (bal>0 ? bal.toFixed(2) : '') + '" placeholder="5"></div>' +
+      '<div class="field-row"><label>Sold cont ($)</label><input type="number" id="rcBal" inputmode="decimal" value="' + (goldBal != null ? goldBal : (bal>0 ? bal.toFixed(2) : '')) + '" placeholder="5"></div>' +
       '<div class="field-row"><label>Risc pe tranzacție</label><select id="rcRisk">' + [0.5,1,2,3,5].map(function(r){ return '<option value="' + r + '"' + (r===goldRisk?' selected':'') + '>' + r + '%</option>'; }).join('') + '</select></div>' +
       '<div class="field-row"><label>Scenariu</label><select id="rcSide"><option value="BUY"' + (goldSide==='BUY'?' selected':'') + '>BUY</option><option value="SELL"' + (goldSide==='SELL'?' selected':'') + '>SELL</option></select></div>' +
       '<div class="rc-out" id="rcOut"></div></div>';
@@ -2753,9 +2930,24 @@
       '<div><b>' + g.rsi + '</b><span>RSI 14</span></div><div><b>' + f2(g.atr) + '</b><span>ATR 14 ($/zi)</span></div><div><b>' + f2(g.dayHigh - g.dayLow) + '</b><span>RANGE AZI</span></div></div>' +
       '<ul class="gd-notes">' + g.notes.map(function(n){ return '<li>' + n + '</li>'; }).join('') + '</ul>';
 
-    html += '<div class="hint">Analiză automată pe reguli (trend EMA, RSI, ATR, suporturi/rezistențe), actualizată din oră în oră · ' + g.source + ' · ' +
+    if(g.avoid){ html += '<div class="nar avoid"><h4>⛔ Ce să eviți</h4>' + g.avoid.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>'; }
+    if(g.history && g.history.length){
+      var tr = g.track || {};
+      var cls = function(st){ return /TP/.test(st) ? 'hs-win' : /SL/.test(st) ? 'hs-loss' : /desfășurare|așteaptă/.test(st) ? 'hs-open' : 'hs-none'; };
+      var ico = function(st){ return /TP2/.test(st) ? '✅✅' : /TP/.test(st) ? '✅' : /SL/.test(st) ? '❌' : /desfășurare/.test(st) ? '⏳' : /așteaptă intrarea/.test(st) ? '🕒' : '⏸'; };
+      html += '<div class="gd-sec">📜 Cum au ieșit analizele anterioare</div><div class="rc">' +
+        '<div class="hist-sum"><div><b>' + (tr.closed || 0) + '</b><span>ÎNCHISE</span></div><div><b class="hs-win">' + (tr.wins || 0) + '</b><span>CÂȘTIGATE</span></div><div><b>' + (tr.rate != null ? tr.rate + '%' : '–') + '</b><span>RATĂ</span></div></div>' +
+        g.history.slice().reverse().slice(0, 10).map(function(h){ var dd = new Date(h.date + 'T00:00:00');
+          return '<div class="hist-r"><span class="d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · ' + (h.side === 'AȘTEAPTĂ' ? '—' : h.side + ' ' + f2(h.entry)) + '</span><span class="st2 ' + cls(h.status) + '">' + ico(h.status) + ' ' + h.status + '</span></div>'; }).join('') +
+        '<div class="hint">Verificat automat pe lumânările zilnice, după publicarea fiecărui plan. Rezultatele trecute nu garantează rezultate viitoare.</div></div>';
+    }
+    html += '<div class="hint">Analiză automată pe reguli: 10 strategii (trend EMA, suport/rezistență, breakout, RSI, MACD, Bollinger, Fibonacci, pivot, Fair Value Gap, aliniere timeframe-uri), actualizată din oră în oră · ' + g.source + ' · ' +
       upd.getDate() + ' ' + monthShort[upd.getMonth()] + ' ' + hhmm(upd) + '. Nu e sfat financiar: e un punct de plecare. Confirmă pe grafic și decide tu. Prețul brokerului poate diferi cu câțiva dolari.</div>';
     box.innerHTML = html;
+    box.querySelectorAll('.ch-tab').forEach(function(t){ t.addEventListener('click', function(){ goldChart = t.getAttribute('data-ch');
+      box.querySelectorAll('.ch-tab').forEach(function(x){ x.classList.toggle('active', x === t); }); drawGoldChart(); }); });
+    drawGoldChart();
+    box.querySelectorAll('.st-h').forEach(function(h){ h.addEventListener('click', function(){ var st = h.parentNode; st.classList.toggle('open'); var nm = st.querySelector('.st-n').textContent; goldOpen[nm] = st.classList.contains('open'); }); });
 
     function calc(){
       var b = parseFloat(document.getElementById('rcBal').value) || 0;
@@ -2777,7 +2969,7 @@
           '<div style="margin-top:4px;font-size:11px;color:var(--text-faint);">Calcul pentru 1 lot = 100 oz (standardul la majoritatea brokerilor). Verifică specificația XAUUSD la brokerul tău.</div>';
       }
     }
-    document.getElementById('rcBal').addEventListener('input', calc);
+    document.getElementById('rcBal').addEventListener('input', function(){ goldBal = this.value; calc(); });
     document.getElementById('rcRisk').addEventListener('change', function(){ goldRisk = parseFloat(this.value); try{ localStorage.setItem('byzyp_gold_risk', String(goldRisk)); }catch(e){} calc(); });
     document.getElementById('rcSide').addEventListener('change', function(){ goldSide = this.value; calc(); });
     calc();
@@ -3131,6 +3323,7 @@
     db.doc('news/current').onSnapshot(function(snap){
       newsData = snap.exists ? snap.data() : { events: [] };
       renderNews();
+      if(typeof renderGold === 'function') renderGold();
     }, function(err){ console.error('news sub error', err); });
 
     db.doc('settings/worth').onSnapshot(function(snap){
