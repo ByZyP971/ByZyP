@@ -676,6 +676,58 @@
   .brand-mark{ background:url(icon.png) center/cover no-repeat !important; }
   .brand-mark::after{ content:none !important; }
   .sp-core, .auth-logo{ background:url(icon.png) center/cover no-repeat !important; color:transparent !important; border-radius:22px !important; }
+
+  /* ===== XAUUSD ===== */
+  .gold-card{ background:linear-gradient(160deg, color-mix(in srgb, var(--gold) 12%, var(--bg-raised)), var(--bg-card)) !important; }
+  .gd-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .gd-sym{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--gold); }
+  .gd-price{ font-family:var(--mono); font-size:32px; font-weight:700; letter-spacing:-.03em; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .gd-chg{ font-family:var(--mono); font-size:12.5px; margin-top:2px; }
+  .gd-chg.pos{ color:var(--accent); } .gd-chg.neg{ color:var(--danger); }
+  .gd-bias{ text-align:right; }
+  .gd-badge{ display:inline-block; font-family:var(--mono); font-weight:700; font-size:12px; letter-spacing:.1em; padding:7px 11px; border-radius:10px; border:1px solid; }
+  .gd-badge.BULLISH{ color:var(--accent); border-color:color-mix(in srgb, var(--accent) 50%, transparent); background:color-mix(in srgb, var(--accent) 10%, transparent); }
+  .gd-badge.BEARISH{ color:var(--danger); border-color:color-mix(in srgb, var(--danger) 50%, transparent); background:color-mix(in srgb, var(--danger) 10%, transparent); }
+  .gd-badge.NEUTRU{ color:var(--gold); border-color:color-mix(in srgb, var(--gold) 50%, transparent); background:color-mix(in srgb, var(--gold) 10%, transparent); }
+  .gd-meter{ display:flex; gap:3px; margin-top:8px; justify-content:flex-end; }
+  .gd-meter i{ width:12px; height:6px; border-radius:2px; background:var(--line); }
+  .gd-meter i.on-b{ background:var(--accent); } .gd-meter i.on-s{ background:var(--danger); }
+  .gd-sub{ font-size:10px; color:var(--text-faint); margin-top:4px; font-family:var(--mono); }
+  .gd-alert{ margin-top:12px; padding:10px 12px; border-radius:11px; font-size:12.5px; line-height:1.4;
+    border:1px solid color-mix(in srgb, var(--danger) 50%, transparent); background:color-mix(in srgb, var(--danger) 9%, var(--bg-card-2)); }
+  .gd-sec{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); margin:16px 0 8px; }
+  .sc{ border-radius:14px; padding:13px; margin-bottom:8px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .sc.main{ border-color:color-mix(in srgb, var(--gold) 55%, transparent); box-shadow:0 0 18px -10px var(--gold); }
+  .sc-h{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .sc-t{ font-weight:800; font-size:15px; }
+  .sc-t.BUY{ color:var(--accent); } .sc-t.SELL{ color:var(--danger); }
+  .sc-tag{ font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:var(--gold); border:1px solid color-mix(in srgb, var(--gold) 50%, transparent); border-radius:7px; padding:3px 7px; }
+  .sc-tag.alt{ color:var(--text-faint); border-color:var(--line); }
+  .sc-row{ display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-top:1px solid var(--line); font-size:13px; }
+  .sc-row:first-of-type{ border-top:none; }
+  .sc-row span{ color:var(--text-dim); } .sc-row b{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .sc-row b.sl{ color:var(--danger); } .sc-row b.tp{ color:var(--accent); }
+  .sc-row em{ font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--text-faint); margin-left:6px; }
+  .sc-c{ font-size:11.5px; color:var(--text-dim); line-height:1.45; margin-top:8px; }
+  .lad{ border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+  .lad-r{ display:flex; justify-content:space-between; padding:8px 12px; font-size:12.5px; background:var(--bg-card-2); border-top:1px solid var(--line); }
+  .lad-r:first-child{ border-top:none; }
+  .lad-r span{ color:var(--text-dim); font-family:var(--mono); font-size:11px; letter-spacing:.06em; }
+  .lad-r b{ font-family:var(--mono); } .lad-r em{ font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--text-faint); margin-left:8px; }
+  .lad-r.res b{ color:var(--danger); } .lad-r.sup b{ color:var(--accent); }
+  .lad-r.now{ background:color-mix(in srgb, var(--gold) 14%, var(--bg-card-2)); }
+  .lad-r.now span, .lad-r.now b{ color:var(--gold); }
+  .gd-ind{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .gd-ind div{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:10px; padding:8px 6px; text-align:center; }
+  .gd-ind b{ display:block; font-family:var(--mono); font-size:13px; } .gd-ind span{ font-size:9.5px; color:var(--text-faint); font-family:var(--mono); }
+  .gd-notes{ margin:8px 0 0; padding-left:18px; font-size:12px; color:var(--text-dim); line-height:1.6; }
+  .rc{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; padding:12px; }
+  .rc .field-row{ margin-bottom:8px; }
+  .rc .field-row select{ width:120px; }
+  .rc-out{ margin-top:6px; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; line-height:1.55; color:var(--text-dim); }
+  .rc-out b{ color:var(--text); font-family:var(--mono); }
+  .rc-lot{ font-family:var(--mono); font-size:24px; font-weight:700; color:var(--gold); }
+  .rc-warn{ color:var(--danger); font-weight:600; }
 </style>
 </head>
 <body>
@@ -1041,6 +1093,11 @@
         <div id="newsList"></div>
         <div class="news-meta" id="newsMeta"></div>
         <a class="ghost-btn news-link" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">Deschide Forex Factory ↗</a>
+      </div>
+
+      <div class="card gold-card" data-seg-card="trading">
+        <div class="card-title">Analiză XAUUSD</div>
+        <div id="goldBox"><div class="hint" style="margin-top:0;">Se încarcă analiza…</div></div>
       </div>
 
       <div class="card" data-seg-card="trading">
@@ -2619,6 +2676,7 @@
       } else { al.style.display = 'none'; }
     }
     if(typeof renderPlanTiles === 'function') renderPlanTiles();
+    if(typeof renderGold === 'function') renderGold();
   }
   document.querySelectorAll('.news-f').forEach(function(b){
     b.addEventListener('click', function(){
@@ -2629,6 +2687,103 @@
   });
   setInterval(renderNews, 30000);
   setInterval(tickNews, 1000);
+
+  /* ===== XAUUSD analysis ===== */
+  var gold = null, goldRisk = 1, goldSide = null;
+  try{ goldRisk = parseFloat(localStorage.getItem('byzyp_gold_risk')) || 1; }catch(e){}
+  function f2(n){ return Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function curBalance(){
+    var st = (typeof eqStart === 'number') ? eqStart : 0;
+    return st + trades.reduce(function(a,t){ return a + (t.result||0); }, 0);
+  }
+  function loadGold(){
+    fetch('xauusd.json?t=' + Date.now(), { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(j){ gold = j; renderGold(); })
+      .catch(function(){ var b = document.getElementById('goldBox'); if(b && !gold) b.innerHTML = '<div class="hint" style="margin-top:0;">Analiza apare după prima rulare automată pe GitHub (în cel mult o oră).</div>'; });
+  }
+  function renderGold(){
+    var box = document.getElementById('goldBox'); if(!box || !gold) return;
+    var g = gold, up = g.change >= 0;
+    var meter = ''; for(var i=-5;i<=5;i++){ if(i===0) continue; var on = (g.score>0 && i>0 && i<=g.score) || (g.score<0 && i<0 && i>=g.score); meter += '<i class="' + (on ? (i>0?'on-b':'on-s') : '') + '"></i>'; }
+    var upd = new Date(g.updated);
+    var html = '<div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR</div><div class="gd-price">' + f2(g.price) + '</div>' +
+      '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
+      '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
+
+    // USD red news soon
+    var evs = (newsData && newsData.events) ? newsData.events : [];
+    var now = Date.now();
+    var hot = evs.filter(function(e){ var t = new Date(e.t).getTime(); return e.i === 'High' && e.c === 'USD' && t > now - 30*60000 && t < now + 6*3600000; })
+      .sort(function(a,b){ return new Date(a.t) - new Date(b.t); })[0];
+    if(hot){ var ht = new Date(hot.t); html += '<div class="gd-alert">⚠️ <b>Știre roșie USD</b> la ' + hhmm(ht) + ': ' + hot.title + '. Aurul se poate mișca brusc cu zeci de dolari. Mulți traderi nu deschid poziții cu 30 min înainte și după.</div>'; }
+
+    // scenarios (main first)
+    var sc = g.scenarios.slice().sort(function(a,b){ return (b.main?1:0) - (a.main?1:0); });
+    html += '<div class="gd-sec">Scenarii de azi</div>';
+    sc.forEach(function(x){
+      html += '<div class="sc' + (x.main?' main':'') + '"><div class="sc-h"><div class="sc-t ' + x.side + '">' + (x.side==='BUY'?'🟢 BUY':'🔴 SELL') + '</div>' +
+        '<span class="sc-tag' + (x.main?'':' alt') + '">' + (x.main ? 'ÎN DIRECȚIA TRENDULUI' : (g.bias==='NEUTRU' ? 'PIAȚĂ NEUTRĂ' : 'CONTRA TREND · RISC MARE')) + '</span></div>' +
+        '<div class="sc-row"><span>Zonă intrare</span><b>' + f2(x.zone[0]) + ' – ' + f2(x.zone[1]) + '</b></div>' +
+        '<div class="sc-row"><span>Stop Loss</span><b class="sl">' + f2(x.sl) + '<em>' + f2(x.slDist) + ' $</em></b></div>' +
+        '<div class="sc-row"><span>Take Profit 1</span><b class="tp">' + f2(x.tp1) + '<em>R:R 1:' + x.rr1 + '</em></b></div>' +
+        '<div class="sc-row"><span>Take Profit 2</span><b class="tp">' + f2(x.tp2) + '<em>R:R 1:' + x.rr2 + '</em></b></div>' +
+        '<div class="sc-c">' + x.cond + ' ' + x.inval + ' La TP1 poți închide jumătate și muta SL-ul la intrare.</div></div>';
+    });
+
+    // risk calculator
+    if(!goldSide) goldSide = (sc[0] && sc[0].side) || 'BUY';
+    var bal = curBalance();
+    html += '<div class="gd-sec">Calculator de risc</div><div class="rc">' +
+      '<div class="field-row"><label>Sold cont ($)</label><input type="number" id="rcBal" inputmode="decimal" value="' + (bal>0 ? bal.toFixed(2) : '') + '" placeholder="5"></div>' +
+      '<div class="field-row"><label>Risc pe tranzacție</label><select id="rcRisk">' + [0.5,1,2,3,5].map(function(r){ return '<option value="' + r + '"' + (r===goldRisk?' selected':'') + '>' + r + '%</option>'; }).join('') + '</select></div>' +
+      '<div class="field-row"><label>Scenariu</label><select id="rcSide"><option value="BUY"' + (goldSide==='BUY'?' selected':'') + '>BUY</option><option value="SELL"' + (goldSide==='SELL'?' selected':'') + '>SELL</option></select></div>' +
+      '<div class="rc-out" id="rcOut"></div></div>';
+
+    // levels ladder
+    var L = [
+      { k:'R2', v:g.levels.R2, c:'res' }, { k:'R1', v:g.levels.R1, c:'res' }, { k:'PIVOT', v:g.pivots.P, c:'' },
+      { k:'PREȚ', v:g.price, c:'now' }, { k:'S1', v:g.levels.S1, c:'sup' }, { k:'S2', v:g.levels.S2, c:'sup' }
+    ].sort(function(a,b){ return b.v - a.v; });
+    html += '<div class="gd-sec">Niveluri cheie</div><div class="lad">' + L.map(function(l){
+      var d = l.v - g.price; return '<div class="lad-r ' + l.c + '"><span>' + l.k + '</span><b>' + f2(l.v) + (l.c==='now' ? '' : '<em>' + (d>0?'+':'') + f2(d) + '</em>') + '</b></div>'; }).join('') + '</div>';
+
+    // indicators + reasons
+    html += '<div class="gd-sec">Indicatori (zilnic)</div><div class="gd-ind">' +
+      '<div><b>' + f2(g.ema20) + '</b><span>EMA 20</span></div><div><b>' + f2(g.ema50) + '</b><span>EMA 50</span></div><div><b>' + f2(g.ema200) + '</b><span>EMA 200</span></div>' +
+      '<div><b>' + g.rsi + '</b><span>RSI 14</span></div><div><b>' + f2(g.atr) + '</b><span>ATR 14 ($/zi)</span></div><div><b>' + f2(g.dayHigh - g.dayLow) + '</b><span>RANGE AZI</span></div></div>' +
+      '<ul class="gd-notes">' + g.notes.map(function(n){ return '<li>' + n + '</li>'; }).join('') + '</ul>';
+
+    html += '<div class="hint">Analiză automată pe reguli (trend EMA, RSI, ATR, suporturi/rezistențe), actualizată din oră în oră · ' + g.source + ' · ' +
+      upd.getDate() + ' ' + monthShort[upd.getMonth()] + ' ' + hhmm(upd) + '. Nu e sfat financiar: e un punct de plecare. Confirmă pe grafic și decide tu. Prețul brokerului poate diferi cu câțiva dolari.</div>';
+    box.innerHTML = html;
+
+    function calc(){
+      var b = parseFloat(document.getElementById('rcBal').value) || 0;
+      var r = parseFloat(document.getElementById('rcRisk').value) || 1;
+      var side = document.getElementById('rcSide').value;
+      var x = g.scenarios.filter(function(s){ return s.side === side; })[0];
+      var riskUsd = b * r / 100, per001 = x.slDist; // $ lost per 0.01 lot at SL (1 oz)
+      var lots = Math.floor(riskUsd / (x.slDist * 100) * 100) / 100;
+      var out = document.getElementById('rcOut');
+      if(!b){ out.innerHTML = 'Scrie soldul contului.'; return; }
+      if(lots < 0.01){
+        out.innerHTML = '<div class="rc-warn">Contul e prea mic pentru acest stop loss.</div>' +
+          'Cel mai mic lot, <b>0.01</b>, te costă <b>' + f2(per001) + ' $</b> dacă atinge SL-ul, adică <b>' + Math.round(per001/b*100) + '%</b> din cont (tu ai ales ' + r + '% = ' + f2(riskUsd) + ' $). ' +
+          'Variante: aștepți un setup cu SL mai mic, alimentezi contul sau folosești contul demo până crește.';
+      } else {
+        var p1 = Math.abs(x.tp1 - x.entry) * lots * 100, p2 = Math.abs(x.tp2 - x.entry) * lots * 100;
+        out.innerHTML = 'Lot recomandat<div class="rc-lot">' + lots.toFixed(2) + '</div>' +
+          'Risc la SL: <b>-' + f2(x.slDist * lots * 100) + ' $</b> · la TP1: <b>+' + f2(p1) + ' $</b> · la TP2: <b>+' + f2(p2) + ' $</b>' +
+          '<div style="margin-top:4px;font-size:11px;color:var(--text-faint);">Calcul pentru 1 lot = 100 oz (standardul la majoritatea brokerilor). Verifică specificația XAUUSD la brokerul tău.</div>';
+      }
+    }
+    document.getElementById('rcBal').addEventListener('input', calc);
+    document.getElementById('rcRisk').addEventListener('change', function(){ goldRisk = parseFloat(this.value); try{ localStorage.setItem('byzyp_gold_risk', String(goldRisk)); }catch(e){} calc(); });
+    document.getElementById('rcSide').addEventListener('change', function(){ goldSide = this.value; calc(); });
+    calc();
+  }
+  loadGold();
+  setInterval(loadGold, 10*60*1000);
 
   /* money segments */
   (function(){
