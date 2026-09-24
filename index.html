@@ -800,6 +800,38 @@
   .gold-mini .gm-v{ font-family:var(--mono); font-weight:800; font-size:14px; }
   .gold-mini .gm-v.BUY{ color:var(--accent); } .gold-mini .gm-v.SELL{ color:var(--danger); } .gold-mini .gm-v.AȘTEAPTĂ{ color:var(--gold); }
   #goldBox > .card{ margin-bottom:14px; }
+
+  .sx-bar{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 10px; scrollbar-width:none; }
+  .sx-bar::-webkit-scrollbar{ display:none; }
+  .sx-chip{ flex:none; display:flex; align-items:center; gap:6px; background:var(--bg-card-2); border:1px solid var(--line); color:var(--text-dim);
+    border-radius:18px; padding:8px 12px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .sx-chip.on{ border-color:var(--gold); color:var(--text); background:color-mix(in srgb, var(--gold) 12%, var(--bg-card-2)); }
+  .sx-chip .dot{ width:7px; height:7px; border-radius:50%; background:var(--text-faint); flex:none; }
+  .sx-chip .dot.BUY{ background:var(--accent); box-shadow:0 0 6px var(--accent); } .sx-chip .dot.SELL{ background:var(--danger); box-shadow:0 0 6px var(--danger); }
+  .sx-chip .dot.AȘTEAPTĂ{ background:var(--gold); }
+  .sx-head{ display:flex; gap:12px; align-items:center; margin:4px 0 2px; }
+  .sx-ic{ width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; background:var(--bg-card-2); border:1px solid var(--line); flex:none; }
+  .sx-t{ font-size:17px; font-weight:800; letter-spacing:-.01em; }
+  .sx-v{ font-size:13px; font-weight:700; margin-top:3px; } .sx-v.BUY{ color:var(--accent); } .sx-v.SELL{ color:var(--danger); } .sx-v.AȘTEAPTĂ{ color:var(--gold); } .sx-v.NEUTRU{ color:var(--text-dim); }
+  .sx-rr{ font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-top:6px; }
+
+  .pt-r{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .pt-r:first-child{ border-top:none; }
+  .pt-l{ min-width:0; flex:1; }
+  .pt-n{ font-size:12.5px; font-weight:700; margin-bottom:2px; }
+  .pt-d{ font-family:var(--mono); font-size:10.5px; color:var(--text-dim); }
+  .pt-s{ font-size:11px; color:var(--text-faint); margin-top:2px; }
+  .pt-res{ font-family:var(--mono); font-size:11px; font-weight:700; text-align:right; white-space:nowrap; }
+  .pt-meta{ font-size:11px; color:var(--text-faint); margin:-2px 0 6px; }
+  .lb{ border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .lb-r{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-top:1px solid var(--line); background:var(--bg-card-2); cursor:pointer; }
+  .lb-r:first-child{ border-top:none; }
+  .lb-i{ width:24px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--text-faint); flex:none; }
+  .lb-n{ flex:1; min-width:0; font-size:12.5px; font-weight:700; }
+  .lb-n em{ display:block; font-style:normal; font-weight:500; font-size:10.5px; color:var(--text-faint); margin-top:2px; }
+  .lb-r2{ font-family:var(--mono); font-weight:800; font-size:13px; }
+  .sx-wr{ font-style:normal; font-family:var(--mono); font-size:10px; color:var(--text-faint); }
+  .hist-sum{ flex-wrap:wrap; }
 </style>
 </head>
 <body>
@@ -2778,6 +2810,99 @@
 
   /* ===== XAUUSD analysis ===== */
   var gold = null, goldRisk = 1, goldSide = null, goldOpen = {}, goldBal = null, goldChart = 'a', goldChartSide = null;
+
+  var SGUIDE = {
+    trend:{ ic:'📈', short:'Trend EMA', what:'Tranzacționezi doar în direcția trendului mare, arătat de mediile mobile EMA 20, 50 și 200. Când sunt aliniate (20 peste 50 peste 200 = trend în sus), cumperi la retrageri.',
+      how:['Verifică ordinea mediilor: EMA20 > EMA50 > EMA200 = doar BUY; invers = doar SELL.','Nu intra la vârf: așteaptă ca prețul să revină spre EMA20.','Pe H1 caută o lumânare de respingere (fitil) la EMA20.','SL cam 1×ATR dincolo de EMA20, TP1 la 1.5R, TP2 la 3R.','Dacă prețul închide o zi întreagă dincolo de EMA50, trendul slăbește: stai deoparte.'] },
+    sr:{ ic:'🧱', short:'Suport/Rezistență', what:'Prețul reacționează des la aceleași niveluri: podele (suporturi) unde apar cumpărătorii și plafoane (rezistențe) unde apar vânzătorii.',
+      how:['Marchează suportul și rezistența cele mai apropiate (le ai în Analiză).','Nu cumpăra în mijlocul intervalului: așteaptă prețul la nivel.','La suport: caută fitil lung în jos sau engulfing verde pe H1, apoi BUY.','La rezistență: fitil lung în sus sau engulfing roșu, apoi SELL.','SL puțin dincolo de nivel, TP la nivelul opus.'] },
+    breakout:{ ic:'💥', short:'Breakout', what:'Când prețul sparge maximul sau minimul ultimelor 20 de zile, deseori pornește o mișcare puternică în acea direcție.',
+      how:['Urmărește maximul și minimul pe 20 de zile.','Intră doar după o lumânare H4/D1 închisă dincolo de nivel, nu doar la o atingere.','Cea mai sigură intrare e la retestul nivelului spart (fostul plafon devine podea).','SL înapoi în interiorul canalului, TP la 1.5–3×ATR.','Atenție la spargerile false chiar înainte de știri.'] },
+    rsi:{ ic:'🌡️', short:'RSI extrem', what:'RSI măsoară cât de „întins” e prețul. Peste 70 = supracumpărat, sub 30 = supravândut, adică posibilă revenire.',
+      how:['Folosește-o mai ales când piața merge lateral (ADX sub 20).','RSI sub 30 + suport = cumpărare; RSI peste 70 + rezistență = vânzare.','Așteaptă ca RSI să iasă înapoi din zona extremă înainte de intrare.','Țintă modestă: EMA20 sau mijlocul intervalului.','Într-un trend puternic RSI poate sta mult timp la extreme: nu te opune trendului.'] },
+    macd:{ ic:'〽️', short:'MACD', what:'MACD arată accelerarea sau încetinirea mișcării. Când linia MACD trece peste linia de semnal, momentumul devine pozitiv.',
+      how:['BUY la încrucișarea MACD peste semnal, mai ales sub linia 0.','SELL la încrucișarea sub semnal, mai ales peste linia 0.','Confirmă cu trendul EMA; încrucișările contra trendului sunt slabe.','Histograma care scade arată că mișcarea obosește.','SL la ultimul minim/maxim local.'] },
+    bb:{ ic:'🎯', short:'Bollinger', what:'Benzile Bollinger arată volatilitatea. Când se strâng (squeeze), urmează de obicei o mișcare mare; atingerea benzilor arată întindere.',
+      how:['Squeeze: nu ghici direcția, intră după ce o lumânare închide în afara benzii.','Piață laterală: vânzare la banda de sus, cumpărare la banda de jos, țintă banda de mijloc.','Trend puternic: prețul „merge” pe bandă, nu vinde doar pentru că atinge banda de sus.','SL dincolo de ultima lumânare extremă.'] },
+    fib:{ ic:'🌀', short:'Fibonacci', what:'După o mișcare mare, prețul revine des în zona 50–61.8% (zona de aur) înainte să continue.',
+      how:['Identifică ultimul impuls (minim → maxim pentru BUY).','Așteaptă retragerea în zona 50–61.8%.','Caută confirmare pe H1 (respingere, engulfing).','SL sub 78.6%, TP1 la maximul impulsului, TP2 la extensia 127.2%.','Dacă prețul trece de 78.6%, impulsul e anulat.'] },
+    pivot:{ ic:'📍', short:'Pivot', what:'Pivotul zilei (calculat din ziua de ieri) împarte ziua în bias pozitiv (peste pivot) și negativ (sub pivot). R1/R2 și S1/S2 sunt țintele intraday.',
+      how:['Peste pivot: caută BUY cu țintă R1, apoi R2.','Sub pivot: caută SELL cu țintă S1, apoi S2.','Retestul pivotului e un punct bun de intrare.','E o strategie intraday: închide pozițiile până seara.'] },
+    fvg:{ ic:'🧠', short:'Fair Value Gap', what:'Smart Money: un „gol” de preț lăsat de o mișcare foarte rapidă. Prețul revine des să-l „umple”, iar acolo intră instituțiile.',
+      how:['Un FVG bullish sub preț e o zonă de cumpărare la revenire.','Un FVG bearish deasupra prețului e o zonă de vânzare la revenire.','Intră când prețul atinge zona și arată respingere pe H1.','SL dincolo de capătul golului, TP la ultimul maxim/minim.'] },
+    mtf:{ ic:'🧭', short:'Timeframe-uri', what:'Cele mai bune tranzacții sunt când trendul zilnic (D1), pe 4 ore (H4) și pe o oră (H1) arată toate în aceeași direcție.',
+      how:['Direcția o dă D1.','Pe H4 aștepți o retragere contra ei.','Pe H1 intri când trendul revine în direcția D1.','Dacă timeframe-urile se contrazic, stai deoparte.'] },
+    ichi:{ ic:'☁️', short:'Ichimoku', what:'Sistem japonez complet: norul arată trendul și zonele de suport, iar liniile Tenkan și Kijun dau semnalele.',
+      how:['Preț deasupra norului + Tenkan peste Kijun = doar BUY.','Preț sub nor + Tenkan sub Kijun = doar SELL.','Intrare la retragerea spre Kijun.','Preț în interiorul norului = indecizie, nu tranzacționa.','SL dincolo de Kijun sau de nor.'] },
+    stoch:{ ic:'🔁', short:'Stochastic', what:'Oscilator ca RSI, dar mai rapid: arată unde e prețul față de intervalul ultimelor 14 zile.',
+      how:['BUY: %K trece peste %D sub nivelul 20–30.','SELL: %K trece sub %D peste nivelul 70–80.','Cel mai bine funcționează în piață laterală.','Confirmă cu suport/rezistență.'] },
+    pa:{ ic:'🕯️', short:'Lumânări', what:'Price action: formațiile de lumânări arată cine a câștigat lupta zilei. Engulfing, pin bar și inside bar sunt cele mai folosite.',
+      how:['Uită-te doar la lumânări închise (ziua de ieri, H4 închis).','Engulfing verde/pin bar la suport = BUY; engulfing roșu/shooting star la rezistență = SELL.','Inside bar: pui ordine peste maximul și sub minimul zilei-mamă.','SL dincolo de capătul lumânării, TP la 1.5–2R.'] },
+    adx:{ ic:'💪', short:'ADX', what:'ADX nu arată direcția, ci puterea trendului: peste 25 e trend puternic, sub 20 piața merge lateral.',
+      how:['ADX peste 25: folosește strategii de trend (EMA, Supertrend, Breakout).','ADX sub 20: folosește strategii de interval (S/R, RSI, Stochastic, Bollinger).','+DI peste −DI = presiune de cumpărare, invers = de vânzare.','ADX care urcă = trendul se întărește.'] },
+    st:{ ic:'🚦', short:'Supertrend', what:'Linie care urmărește prețul: verde sub preț = trend în sus, roșie peste preț = trend în jos. E folosită și ca Stop Loss mobil.',
+      how:['Schimbarea culorii e semnalul de intrare.','Intră în direcția culorii, cu SL pe linia Supertrend.','Mută SL-ul pe linie în fiecare zi (trailing stop).','Ieși când linia își schimbă culoarea.','În piață laterală dă multe semnale false: verifică ADX.'] },
+    london:{ ic:'🇬🇧', short:'London breakout', what:'Noaptea, în sesiunea asiatică, aurul face un interval mic. La deschiderea Londrei (07:00 UTC) prețul îl sparge des cu putere.',
+      how:['Notează maximul și minimul dintre 00:00 și 07:00 UTC.','BUY la spargerea maximului, SELL la spargerea minimului.','SL la mijlocul intervalului.','TP = 1× și 2× mărimea intervalului.','Dacă nu se sparge până la prânz, anulezi.'] },
+    round:{ ic:'🔢', short:'Niveluri rotunde', what:'Traderii pun ordine la prețuri rotunde (4300, 4350). Acolo prețul reacționează des: se oprește sau accelerează.',
+      how:['Folosește nivelurile rotunde ca ținte (TP) și nu pune SL chiar pe ele.','Nivelurile de 100 sunt mai puternice decât cele de 50.','Respingere la nivel rotund + altă strategie = semnal mai bun.','O spargere clară a unui nivel de 100 duce deseori spre următorul.'] },
+    ema921:{ ic:'⚡', short:'EMA 9/21', what:'Varianta rapidă a strategiei de trend: încrucișarea mediilor de 9 și 21 de zile arată impulsul pe termen scurt.',
+      how:['EMA9 trece peste EMA21 = impuls în sus; sub = în jos.','Intrare la prima retragere spre EMA21 după încrucișare.','SL puțin dincolo de EMA21.','Mai sigur când e în aceeași direcție cu EMA200.'] }
+  };
+  var goldStrat = 'all';
+  try{ goldStrat = localStorage.getItem('byzyp_gstrat') || 'all'; }catch(e){}
+  function renderStratPage(){
+    var el = document.getElementById('sxDetail'); if(!el || !gold) return;
+    document.querySelectorAll('.sx-chip').forEach(function(c){ c.classList.toggle('on', c.getAttribute('data-sx') === goldStrat); });
+    if(goldStrat === 'all'){ el.innerHTML = goldAllHtml; bindStratList(el); return; }
+    var x = (gold.strategies || []).filter(function(s){ return s.id === goldStrat; })[0];
+    var G = SGUIDE[goldStrat] || { ic:'•', short:goldStrat, what:'', how:[] };
+    if(!x){ el.innerHTML = '<div class="hint">Strategia apare la următoarea actualizare.</div>'; return; }
+    var dots = ''; for(var k=0;k<3;k++) dots += k < x.strength ? '●' : '○';
+    var vtxt = x.verdict === 'BUY' ? '🟢 Spune CUMPĂRARE' : x.verdict === 'SELL' ? '🔴 Spune VÂNZARE' : x.verdict === 'AȘTEAPTĂ' ? '⏳ Spune AȘTEAPTĂ' : '◻️ Neutru acum';
+    var h = '<div class="sx-head"><div class="sx-ic">' + G.ic + '</div><div><div class="sx-t">' + x.name + '</div><div class="sx-v ' + x.verdict + '">' + vtxt + ' <span class="st-dots">' + dots + '</span></div></div></div>';
+    h += '<div class="nar"><h4>📌 Ce spune acum</h4><p>' + x.why + (x.info ? ' ' + x.info : '') + '</p></div>';
+    if(x.entry != null){
+      h += '<div class="st-lv" style="margin-top:12px;"><div><b>' + f2(x.entry) + '</b><span>INTRARE</span></div><div class="slv"><b>' + f2(x.sl) + '</b><span>STOP LOSS</span></div><div class="tpv"><b>' + f2(x.tp1) + '</b><span>TP1</span></div><div class="tpv"><b>' + f2(x.tp2) + '</b><span>TP2</span></div></div>' +
+        '<div class="sx-rr">Risc ' + f2(Math.abs(x.entry - x.sl)) + ' $/uncie · R:R până la TP1 1:' + x.rr + '</div>' +
+        '<div class="ch-wrap" id="sxChart" style="margin-top:10px;"></div>';
+    }
+    var myT = (gold.ptrades || []).filter(function(t){ return t.sid === goldStrat; }).slice().reverse();
+    h += '<div class="nar"><h4>📊 Cum a mers strategia asta (tranzacții de test)</h4>' + ptStatsBox((gold.pstats || {})[goldStrat]) +
+      (myT.length ? myT.slice(0, 8).map(function(t){ return ptRow(t, false); }).join('') : '') + '</div>';
+    h += '<div class="nar"><h4>' + G.ic + ' Ce e strategia asta</h4><p>' + G.what + '</p></div>';
+    h += '<div class="nar plan"><h4>🧭 Cum o folosești, pas cu pas</h4>' + G.how.map(function(t, i){ return '<p>' + (i+1) + '. ' + t + '</p>'; }).join('') + '</div>';
+    h += '<div class="hint">O singură strategie nu e suficientă: e mai sigur când mai multe spun același lucru (vezi verdictul din Plan).</div>';
+    el.innerHTML = h;
+    if(x.entry != null){
+      var A = gold.atr || Math.abs(x.entry - x.sl);
+      drawGoldChart('sxChart', { side:x.verdict, entry:x.entry, sl:x.sl, tp1:x.tp1, tp2:x.tp2, zone:[x.entry - 0.15*A, x.entry + 0.15*A] });
+    }
+  }
+
+  function ptRow(t, showName){
+    var dd = new Date(t.date + 'T00:00:00');
+    var res = '', cls = 'hs-open';
+    if(t.closed && t.resultR != null){ cls = t.resultR > 0 ? 'hs-win' : 'hs-loss'; res = (t.resultR > 0 ? '+' : '') + t.resultR + 'R · ' + (t.pnlOz >= 0 ? '+' : '-') + '$' + Math.abs(t.pnlOz).toFixed(2); }
+    else if(t.closed){ cls = 'hs-none'; res = 'expirată'; }
+    else if(t.floatR != null){ res = 'acum ' + (t.floatR >= 0 ? '+' : '') + t.floatR + 'R'; }
+    else res = 'așteaptă ' + f2(t.entry);
+    var ic = t.closed ? (t.resultR == null ? '⏸' : t.resultR > 0 ? '✅' : '❌') : (t.status === 'în așteptare' ? '🕒' : '⏳');
+    return '<div class="pt-r"><div class="pt-l">' + (showName ? '<div class="pt-n">' + ((SGUIDE[t.sid] || {}).ic || '•') + ' ' + t.strat + '</div>' : '') +
+      '<div class="pt-d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · <b class="' + (t.side === 'BUY' ? 'hs-win' : 'hs-loss') + '">' + t.side + '</b> ' + f2(t.entry) + ' · SL ' + f2(t.sl) + ' · TP ' + f2(t.tp1) + '</div>' +
+      '<div class="pt-s">' + t.status + '</div></div><div class="pt-res ' + cls + '">' + ic + ' ' + res + '</div></div>';
+  }
+  function ptStatsBox(v){
+    if(!v) return '<div class="hint" style="margin-top:0;">Încă nicio tranzacție de test pentru strategia asta. Robotul intră automat când strategia dă semnal BUY/SELL cu niveluri.</div>';
+    return '<div class="hist-sum"><div><b>' + v.n + '</b><span>ÎNCHISE</span></div><div><b>' + (v.rate != null ? v.rate + '%' : '–') + '</b><span>CÂȘTIGATE</span></div>' +
+      '<div><b class="' + (v.r >= 0 ? 'hs-win' : 'hs-loss') + '">' + (v.r >= 0 ? '+' : '') + v.r + 'R</b><span>TOTAL</span></div>' +
+      '<div><b class="' + (v.oz >= 0 ? 'hs-win' : 'hs-loss') + '">' + (v.oz >= 0 ? '+' : '-') + '$' + Math.abs(v.oz).toFixed(0) + '</b><span>LA 0.01 LOT</span></div></div>' +
+      '<div class="pt-meta">' + v.wins + ' câștigate · ' + v.losses + ' pierdute · ' + v.open + ' deschise · ' + v.pending + ' în așteptare' + (v.expired ? ' · ' + v.expired + ' expirate' : '') + '</div>';
+  }
+  var goldAllHtml = '';
+  function bindStratList(root){
+    root.querySelectorAll('.st-h').forEach(function(h){ h.addEventListener('click', function(){ var st = h.parentNode; st.classList.toggle('open'); var nm = st.querySelector('.st-n').textContent; goldOpen[nm] = st.classList.contains('open'); }); });
+  }
   var goldSeg = 'plan', goldLiveLoaded = false;
   try{ goldSeg = localStorage.getItem('byzyp_gseg') || 'plan'; }catch(e){}
   function loadGoldLive(){
@@ -2812,9 +2937,9 @@
       '<button class="primary-btn" id="gmOpen" style="margin-top:12px;">Deschide analiza completă →</button>';
     document.getElementById('gmOpen').addEventListener('click', function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); try{ window.scrollTo(0,0); }catch(e){} });
   }
-  function drawGoldChart(){
-    var wrap = document.getElementById('chWrap'); if(!wrap || !gold) return;
-    if(goldChart === 'tv'){
+  function drawGoldChart(wrapId, scOv){
+    var wrap = document.getElementById(wrapId || 'chWrap'); if(!wrap || !gold) return;
+    if(!wrapId && goldChart === 'tv'){
       if(wrap.getAttribute('data-tv') === '1') return;
       wrap.setAttribute('data-tv','1');
       var dark = !document.documentElement.getAttribute('data-theme') || document.documentElement.getAttribute('data-theme') !== 'light';
@@ -2832,7 +2957,7 @@
     C = C.slice(-60);
     var e20 = (g.ema20s || []).slice(-60), e50 = (g.ema50s || []).slice(-60);
     var side = goldChartSide || (g.scenarios.filter(function(x){ return x.main; })[0] || g.scenarios[0]).side;
-    var sc2 = g.scenarios.filter(function(x){ return x.side === side; })[0];
+    var sc2 = scOv || g.scenarios.filter(function(x){ return x.side === side; })[0];
     var W = 360, H = 230, padL = 4, padR = 64, padT = 10, padB = 18;
     var lo = Infinity, hi = -Infinity;
     C.forEach(function(k){ lo = Math.min(lo, k[3]); hi = Math.max(hi, k[2]); });
@@ -2891,7 +3016,7 @@
     labels.push({ v:g.price, y:+lp, t:'ACUM', col:'var(--text)' });
     drawLabels();
     svg += '</svg>';
-    wrap.innerHTML = '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>' + svg +
+    wrap.innerHTML = (scOv ? '' : '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>') + svg +
       '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>60 zile · D1</span></div>';
     wrap.querySelectorAll('.ch-scn button').forEach(function(b){ b.addEventListener('click', function(){ goldChartSide = b.getAttribute('data-s'); drawGoldChart(); }); });
   }
@@ -2951,6 +3076,7 @@
     }
     if(g.session){ html += '<div class="sess">🕒 Sesiune (la ultima actualizare): <b>' + g.session.active.join(' + ') + '</b>. ' + g.session.note + '</div>'; }
 
+    var allStart = html.length;
     html += '\u0001strat\u0002';
     // scenarios (main first)
     var sc = g.scenarios.slice().sort(function(a,b){ return (b.main?1:0) - (a.main?1:0); });
@@ -2978,6 +3104,14 @@
       });
     }
 
+    // strategies: remember the "all" view, then replace it with bar + detail container
+    var stratKeyPos = html.indexOf('\u0001strat\u0002', allStart);
+    goldAllHtml = html.slice(stratKeyPos).split('\u0001strat\u0002').join('');
+    html = html.slice(0, stratKeyPos);
+    var chips = '<button class="sx-chip" data-sx="all">📋 Toate</button>' + (g.strategies || []).map(function(x){ var G = SGUIDE[x.id] || { ic:'•', short:x.name };
+      var ps = (g.pstats || {})[x.id]; var wr = ps && ps.n ? ' <em class="sx-wr">' + ps.rate + '%</em>' : '';
+      return '<button class="sx-chip" data-sx="' + x.id + '"><i class="dot ' + x.verdict + '"></i>' + G.ic + ' ' + G.short + wr + '</button>'; }).join('');
+    html += '\u0001strat\u0002<div class="sx-bar">' + chips + '</div><div id="sxDetail"></div>';
     html += '\u0001risk\u0002';
     // risk calculator
     if(!goldSide) goldSide = (sc[0] && sc[0].side) || 'BUY';
@@ -3006,6 +3140,23 @@
     html += '\u0001avoid\u0002';
     if(g.avoid){ html += '<div class="nar avoid"><h4>⛔ Ce să eviți</h4>' + g.avoid.map(function(t){ return '<p>' + t + '</p>'; }).join('') + '</div>'; }
     html += '\u0001hist\u0002';
+    if(g.pstats){
+      var T = g.ptotal || {};
+      var rows = Object.keys(g.pstats).map(function(k){ return g.pstats[k]; }).sort(function(a,b){ return (b.r - a.r) || ((b.rate||0) - (a.rate||0)); });
+      html += '<div class="gd-sec" style="margin-top:0;">🏆 Clasamentul strategiilor · tranzacții de test</div>' +
+        '<div class="hist-sum"><div><b>' + (T.n || 0) + '</b><span>ÎNCHISE</span></div><div><b>' + (T.rate != null ? T.rate + '%' : '–') + '</b><span>CÂȘTIGATE</span></div>' +
+        '<div><b class="' + ((T.r||0) >= 0 ? 'hs-win' : 'hs-loss') + '">' + ((T.r||0) >= 0 ? '+' : '') + (T.r || 0) + 'R</b><span>TOTAL</span></div><div><b>' + ((T.open||0) + (T.pending||0)) + '</b><span>ACTIVE</span></div></div>' +
+        '<div class="lb">' + rows.map(function(v, i){ var G = SGUIDE[v.sid] || { ic:'•' };
+          return '<div class="lb-r" data-sx="' + v.sid + '"><span class="lb-i">' + (i === 0 && v.n ? '🥇' : i === 1 && v.n ? '🥈' : i === 2 && v.n ? '🥉' : (i+1)) + '</span>' +
+            '<span class="lb-n">' + G.ic + ' ' + v.name + '<em>' + v.n + ' închise · ' + (v.rate != null ? v.rate + '% câștig' : 'fără rezultate încă') + (v.open + v.pending ? ' · ' + (v.open + v.pending) + ' active' : '') + '</em></span>' +
+            '<span class="lb-r2 ' + (v.r >= 0 ? 'hs-win' : 'hs-loss') + '">' + (v.r >= 0 ? '+' : '') + v.r + 'R</span></div>'; }).join('') + '</div>';
+      var act = (g.ptrades || []).filter(function(t){ return !t.closed; }).slice().reverse();
+      html += '<div class="gd-sec">⏳ Tranzacții active acum (' + act.length + ')</div>' + (act.length ? act.map(function(t){ return ptRow(t, true); }).join('') : '<div class="hint" style="margin-top:0;">Nicio tranzacție activă.</div>');
+      var cl = (g.ptrades || []).filter(function(t){ return t.closed; }).slice().reverse().slice(0, 15);
+      if(cl.length) html += '<div class="gd-sec">✔️ Ultimele închise</div>' + cl.map(function(t){ return ptRow(t, true); }).join('');
+      html += '<div class="hint">Tranzacții simulate (nu reale): robotul „intră” automat când o strategie dă semnal, cu intrarea, SL-ul și TP-urile ei, apoi le urmărește pe lumânările zilnice. La TP1 închide jumătate și mută SL-ul la intrare. Dacă SL și TP apar în aceeași zi, se consideră SL (varianta prudentă). R = câte riscuri ai câștigat sau pierdut; $ la 0.01 lot = 1 uncie.</div>';
+      html += '<div class="gd-sec">📜 Planul zilnic combinat</div>';
+    }
     if(g.history && g.history.length){
       var tr = g.track || {};
       var cls = function(st){ return /TP/.test(st) ? 'hs-win' : /SL/.test(st) ? 'hs-loss' : /desfășurare|așteaptă/.test(st) ? 'hs-open' : 'hs-none'; };
@@ -3017,7 +3168,7 @@
         '<div class="hint">Verificat automat pe lumânările zilnice, după publicarea fiecărui plan. Rezultatele trecute nu garantează rezultate viitoare.</div></div>';
     }
     html += '\u0001foot\u0002';
-    html += '<div class="hint">Analiză automată pe reguli: 10 strategii (trend EMA, suport/rezistență, breakout, RSI, MACD, Bollinger, Fibonacci, pivot, Fair Value Gap, aliniere timeframe-uri), actualizată din oră în oră · ' + g.source + ' · ' +
+    html += '<div class="hint">Analiză automată pe reguli: 18 strategii (trend EMA, S/R, breakout, RSI, MACD, Bollinger, Fibonacci, pivot, FVG, timeframe-uri, Ichimoku, Stochastic, lumânări, ADX, Supertrend, London breakout, niveluri rotunde, EMA 9/21), actualizată din oră în oră · ' + g.source + ' · ' +
       upd.getDate() + ' ' + monthShort[upd.getMonth()] + ' ' + hhmm(upd) + '. Nu e sfat financiar: e un punct de plecare. Confirmă pe grafic și decide tu. Prețul brokerului poate diferi cu câțiva dolari.</div>';
     var parts = html.split(/\u0001(\w+)\u0002/), B = { top:'' }, key = 'top';
     for(var pi=0; pi<parts.length; pi++){ if(pi % 2 === 1){ key = parts[pi]; } else { B[key] = (B[key] || '') + parts[pi]; } }
@@ -3027,13 +3178,17 @@
     box.innerHTML =
       sec('plan', (B.conf || '') + (B.nar || '') + (B.avoid || '') + (B.foot || '')) +
       sec('chart', '<div class="card-title">Graficul analizei · D1</div>' + (B.chart || '')) +
-      sec('strat', (B.strat || '')) +
+      sec('strat', '<div class="card-title">Strategii · alege una din bară</div>' + (B.strat || '')) +
       sec('risk', (B.risk || '')) +
       sec('hist', (B.hist || '<div class="hint" style="margin-top:0;">Istoricul apare după primele zile de analiză.</div>'));
     applyGoldSeg();
+    box.querySelectorAll('.lb-r').forEach(function(r){ r.addEventListener('click', function(){ goldStrat = r.getAttribute('data-sx'); try{ localStorage.setItem('byzyp_gstrat', goldStrat); }catch(e){}
+      goldSeg = 'strat'; try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){} applyGoldSeg(); renderStratPage(); try{ window.scrollTo(0,0); }catch(e){} }); });
     goldChart = 'a'; drawGoldChart();
     renderGoldMini();
-    box.querySelectorAll('.st-h').forEach(function(h){ h.addEventListener('click', function(){ var st = h.parentNode; st.classList.toggle('open'); var nm = st.querySelector('.st-n').textContent; goldOpen[nm] = st.classList.contains('open'); }); });
+    box.querySelectorAll('.sx-chip').forEach(function(c){ c.addEventListener('click', function(){ goldStrat = c.getAttribute('data-sx'); try{ localStorage.setItem('byzyp_gstrat', goldStrat); }catch(e){} renderStratPage(); }); });
+    if(goldStrat !== 'all' && !(g.strategies || []).some(function(x){ return x.id === goldStrat; })) goldStrat = 'all';
+    renderStratPage();
 
     function calc(){
       var b = parseFloat(document.getElementById('rcBal').value) || 0;
