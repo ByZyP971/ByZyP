@@ -1,0 +1,9 @@
+{
+  "name": "By ZyP",
+  "short_name": "By ZyP",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#05080D",
+  "theme_color": "#05080D",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}
