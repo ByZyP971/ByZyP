@@ -3014,7 +3014,14 @@
     var e20, e50;
     if(intra){
       C = intradayCandles(tf);
-      if(C.length < 3){ wrap.innerHTML = '<div class="hint" style="padding:12px;margin:0;">Se încarcă prețurile live…</div>'; return; }
+      if(C.length < 3){
+        var myId0 = wrapId || 'chWrap';
+        wrap.innerHTML = '<div class="ch-tf">' + ['5m','15m','1h','D1'].map(function(t){ return '<button data-tf="' + t + '" class="' + (t === tf ? 'on' : '') + '">' + t + '</button>'; }).join('') + '</div>' +
+          '<div class="hint" style="padding:12px;margin:0;">' + (intraFailed ? 'Prețurile intraday nu sunt disponibile acum. Apasă D1 sau încearcă din nou peste un minut.' : 'Se încarcă prețurile live…') + '</div>';
+        wrap.querySelectorAll('.ch-tf button').forEach(function(b){ b.addEventListener('click', function(){ goldTf[myId0] = b.getAttribute('data-tf'); var o2 = {}; for(var k in opt) o2[k] = opt[k]; o2.tf = goldTf[myId0]; if(o2.tf !== 'D1'){ intraAt = 0; fetchIntraday(); } drawGoldChart(wrapId, scOv, o2); }); });
+        goldCharts[myId0] = { scOv:scOv, opt:opt };
+        return;
+      }
       var cl = C.map(function(k){ return k[4]; });
       e20 = emaJS(cl, 20); e50 = emaJS(cl, 50);
     } else {
@@ -3117,18 +3124,40 @@
     goldCharts[myId] = { scOv:scOv, opt:opt };
   }
   /* ---- live intraday data (xaus.com, 2-min samples, 48h) ---- */
-  var goldTf = { chWrap:'15m', planChart:'15m', sxChart:'D1' }, goldCharts = {}, intraPts = [], intraAt = 0;
+  var goldTf = { chWrap:'15m', planChart:'15m', sxChart:'D1' }, goldCharts = {}, intraPts = [], intraAt = 0, intraK = {}, intraFailed = false;
   try{ var _t = JSON.parse(localStorage.getItem('byzyp_gtf') || '{}'); for(var _k in _t) goldTf[_k] = _t[_k]; }catch(e){}
   function fetchIntraday(){
-    if(Date.now() - intraAt < 50000 && intraPts.length) return;
+    if(Date.now() - intraAt < 50000 && (intraPts.length || Object.keys(intraK).length)) return;
     intraAt = Date.now();
+    var hosts = ['https://data-api.binance.vision', 'https://api.binance.com'];
+    var tfs = { '5m':'5m', '15m':'15m', '1h':'1h' }, pending = 3, anyOk = false;
+    function done(){ if(--pending > 0) return; if(!anyOk) fetchXaus(); else { intraFailed = false; redrawLiveCharts(); } }
+    Object.keys(tfs).forEach(function(tf){
+      (function tryHost(i){
+        if(i >= hosts.length){ done(); return; }
+        fetch(hosts[i] + '/api/v3/klines?symbol=PAXGUSDT&interval=' + tfs[tf] + '&limit=' + (tf === '1h' ? 48 : 64), { cache:'no-store' })
+          .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+          .then(function(a){ intraK[tf] = a.map(function(k){ return [Math.floor(k[0] / 1000), +k[1], +k[2], +k[3], +k[4]]; }); anyOk = true; done(); })
+          .catch(function(){ tryHost(i + 1); });
+      })(0);
+    });
+  }
+  function fetchXaus(){
     fetch('https://xaus.com/api/v1/intraday?symbol=xau&hours=48', { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
       intraPts = (j.points || []).filter(function(x){ return x && x.t && x.p; }).sort(function(a,b){ return a.t - b.t; });
-      redrawLiveCharts();
-    }).catch(function(){});
+      intraFailed = intraPts.length < 10; redrawLiveCharts();
+    }).catch(function(){ intraFailed = true; redrawLiveCharts(); });
   }
   function intradayCandles(tf){
     var sec = tf === '5m' ? 300 : tf === '1h' ? 3600 : 900, maxN = tf === '1h' ? 48 : 64;
+    var K = intraK[tf];
+    if(K && K.length > 2){
+      // PAXG tracks 1 oz of gold; shift it onto the live XAUUSD spot so levels line up
+      var off = liveSpot != null ? liveSpot - K[K.length - 1][4] : 0;
+      var out2 = K.map(function(k){ return ['', k[1] + off, k[2] + off, k[3] + off, k[4] + off, k[0]]; });
+      if(liveSpot != null){ var lk = out2[out2.length - 1]; lk[4] = liveSpot; lk[2] = Math.max(lk[2], liveSpot); lk[3] = Math.min(lk[3], liveSpot); }
+      return out2.slice(-maxN);
+    }
     var pts = intraPts.slice();
     if(liveSpot != null) pts.push({ t: Math.floor(Date.now() / 1000), p: liveSpot });
     var out = [], cur = null;
