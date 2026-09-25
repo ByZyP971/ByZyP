@@ -22,10 +22,10 @@ function local(d) {
   return { date: `${p.year}-${p.month}-${p.day}`, hm: +p.hour * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
 }
 const status = Array.isArray(sent._status) ? sent._status : [];
-async function send(title, body, tag) {
+async function send(title, body, tag, url) {
   let ok = false;
   for (const s of subs) {
-    try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: './' }), { TTL: 1800, urgency: 'high' });
+    try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: url || './' }), { TTL: 1800, urgency: 'high' });
       ok = true; console.log('sent:', title, r && r.statusCode); status.push({ t: new Date().toISOString(), title, ok: true, code: r && r.statusCode }); }
     catch (e) { console.log('push error', e.statusCode, e.body || e.message); status.push({ t: new Date().toISOString(), title, ok: false, code: e.statusCode || 0, err: String(e.body || e.message).slice(0, 120) }); }
   }
@@ -53,6 +53,14 @@ for (let i = 0; i < SLOTS.length; i++) {
   const key = `m-${L.date}-${i}`;
   if (L.hm >= SLOTS[i] && L.hm < SLOTS[i] + 40 && !sent[key]) {
     if (await send('By ZyP', MOT[L.wd][i], 'motivatie')) { sent[key] = Date.now(); changed = true; }
+  }
+}
+
+// ---------- weekly report: Sunday 20:00 ----------
+{
+  const key = `w-${L.date}`, slot = 20 * 60;
+  if (L.wd === 'Sun' && L.hm >= slot && L.hm < slot + 60 && !sent[key]) {
+    if (await send('📊 Raportul săptămânii e gata', 'Vezi cum a mers săptămâna: obiceiuri, greutate, bani, trading și strategiile pe aur. Plus obiectivul pentru săptămâna viitoare.', 'raport', './#raport')) { sent[key] = Date.now(); changed = true; }
   }
 }
 

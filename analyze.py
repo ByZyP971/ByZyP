@@ -884,13 +884,13 @@ def main():
         later = bars[start + 1:]
         buy = t['side'] == 'BUY'; risk = abs(t['entry'] - t['sl'])
         state = 'open' if t['type'] == 'market' else 'pending'; status = 'deschisă' if state == 'open' else 'în așteptare'
-        res_r = None; exit_p = None; n_open = 0
+        res_r = None; exit_p = None; n_open = 0; closed_d = None
         for bi, b in enumerate(later):
             if state == 'pending':
                 if (b['l'] <= t['entry'] <= b['h']) or (buy and b['l'] <= t['entry']) or ((not buy) and b['h'] >= t['entry']):
                     state = 'open'; status = 'deschisă'
                 elif bi >= 4:
-                    state = 'done'; status = 'expirată (nu s-a atins intrarea)'; break
+                    state = 'done'; closed_d = b['d']; status = 'expirată (nu s-a atins intrarea)'; break
                 else: continue
             n_open += 1
             hit_sl = (b['l'] <= t['sl']) if buy else (b['h'] >= t['sl'])
@@ -899,16 +899,16 @@ def main():
             back_be = (b['l'] <= t['entry']) if buy else (b['h'] >= t['entry'])
             r1 = abs(t['tp1'] - t['entry']) / risk; r2_ = abs(t['tp2'] - t['entry']) / risk
             if state == 'open':
-                if hit_sl: state = 'done'; status = 'pierdere (SL)'; res_r = -1.0; exit_p = t['sl']; break   # conservative: SL first on same bar
-                if hit_tp2: state = 'done'; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']; break
+                if hit_sl: state = 'done'; closed_d = b['d']; status = 'pierdere (SL)'; res_r = -1.0; exit_p = t['sl']; break   # conservative: SL first on same bar
+                if hit_tp2: state = 'done'; closed_d = b['d']; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']; break
                 if hit_tp1: state = 'tp1'; status = 'TP1 atins, restul fără risc'; continue
             elif state == 'tp1':
-                if hit_tp2: state = 'done'; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']; break
-                if back_be: state = 'done'; status = 'câștig (TP1 + breakeven)'; res_r = 0.5 * r1; exit_p = t['entry']; break
+                if hit_tp2: state = 'done'; closed_d = b['d']; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']; break
+                if back_be: state = 'done'; closed_d = b['d']; status = 'câștig (TP1 + breakeven)'; res_r = 0.5 * r1; exit_p = t['entry']; break
             if n_open >= 20:
                 cur = b['c']; mv = (cur - t['entry']) if buy else (t['entry'] - cur)
                 base = 0.5 * r1 if state == 'tp1' else 0
-                res_r = base + (0.5 if state == 'tp1' else 1) * mv / risk; exit_p = cur; state = 'done'
+                res_r = base + (0.5 if state == 'tp1' else 1) * mv / risk; exit_p = cur; state = 'done'; closed_d = b['d']
                 status = 'închisă după 20 de zile'; break
         t['status'] = status; t['closed'] = state == 'done'
         t['resultR'] = round(res_r, 2) if res_r is not None else None
@@ -920,6 +920,7 @@ def main():
         else:
             t.pop('floatR', None); t.pop('floatOz', None)
         t['exit'] = r2(exit_p) if exit_p is not None else None
+        t['closedDate'] = closed_d if state == 'done' else None
         return t
 
     old_status = {t['id']: t.get('status') for t in ptrades}

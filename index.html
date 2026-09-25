@@ -851,6 +851,28 @@
   .gpt-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:2px; }
   .gpt-v{ font-family:var(--mono); font-weight:800; font-size:13px; white-space:nowrap; }
   .gpt-v.BUY, .gpt-v.BULLISH{ color:var(--accent); } .gpt-v.SELL, .gpt-v.BEARISH{ color:var(--danger); } .gpt-v.AȘTEAPTĂ, .gpt-v.NEUTRU{ color:var(--gold); }
+
+  .hx-btn{ margin-top:4px; }
+  .hx-btn.on{ border-style:solid; color:var(--text); }
+
+  .rp-nav{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .rp-arrow{ width:38px; height:38px; border-radius:11px; background:var(--bg-card-2); border:1px solid var(--line); color:var(--text); font-size:20px; cursor:pointer; }
+  .rp-arrow:disabled{ opacity:.3; }
+  .rp-week{ flex:1; text-align:center; font-weight:700; font-size:14px; }
+  .rp-week span{ display:block; font-weight:500; font-size:11px; color:var(--text-faint); font-family:var(--mono); margin-top:2px; }
+  .rp-score{ display:flex; align-items:center; gap:14px; padding:14px; border-radius:14px; background:linear-gradient(150deg, color-mix(in srgb, var(--accent) 12%, var(--bg-card-2)), var(--bg-card-2)); border:1px solid var(--line); }
+  .rp-ring{ width:74px; height:74px; flex:none; }
+  .rp-msg b{ display:block; font-size:15px; margin-bottom:3px; } .rp-msg span{ font-size:12px; color:var(--text-dim); line-height:1.45; }
+  .rp-sec{ margin-top:14px; padding:12px 13px; border-radius:13px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .rp-sec h4{ margin:0 0 8px; font-size:13px; }
+  .rp-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; padding:5px 0; border-top:1px solid var(--line); }
+  .rp-row:first-of-type{ border-top:none; }
+  .rp-row span{ color:var(--text-dim); } .rp-row b{ font-family:var(--mono); text-align:right; }
+  .rp-hab{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .rp-hab div{ text-align:center; padding:8px 2px; border-radius:10px; background:var(--bg-card); border:1px solid var(--line); }
+  .rp-hab i{ display:block; font-style:normal; font-size:18px; } .rp-hab b{ display:block; font-family:var(--mono); font-size:12px; margin-top:3px; } .rp-hab span{ font-size:9px; color:var(--text-faint); }
+  .rp-good{ color:var(--accent); } .rp-bad{ color:var(--danger); }
+  .rp-tip{ margin-top:14px; padding:12px 13px; border-radius:13px; border:1px solid color-mix(in srgb, var(--gold) 45%, transparent); background:color-mix(in srgb, var(--gold) 8%, var(--bg-card-2)); font-size:12.5px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -1202,7 +1224,7 @@
 
       <div class="card" data-seg-card="worth">
         <div class="card-title">Istoric</div>
-        <div id="worthHistory"></div>
+        <button class="past-toggle hx-btn" data-hx="worth" data-label="istoricul soldurilor">Arată istoricul soldurilor ▾</button><div class="hx-body" data-hxb="worth" style="display:none;margin-top:10px;"><div id="worthHistory"></div></div>
       </div>
 
       <div class="card" data-seg-card="trading">
@@ -1272,8 +1294,7 @@
           <span class="trade-current-num" id="tradeTotalAll">$0.00</span>
         </div>
         <div id="tradeMonthly"><div class="hint" style="margin-top:0;">Adaugă prima tranzacție ca să vezi rezultatul pe lună.</div></div>
-        <div class="hint" style="margin-top:16px;">Ultimele tranzacții:</div>
-        <div id="tradeList"></div>
+        <div style="margin-top:14px;"><button class="past-toggle hx-btn" data-hx="trades" data-label="ultimele tranzacții">Arată ultimele tranzacții ▾</button><div class="hx-body" data-hxb="trades" style="display:none;margin-top:10px;"><div id="tradeList"></div></div></div>
       </div>
 
       <div class="card" data-seg-card="invest">
@@ -1290,7 +1311,7 @@
         </div>
         <button class="primary-btn" id="investSaveBtn">Salvează luna curentă</button>
         <div class="invest-bars" id="investBars"></div>
-        <div id="investHistory"></div>
+        <div style="margin-top:12px;"><button class="past-toggle hx-btn" data-hx="invest" data-label="istoricul investițiilor">Arată istoricul investițiilor ▾</button><div class="hx-body" data-hxb="invest" style="display:none;margin-top:10px;"><div id="investHistory"></div></div></div>
         <div class="hint">Revino în chat pentru o analiză a pieței înainte să aloci suma din fiecare lună.</div>
       </div>
     </section>
@@ -1341,6 +1362,16 @@
         </div>
       </div>
 
+      <div class="card" id="reportCard">
+        <div class="card-title">📊 Raport săptămânal</div>
+        <div class="rp-nav">
+          <button class="rp-arrow" id="rpPrev">‹</button>
+          <div class="rp-week" id="rpWeek">Săptămâna asta</div>
+          <button class="rp-arrow" id="rpNext">›</button>
+        </div>
+        <div id="rpBody"></div>
+      </div>
+
       <div class="card" id="notifCard">
         <div class="card-title">Notificări</div>
         <div class="nt-status" id="ntStatus">Se verifică…</div>
@@ -1372,7 +1403,7 @@
           <div class="weight-now-delta" id="weightDelta"></div>
         </div>
         <svg class="sparkline" id="weightSpark" viewBox="0 0 300 110" preserveAspectRatio="none" width="100%" height="110"></svg>
-        <div id="weightHistory"></div>
+        <div style="margin-top:10px;"><button class="past-toggle hx-btn" data-hx="weight" data-label="istoricul greutății">Arată istoricul greutății ▾</button><div class="hx-body" data-hxb="weight" style="display:none;margin-top:10px;"><div id="weightHistory"></div></div></div>
         <div class="hint">Se completează automat din fila „Azi”, când notezi greutatea acolo.</div>
       </div>
 
@@ -1400,6 +1431,22 @@
   <span style="background:var(--gold);color:#1A1200;font-size:11.5px;padding:6px 14px;border-radius:20px;display:inline-block;">Mod offline — datele se salvează doar pe acest telefon</span>
 </div>
 
+<script>
+/* ===== collapsible history blocks ===== */
+window.__hxOpen = {};
+window.hxHtml = function(key, label, inner){
+  var open = !!window.__hxOpen[key];
+  return '<button class="past-toggle hx-btn' + (open ? ' on' : '') + '" data-hx="' + key + '" data-label="' + label + '">' + (open ? 'Ascunde ' : 'Arată ') + label + (open ? ' ▴' : ' ▾') + '</button>' +
+    '<div class="hx-body" data-hxb="' + key + '" style="display:' + (open ? 'block' : 'none') + ';margin-top:10px;">' + inner + '</div>';
+};
+document.addEventListener('click', function(e){
+  var b = e.target.closest ? e.target.closest('.hx-btn') : null; if(!b) return;
+  var k = b.getAttribute('data-hx'), body = document.querySelector('[data-hxb="' + k + '"]'); if(!body) return;
+  var open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none'; window.__hxOpen[k] = open; b.classList.toggle('on', open);
+  var l = b.getAttribute('data-label'); b.textContent = (open ? 'Ascunde ' : 'Arată ') + l + (open ? ' ▴' : ' ▾');
+});
+</script>
 <script>
 /* ===== By ZyP · Supabase bridge (same API the app already uses) ===== */
 (function(){
@@ -1451,7 +1498,7 @@
         next({ id:'current', exists:true, data:function(){ return { updated: label, source:'Forex Factory', events: clone(ev) }; } });
       }
       // 1) copy kept next to the site (refreshed by GitHub every 3h) → 2) Forex Factory directly → 3) saved copy
-      getJSON('news.json?t=' + Date.now()).then(function(arr){ deliver(arr, 'automat, la fiecare 30 de minute'); })
+      getJSON('news.json?t=' + Date.now()).then(function(arr){ window.__newsCheckedAt = Date.now(); deliver(arr, 'automat'); })
         .catch(function(){ return getJSON(FF_URL).then(function(arr){ deliver(arr, 'direct de pe Forex Factory'); }); })
         .catch(function(e){ console.warn('news unavailable', e); whenLoaded(function(){ next(snapDoc('news','current')); }); });
     }
@@ -1467,7 +1514,7 @@
         delete:function(){ put(col, id, null);
           return sb.from('docs').delete().match({ user_id:uid, col:col, id:id }).then(function(r){ if(r.error) throw r.error; }); },
         onSnapshot:function(next){
-          if(path === 'news/current'){ newsSnapshot(next); var iv = setInterval(function(){ newsSnapshot(next); }, 30*60*1000); return function(){ clearInterval(iv); }; }
+          if(path === 'news/current'){ newsSnapshot(next); var iv = setInterval(function(){ newsSnapshot(next); }, 60*1000); return function(){ clearInterval(iv); }; }
           (docL[path] = docL[path] || []).push(next);
           whenLoaded(function(){ next(snapDoc(col, id)); });
           return function(){ docL[path] = (docL[path] || []).filter(function(f){ return f !== next; }); };
@@ -2816,7 +2863,10 @@
       list.innerHTML = html;
     }
     var meta = document.getElementById('newsMeta');
-    meta.textContent = newsData.updated ? ('Sursa: Forex Factory · actualizat ' + newsData.updated + ' · ore pe fusul orar al telefonului. Verifică pe site înainte de o tranzacție importantă.') : '';
+    if(newsData.updated){
+      var ago = window.__newsCheckedAt ? Math.max(0, Math.round((Date.now() - window.__newsCheckedAt) / 1000)) : null;
+      meta.innerHTML = '<span class="live-tag" style="margin:0 4px 0 0;">●</span>Verificat ' + (ago != null ? 'acum ' + (ago < 60 ? ago + ' s' : Math.round(ago / 60) + ' min') : 'automat') + ' · se reverifică la fiecare minut · sursa: Forex Factory · ore pe fusul orar al telefonului.';
+    } else meta.textContent = '';
 
     // alert on Azi tab: high impact within 60 min
     var al = document.getElementById('newsAlert');
@@ -2942,7 +2992,7 @@
     }
     var myT = (gold.ptrades || []).filter(function(t){ return t.sid === goldStrat; }).slice().reverse();
     h += '<div class="nar"><h4>📊 Cum a mers strategia asta (tranzacții de test)</h4>' + ptStatsBox((gold.pstats || {})[goldStrat]) +
-      (myT.length ? myT.slice(0, 8).map(function(t){ return ptRow(t, false); }).join('') : '') + '</div>';
+      (myT.length ? hxHtml('st-' + goldStrat, 'tranzacțiile strategiei (' + myT.length + ')', myT.slice(0, 8).map(function(t){ return ptRow(t, false); }).join('')) : '') + '</div>';
     h += '<div class="nar"><h4>' + G.ic + ' Ce e strategia asta</h4><p>' + G.what + '</p></div>';
     h += '<div class="nar plan"><h4>🧭 Cum o folosești, pas cu pas</h4>' + G.how.map(function(t, i){ return '<p>' + (i+1) + '. ' + t + '</p>'; }).join('') + '</div>';
     h += '<div class="hint">O singură strategie nu e suficientă: e mai sigur când mai multe spun același lucru (vezi verdictul din Plan).</div>';
@@ -2972,6 +3022,7 @@
       '<div><b class="' + (v.oz >= 0 ? 'hs-win' : 'hs-loss') + '">' + (v.oz >= 0 ? '+' : '-') + '$' + Math.abs(v.oz).toFixed(0) + '</b><span>LA 0.01 LOT</span></div></div>' +
       '<div class="pt-meta">' + v.wins + ' câștigate · ' + v.losses + ' pierdute · ' + v.open + ' deschise · ' + v.pending + ' în așteptare' + (v.expired ? ' · ' + v.expired + ' expirate' : '') + '</div>';
   }
+  var hxHtml = window.hxHtml;
   var goldAllHtml = '';
   function bindStratList(root){
     root.querySelectorAll('.st-h').forEach(function(h){ h.addEventListener('click', function(){ var st = h.parentNode; st.classList.toggle('open'); var nm = st.querySelector('.st-n').textContent; goldOpen[nm] = st.classList.contains('open'); }); });
@@ -3378,7 +3429,7 @@
       var act = (g.ptrades || []).filter(function(t){ return !t.closed; }).slice().reverse();
       html += '<div class="gd-sec">⏳ Tranzacții active acum (' + act.length + ')</div>' + (act.length ? act.map(function(t){ return ptRow(t, true); }).join('') : '<div class="hint" style="margin-top:0;">Nicio tranzacție activă.</div>');
       var cl = (g.ptrades || []).filter(function(t){ return t.closed; }).slice().reverse().slice(0, 15);
-      if(cl.length) html += '<div class="gd-sec">✔️ Ultimele închise</div>' + cl.map(function(t){ return ptRow(t, true); }).join('');
+      if(cl.length) html += '<div class="gd-sec">✔️ Ultimele închise</div>' + hxHtml('goldClosed', 'tranzacțiile închise (' + cl.length + ')', cl.map(function(t){ return ptRow(t, true); }).join(''));
       html += '<div class="hint">Tranzacții simulate (nu reale): robotul „intră” automat când o strategie dă semnal, cu intrarea, SL-ul și TP-urile ei, apoi le urmărește pe lumânările zilnice. La TP1 închide jumătate și mută SL-ul la intrare. Dacă SL și TP apar în aceeași zi, se consideră SL (varianta prudentă). R = câte riscuri ai câștigat sau pierdut; $ la 0.01 lot = 1 uncie.</div>';
       html += '<div class="gd-sec">📜 Planul zilnic combinat</div>';
     }
@@ -3388,8 +3439,8 @@
       var ico = function(st){ return /TP2/.test(st) ? '✅✅' : /TP/.test(st) ? '✅' : /SL/.test(st) ? '❌' : /desfășurare/.test(st) ? '⏳' : /așteaptă intrarea/.test(st) ? '🕒' : '⏸'; };
       html += '<div class="gd-sec">📜 Cum au ieșit analizele anterioare</div><div class="rc">' +
         '<div class="hist-sum"><div><b>' + (tr.closed || 0) + '</b><span>ÎNCHISE</span></div><div><b class="hs-win">' + (tr.wins || 0) + '</b><span>CÂȘTIGATE</span></div><div><b>' + (tr.rate != null ? tr.rate + '%' : '–') + '</b><span>RATĂ</span></div></div>' +
-        g.history.slice().reverse().slice(0, 10).map(function(h){ var dd = new Date(h.date + 'T00:00:00');
-          return '<div class="hist-r"><span class="d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · ' + (h.side === 'AȘTEAPTĂ' ? '—' : h.side + ' ' + f2(h.entry)) + '</span><span class="st2 ' + cls(h.status) + '">' + ico(h.status) + ' ' + h.status + '</span></div>'; }).join('') +
+        hxHtml('goldPlans', 'planurile zilelor trecute', g.history.slice().reverse().slice(0, 10).map(function(h){ var dd = new Date(h.date + 'T00:00:00');
+          return '<div class="hist-r"><span class="d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · ' + (h.side === 'AȘTEAPTĂ' ? '—' : h.side + ' ' + f2(h.entry)) + '</span><span class="st2 ' + cls(h.status) + '">' + ico(h.status) + ' ' + h.status + '</span></div>'; }).join('')) +
         '<div class="hint">Verificat automat pe lumânările zilnice, după publicarea fiecărui plan. Rezultatele trecute nu garantează rezultate viitoare.</div></div>';
     }
     html += '\u0001foot\u0002';
@@ -3446,6 +3497,124 @@
   }
   loadGold();
   setInterval(loadGold, 10*60*1000);
+
+
+  /* ===== weekly report ===== */
+  var rpOffset = 0;
+  function weekStart(off){ var d = new Date(); d.setHours(0,0,0,0); var wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() - wd + off * 7); return d; }
+  function inRange(k, a, b){ return k >= a && k <= b; }
+  function weekStats(off){
+    var ws = weekStart(off), we = new Date(ws); we.setDate(we.getDate() + 6);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var last = we > today ? today : we;
+    var a = dateKey(ws), b = dateKey(we), lk = dateKey(last);
+    var days = []; for(var d = new Date(ws); d <= last; d.setDate(d.getDate() + 1)) days.push(dateKey(d));
+    var n = days.length || 1;
+    var hab = {}; HABITS.forEach(function(h){ hab[h.key] = 0; });
+    var perfect = 0, done = 0, photos = 0, weights = [], bestDay = null, bestN = -1;
+    days.forEach(function(k){ var e = data[k]; if(!e) return;
+      HABITS.forEach(function(h){ if(e.habits && e.habits[h.key]){ hab[h.key]++; done++; } });
+      var c = doneCount(e); if(c === HABITS.length) perfect++; if(c > bestN){ bestN = c; bestDay = k; }
+      if(e.photo) photos++; if(e.weight != null) weights.push({ k:k, v:+e.weight }); });
+    var pct = Math.round(done / (n * HABITS.length) * 100);
+    // smoke-free streak up to the end of this week
+    var streak = 0; for(var d2 = new Date(last); ; d2.setDate(d2.getDate() - 1)){ var e2 = data[dateKey(d2)]; if(e2 && e2.habits && e2.habits.nosmoke) streak++; else break; if(streak > 999) break; }
+    // weight: last known before the week vs last in week
+    var prevW = null; Object.keys(data).sort().forEach(function(k){ if(k < a && data[k] && data[k].weight != null) prevW = +data[k].weight; });
+    var wStart = weights.length ? weights[0].v : null, wEnd = weights.length ? weights[weights.length - 1].v : null;
+    // net worth
+    var sa = (typeof sortedAccounts === 'function') ? sortedAccounts() : [];
+    var before = null, inWeek = null; sa.forEach(function(x){ if(x.date < a) before = x; if(inRange(x.date, a, b)) inWeek = x; });
+    var worthEnd = inWeek ? accTotal(inWeek) : (before ? accTotal(before) : null), worthStart = before ? accTotal(before) : (inWeek ? accTotal(sa.filter(function(x){ return inRange(x.date, a, b); })[0]) : null);
+    // trading journal
+    var tw = (trades || []).filter(function(t){ return inRange(t.date, a, b); });
+    var pnl = tw.reduce(function(s2, t){ return s2 + (t.result || 0); }, 0), wins = tw.filter(function(t){ return t.result > 0; }).length;
+    var best = tw.reduce(function(m, t){ return m == null || t.result > m ? t.result : m; }, null), worst = tw.reduce(function(m, t){ return m == null || t.result < m ? t.result : m; }, null);
+    // investments (month of this week)
+    var months = {}; months[a.slice(0,7)] = 1; months[b.slice(0,7)] = 1;
+    var inv = (investments || []).filter(function(x){ return months[x.month]; }).reduce(function(s2, x){ return s2 + (+x.amount || 0); }, 0);
+    // gold paper trades
+    var gp = (typeof gold !== 'undefined' && gold && gold.ptrades) ? gold.ptrades : [];
+    var gOpened = gp.filter(function(t){ return inRange(t.date, a, b); }).length;
+    var gClosed = gp.filter(function(t){ return t.closedDate && inRange(t.closedDate, a, b) && t.resultR != null; });
+    var gR = gClosed.reduce(function(s2, t){ return s2 + t.resultR; }, 0), gW = gClosed.filter(function(t){ return t.resultR > 0; }).length;
+    var byS = {}; gClosed.forEach(function(t){ byS[t.strat] = (byS[t.strat] || 0) + t.resultR; });
+    var bestS = Object.keys(byS).sort(function(x, y){ return byS[y] - byS[x]; })[0];
+    // gold price over the week (daily candles)
+    var gc = (typeof gold !== 'undefined' && gold && gold.candles) ? gold.candles.filter(function(c){ return inRange(c[0], a, b); }) : [];
+    var gPrev = (typeof gold !== 'undefined' && gold && gold.candles) ? gold.candles.filter(function(c){ return c[0] < a; }).pop() : null;
+    return { ws:ws, we:we, n:n, hab:hab, pct:pct, perfect:perfect, photos:photos, streak:streak, bestDay:bestDay, bestN:bestN,
+      prevW:prevW, wStart:wStart, wEnd:wEnd, worthStart:worthStart, worthEnd:worthEnd,
+      tw:tw.length, pnl:pnl, wins:wins, best:best, worst:worst, inv:inv, gOpened:gOpened, gClosed:gClosed.length, gR:gR, gW:gW, bestS:bestS, bestSR:bestS ? byS[bestS] : null,
+      goldFrom: gPrev ? gPrev[4] : (gc[0] ? gc[0][1] : null), goldTo: gc.length ? gc[gc.length - 1][4] : null, current: off === 0 };
+  }
+  function sgn(v, d, pre, suf){ if(v == null || isNaN(v)) return '–'; return (v > 0 ? '+' : v < 0 ? '−' : '') + (pre || '') + Math.abs(v).toFixed(d) + (suf || ''); }
+  function renderWeekReport(){
+    var body = document.getElementById('rpBody'); if(!body) return;
+    var W = weekStats(rpOffset), P = weekStats(rpOffset - 1);
+    var fmt = function(d){ return d.getDate() + ' ' + monthShort[d.getMonth()]; };
+    document.getElementById('rpWeek').innerHTML = (rpOffset === 0 ? 'Săptămâna asta' : rpOffset === -1 ? 'Săptămâna trecută' : 'Acum ' + (-rpOffset) + ' săptămâni') + '<span>' + fmt(W.ws) + ' – ' + fmt(W.we) + (W.current ? ' · în desfășurare' : '') + '</span>';
+    document.getElementById('rpNext').disabled = rpOffset >= 0;
+    var sc = W.pct, dsc = sc - P.pct;
+    var msg = sc >= 90 ? ['Săptămână de campion 🏆', 'Aproape tot bifat. Asta e disciplina care schimbă o viață.'] : sc >= 70 ? ['Săptămână foarte bună 💪', 'Ai ținut ritmul. Mai strânge puțin la obiceiul cel mai slab.'] : sc >= 45 ? ['Săptămână ok, se poate mai bine', 'Ai făcut pași. Alege un singur obicei pe care să-l bifezi zilnic săptămâna viitoare.'] : ['Săptămână grea', 'Se întâmplă. Nu contează căderea, contează că revii. Începe mâine cu cel mai ușor obicei.'];
+    var C = 2 * Math.PI * 30, col = sc >= 70 ? 'var(--accent)' : sc >= 45 ? 'var(--gold)' : 'var(--danger)';
+    var h = '<div class="rp-score"><svg class="rp-ring" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="37" cy="37" r="30" fill="none" stroke="' + col + '" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + (C * sc / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 37 37)"/><text x="37" y="42" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)" font-family="monospace">' + sc + '%</text></svg>' +
+      '<div class="rp-msg"><b>' + msg[0] + '</b><span>' + msg[1] + (rpOffset > -52 ? '<br>Față de săptămâna dinainte: <b style="display:inline;font-size:12px" class="' + (dsc >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(dsc, 0, '', ' puncte') + '</b>' : '') + '</span></div></div>';
+    // habits
+    h += '<div class="rp-sec"><h4>✅ Obiceiuri · ' + W.n + ' zile</h4><div class="rp-hab">' + HABITS.map(function(x){ var v = W.hab[x.key]; return '<div><i>' + x.ic + '</i><b class="' + (v === W.n ? 'rp-good' : v <= W.n / 2 ? 'rp-bad' : '') + '">' + v + '/' + W.n + '</b><span>' + ({ nosmoke:'țigări', nosugar:'zahăr', water:'apă', training:'sport', food:'mâncare' }[x.key] || x.label) + '</span></div>'; }).join('') + '</div>' +
+      '<div class="rp-row" style="margin-top:8px;"><span>Zile perfecte (5/5)</span><b>' + W.perfect + '</b></div><div class="rp-row"><span>Zile la rând fără țigări</span><b class="rp-good">' + W.streak + '</b></div>' +
+      (W.photos ? '<div class="rp-row"><span>Poze de progres</span><b>' + W.photos + '</b></div>' : '') + '</div>';
+    // body
+    var wd = (W.wEnd != null && (W.prevW != null || W.wStart != null)) ? W.wEnd - (W.prevW != null ? W.prevW : W.wStart) : null;
+    h += '<div class="rp-sec"><h4>⚖️ Corp</h4><div class="rp-row"><span>Greutate la final</span><b>' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg' : 'nenotată') + '</b></div>' +
+      '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null ? '' : wd <= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(wd, 1, '', ' kg') + '</b></div>' +
+      '<div class="rp-row"><span>Antrenamente bifate</span><b>' + W.hab.training + ' / ' + W.n + '</b></div></div>';
+    // money
+    var dw = (W.worthEnd != null && W.worthStart != null) ? W.worthEnd - W.worthStart : null;
+    h += '<div class="rp-sec"><h4>💼 Bani</h4><div class="rp-row"><span>Avere totală</span><b>' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd).toLocaleString('ro-RO') : '–') + '</b></div>' +
+      '<div class="rp-row"><span>Schimbare</span><b class="' + (dw == null ? '' : dw >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(dw, 0, '€') + '</b></div>' +
+      '<div class="rp-row"><span>Investit luna asta</span><b>€' + Math.round(W.inv) + '</b></div></div>';
+    // trading
+    h += '<div class="rp-sec"><h4>📈 Trading (jurnalul tău)</h4>' + (W.tw ? '<div class="rp-row"><span>Tranzacții</span><b>' + W.tw + ' · ' + Math.round(W.wins / W.tw * 100) + '% pe plus</b></div>' +
+      '<div class="rp-row"><span>Rezultat</span><b class="' + (W.pnl >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.pnl, 2, '$') + '</b></div>' +
+      '<div class="rp-row"><span>Cea mai bună / cea mai slabă</span><b>' + sgn(W.best, 2, '$') + ' / ' + sgn(W.worst, 2, '$') + '</b></div>' : '<div class="rp-row"><span>Nicio tranzacție notată</span><b>–</b></div>') + '</div>';
+    // gold
+    var gch = (W.goldFrom && W.goldTo) ? W.goldTo - W.goldFrom : null;
+    h += '<div class="rp-sec"><h4>🥇 Aur &amp; strategii (test)</h4><div class="rp-row"><span>Aurul în săptămână</span><b class="' + (gch == null ? '' : gch >= 0 ? 'rp-good' : 'rp-bad') + '">' + (gch == null ? '–' : sgn(gch, 2, '$') + ' (' + sgn(gch / W.goldFrom * 100, 2, '', '%') + ')') + '</b></div>' +
+      '<div class="rp-row"><span>Tranzacții de test deschise</span><b>' + W.gOpened + '</b></div>' +
+      '<div class="rp-row"><span>Închise · câștigate</span><b>' + W.gClosed + ' · ' + (W.gClosed ? Math.round(W.gW / W.gClosed * 100) + '%' : '–') + '</b></div>' +
+      '<div class="rp-row"><span>Rezultat total</span><b class="' + (W.gR >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.gR, 2, '', 'R') + '</b></div>' +
+      (W.bestS ? '<div class="rp-row"><span>Strategia săptămânii</span><b class="rp-good">' + W.bestS + ' (' + sgn(W.bestSR, 2, '', 'R') + ')</b></div>' : '') + '</div>';
+    // tip
+    var weakest = HABITS.slice().sort(function(x, y){ return W.hab[x.key] - W.hab[y.key]; })[0];
+    var tip = W.hab[weakest.key] >= W.n ? 'Ai bifat totul în fiecare zi. Păstrează exact același ritm și săptămâna viitoare. 🔥' :
+      'Obiectivul pentru săptămâna viitoare: <b>' + weakest.ic + ' ' + weakest.label + '</b> (acum ' + W.hab[weakest.key] + '/' + W.n + '). Concentrează-te doar pe el și bifează-l zilnic.';
+    h += '<div class="rp-tip">🎯 ' + tip + '</div>';
+    h += '<button class="ghost-btn" id="rpCopy" style="margin-top:12px;">📋 Copiază raportul (ca text)</button>';
+    body.innerHTML = h;
+    document.getElementById('rpCopy').addEventListener('click', function(){
+      var t = 'By ZyP · Raport ' + fmt(W.ws) + ' – ' + fmt(W.we) + '\nScor: ' + sc + '% (' + msg[0] + ')\n' +
+        HABITS.map(function(x){ return x.ic + ' ' + x.label + ': ' + W.hab[x.key] + '/' + W.n; }).join('\n') +
+        '\nZile perfecte: ' + W.perfect + ' · fără țigări la rând: ' + W.streak +
+        '\nGreutate: ' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg (' + sgn(wd, 1, '', ' kg') + ')' : '–') +
+        '\nAvere: ' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd) + ' (' + sgn(dw, 0, '€') + ')' : '–') +
+        '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '$') +
+        '\nStrategii aur (test): ' + W.gClosed + ' închise, ' + sgn(W.gR, 2, '', 'R') + (W.bestS ? ', cea mai bună: ' + W.bestS : '');
+      var btn = this;
+      var ok = function(){ btn.textContent = '✓ Copiat'; setTimeout(function(){ btn.textContent = '📋 Copiază raportul (ca text)'; }, 2000); };
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, ok); else ok();
+    });
+  }
+  document.getElementById('rpPrev').addEventListener('click', function(){ rpOffset--; renderWeekReport(); });
+  document.getElementById('rpNext').addEventListener('click', function(){ if(rpOffset < 0){ rpOffset++; renderWeekReport(); } });
+  document.querySelectorAll('.tab[data-view="profile"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(renderWeekReport, 30); }); });
+  function openReportFromLink(){
+    if(!/raport/.test(location.hash + location.search)) return;
+    var t = document.querySelector('.tab[data-view="profile"]'); if(t) t.click();
+    setTimeout(function(){ var c = document.getElementById('reportCard'); if(c && c.scrollIntoView) c.scrollIntoView({ behavior:'smooth', block:'start' }); }, 400);
+  }
+  window.addEventListener('hashchange', openReportFromLink);
+  setTimeout(openReportFromLink, 1500);
 
   /* money segments */
   (function(){
@@ -3638,6 +3807,7 @@
       tradingEl.style.color = monthSum >= 0 ? 'var(--accent)' : 'var(--danger)';
     } else { tradingEl.textContent = '–'; tradingEl.style.color = ''; }
     renderGrowth();
+    if(typeof renderWeekReport === 'function') renderWeekReport();
   }
 
   /* ===== growth chart (Azi) ===== */
@@ -3891,8 +4061,8 @@
       var st = (j._status || []).slice(-8).reverse();
       if(!st.length){ logEl.innerHTML = '<div class="hint" style="margin-top:0;">Robotul n-a trimis încă notificări.</div>'; return; }
       var bad = st.filter(function(x){ return !x.ok && (x.code === 404 || x.code === 410); }).length;
-      logEl.innerHTML = '<div class="gd-sec" style="margin-top:14px;">Ultimele notificări trimise de robot</div>' + st.map(function(x){ var d = new Date(x.t);
-        return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : ' <em>(eroare ' + x.code + ')</em>') + '</span></div>'; }).join('') +
+      logEl.innerHTML = '<div style="margin-top:14px;"></div>' + (window.hxHtml || function(k,l,x){ return x; })('notifLog', 'ultimele notificări trimise', st.map(function(x){ var d = new Date(x.t);
+        return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : ' <em>(eroare ' + x.code + ')</em>') + '</span></div>'; }).join('')) +
         (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
     }).catch(function(){});
   }
