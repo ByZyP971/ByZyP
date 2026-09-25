@@ -885,6 +885,12 @@ def main():
         buy = t['side'] == 'BUY'; risk = abs(t['entry'] - t['sl'])
         state = 'open' if t['type'] == 'market' else 'pending'; status = 'deschisă' if state == 'open' else 'în așteptare'
         res_r = None; exit_p = None; n_open = 0; closed_d = None
+        lv = t.setdefault('lv', {})          # same-day events seen with the live price (kept between runs)
+        r1 = abs(t['tp1'] - t['entry']) / risk; r2_ = abs(t['tp2'] - t['entry']) / risk
+        if lv.get('done'):
+            dn = lv['done']; state = 'done'; status = dn['status']; res_r = dn['r']; exit_p = dn['exit']; closed_d = dn['d']; later = []
+        elif lv.get('t1'): state = 'tp1'; status = 'TP1 atins, restul fără risc'
+        elif lv.get('f'): state = 'open'; status = 'deschisă'
         for bi, b in enumerate(later):
             if state == 'pending':
                 if (b['l'] <= t['entry'] <= b['h']) or (buy and b['l'] <= t['entry']) or ((not buy) and b['h'] >= t['entry']):
@@ -910,6 +916,25 @@ def main():
                 base = 0.5 * r1 if state == 'tp1' else 0
                 res_r = base + (0.5 if state == 'tp1' else 1) * mv / risk; exit_p = cur; state = 'done'; closed_d = b['d']
                 status = 'închisă după 20 de zile'; break
+        # trade created today: no completed bar after it yet -> follow the live price, run by run
+        if state != 'done' and not later and not lv.get('done'):
+            p_ = price
+            if state == 'pending' and ((buy and p_ <= t['entry']) or ((not buy) and p_ >= t['entry'])):
+                state = 'open'; status = 'deschisă'; lv['f'] = 1
+            if state == 'open':
+                if (buy and p_ <= t['sl']) or ((not buy) and p_ >= t['sl']):
+                    state = 'done'; status = 'pierdere (SL)'; res_r = -1.0; exit_p = t['sl']
+                elif (buy and p_ >= t['tp2']) or ((not buy) and p_ <= t['tp2']):
+                    state = 'done'; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']
+                elif (buy and p_ >= t['tp1']) or ((not buy) and p_ <= t['tp1']):
+                    state = 'tp1'; status = 'TP1 atins, restul fără risc'; lv['t1'] = 1; lv['f'] = 1
+            elif state == 'tp1':
+                if (buy and p_ >= t['tp2']) or ((not buy) and p_ <= t['tp2']):
+                    state = 'done'; status = 'câștig (TP2)'; res_r = 0.5 * r1 + 0.5 * r2_; exit_p = t['tp2']
+                elif (buy and p_ <= t['entry']) or ((not buy) and p_ >= t['entry']):
+                    state = 'done'; status = 'câștig (TP1 + breakeven)'; res_r = 0.5 * r1; exit_p = t['entry']
+            if state == 'done':
+                closed_d = today_d; lv['done'] = {'status': status, 'r': res_r, 'exit': exit_p, 'd': today_d}
         t['status'] = status; t['closed'] = state == 'done'
         t['resultR'] = round(res_r, 2) if res_r is not None else None
         t['pnlOz'] = round(res_r * risk, 2) if res_r is not None else None      # $ per 1 oz = 0.01 lot
@@ -930,7 +955,7 @@ def main():
     except Exception:
         events = []
     ptrades = [sim(t) for t in ptrades]
-    open_ids = {t['sid'] for t in ptrades if not t['closed']}
+    open_ids = {t['sid'] for t in ptrades if not t['closed'] or t['date'] == today_d or t.get('closedDate') == today_d}   # one trade per strategy per day
     for x in strategies:
         if x['verdict'] not in ('BUY', 'SELL') or x.get('entry') is None or x['id'] in open_ids: continue
         if abs(x['entry'] - x['sl']) < 0.15 * A: continue          # ignore unrealistically tight stops
@@ -962,7 +987,10 @@ def main():
         elif cur == 'deschisă':
             title = f"{ICON[t['side']]} {t['side']} intrat · {t['strat']}"; body = f"Ordinul s-a executat la {t['entry']}. SL {t['sl']} · TP1 {t['tp1']}"
         elif cur.startswith('TP1 atins'):
-            title = f"✅ TP1 atins · {t['strat']}"; body = f"{t['side']} de la {t['entry']}: jumătate închisă la {t['tp1']}, SL mutat la intrare."
+            title = f"✅ TP1 atins · SL mutat la BE · {t['strat']}"; body = f"{t['side']} de la {t['entry']}: jumătate închisă la {t['tp1']}. SL mutat la intrare ({t['entry']}): restul e fără risc, ținta TP2 {t['tp2']}."
+        elif t['closed'] and 'breakeven' in cur:
+            title = f"🛡️ Închis la BE după TP1 · {t['strat']}"
+            body = f"{t['side']} de la {t['entry']}: jumătate luată la TP1, restul închis la intrare. Rezultat +{t['resultR']}R ({'+' if t['pnlOz'] >= 0 else ''}{t['pnlOz']}$ la 0.01 lot)."
         elif t['closed'] and t.get('resultR') is not None:
             won = t['resultR'] > 0
             title = f"{'🏆' if won else '❌'} {'Câștig' if won else 'Pierdere'} {('+' if won else '')}{t['resultR']}R · {t['strat']}"
