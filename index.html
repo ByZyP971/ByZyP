@@ -873,6 +873,23 @@
   .rp-hab i{ display:block; font-style:normal; font-size:18px; } .rp-hab b{ display:block; font-family:var(--mono); font-size:12px; margin-top:3px; } .rp-hab span{ font-size:9px; color:var(--text-faint); }
   .rp-good{ color:var(--accent); } .rp-bad{ color:var(--danger); }
   .rp-tip{ margin-top:14px; padding:12px 13px; border-radius:13px; border:1px solid color-mix(in srgb, var(--gold) 45%, transparent); background:color-mix(in srgb, var(--gold) 8%, var(--bg-card-2)); font-size:12.5px; line-height:1.5; }
+
+  #sportSeg{ overflow-x:auto; scrollbar-width:none; } #sportSeg::-webkit-scrollbar{ display:none; }
+  #sportSeg .seg-btn{ flex:1 0 auto; padding-left:10px; padding-right:10px; white-space:nowrap; }
+  .fit-today{ display:flex; align-items:center; gap:16px; }
+  .fit-rings{ width:128px; height:128px; flex:none; }
+  .fit-nums{ flex:1; display:flex; flex-direction:column; gap:8px; }
+  .fit-n{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; color:var(--text-dim); }
+  .fit-n b{ font-family:var(--mono); font-size:15px; color:var(--text); } .fit-n em{ font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--text-faint); }
+  .fit-n i{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+  .fit-pills{ display:flex; gap:5px; overflow-x:auto; scrollbar-width:none; margin-bottom:8px; }
+  .fit-pills button{ flex:none; background:var(--bg-card-2); border:1px solid var(--line); color:var(--text-dim); border-radius:16px; padding:7px 11px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+  .fit-pills button.on{ border-color:var(--accent); color:var(--accent); }
+  .fit-pills.small button{ padding:5px 10px; font-size:11px; }
+  .fit-chart svg{ display:block; width:100%; height:auto; }
+  .fit-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px; }
+  .fit-stats div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:10px; padding:8px 4px; }
+  .fit-stats b{ display:block; font-family:var(--mono); font-size:14px; } .fit-stats span{ font-size:9.5px; color:var(--text-faint); font-family:var(--mono); text-transform:uppercase; letter-spacing:.06em; }
 </style>
 </head>
 <body>
@@ -1019,6 +1036,7 @@
         <button class="seg-btn" data-sseg="gym">🏋️ Sală</button>
         <button class="seg-btn" data-sseg="run">🏃 Alergare</button>
         <button class="seg-btn" data-sseg="mob">🧘 Mobilitate</button>
+        <button class="seg-btn" data-sseg="fit">❤️ Fitness</button>
       </div>
 
       <div data-sseg-card="plan">
@@ -1074,6 +1092,34 @@
             <li>Pantofi de alergare potriviți — contează mult</li>
             <li>Fără țigări, plămânii se recuperează săptămână de săptămână — o să simți diferența</li>
           </ul>
+        </div>
+      </div>
+
+
+      <div data-sseg-card="fit">
+        <div class="card">
+          <div class="card-title">Azi · din Sănătate</div>
+          <div class="fit-today">
+            <svg class="fit-rings" id="fitRings" viewBox="0 0 120 120"></svg>
+            <div class="fit-nums" id="fitNums"></div>
+          </div>
+          <div class="hint" id="fitSync" style="margin-top:10px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Evoluție</div>
+          <div class="fit-pills" id="fitMetric">
+            <button data-m="steps" class="on">👣 Pași</button><button data-m="kcal">🔥 Calorii</button><button data-m="exMin">⏱️ Exercițiu</button><button data-m="distKm">📍 Distanță</button>
+          </div>
+          <div class="fit-pills small" id="fitRange"><button data-r="7" class="on">7 zile</button><button data-r="30">30 zile</button></div>
+          <div class="fit-chart" id="fitChart"></div>
+          <div class="fit-stats" id="fitStats"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Obiectivele tale zilnice</div>
+          <div class="field-row"><label>👣 Pași</label><input type="number" id="fgSteps" inputmode="numeric"></div>
+          <div class="field-row"><label>🔥 Calorii active (kcal)</label><input type="number" id="fgKcal" inputmode="numeric"></div>
+          <div class="field-row"><label>⏱️ Minute de exercițiu</label><input type="number" id="fgEx" inputmode="numeric"></div>
+          <div class="hint">Le poți pune la fel ca inelele din aplicația Fitness de pe iPhone.</div>
         </div>
       </div>
 
@@ -2260,9 +2306,60 @@ document.addEventListener('click', function(e){
     sbtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-sseg') === seg); });
     document.querySelectorAll('[data-sseg-card]').forEach(function(c){ c.classList.toggle('seg-show', c.getAttribute('data-sseg-card') === seg); });
     if(seg === 'gym') renderWo();
+    if(seg === 'fit') renderFitness();
     try{ window.scrollTo(0,0); }catch(e){}
   }
   sbtns.forEach(function(b){ b.addEventListener('click', function(){ sshow(b.getAttribute('data-sseg')); }); });
+
+  /* ===== Fitness (Apple Health via Shortcuts -> Supabase 'health' collection) ===== */
+  var healthData = {}, fitMetric = 'steps', fitRange = 7;
+  var FIT = { steps:{ ic:'👣', l:'Pași', u:'', col:'#3DE0C4', d:0 }, kcal:{ ic:'🔥', l:'Calorii active', u:' kcal', col:'#FF4D6D', d:0 }, exMin:{ ic:'⏱️', l:'Exercițiu', u:' min', col:'#A6FF4D', d:0 }, distKm:{ ic:'📍', l:'Distanță', u:' km', col:'#6C8CFF', d:1 } };
+  var fitGoals = { steps:10000, kcal:500, exMin:30 };
+  try{ var _fg = JSON.parse(localStorage.getItem('byzyp_fitgoals') || 'null'); if(_fg) fitGoals = _fg; }catch(e){}
+  function fitVal(k, m){ var h = healthData[k]; return h && h[m] != null && !isNaN(+h[m]) ? +h[m] : null; }
+  function fitFmt(v, m){ if(v == null) return '–'; var d = FIT[m].d; return (d ? v.toFixed(d) : Math.round(v).toLocaleString('ro-RO')) + FIT[m].u; }
+  function renderFitness(){
+    var ringsEl = document.getElementById('fitRings'); if(!ringsEl) return;
+    var tk = dateKey(new Date());
+    var st = fitVal(tk, 'steps'), kc = fitVal(tk, 'kcal'), ex = fitVal(tk, 'exMin'), di = fitVal(tk, 'distKm');
+    function ring(r, frac, col){ var C = 2 * Math.PI * r, f = Math.max(0, frac || 0);
+      return '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-opacity="0.18" stroke-width="11"/>' +
+        '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + (C * Math.min(f, 1)).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 60 60)"/>' +
+        (f > 1 ? '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + (C * Math.min(f - 1, 1)).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 60 60)" opacity="0.6"/>' : ''); }
+    ringsEl.innerHTML = ring(52, kc != null ? kc / fitGoals.kcal : 0, FIT.kcal.col) + ring(39, ex != null ? ex / fitGoals.exMin : 0, FIT.exMin.col) + ring(26, st != null ? st / fitGoals.steps : 0, FIT.steps.col);
+    var row = function(m, v, g){ return '<div class="fit-n"><span><i style="background:' + FIT[m].col + '"></i>' + FIT[m].ic + ' ' + FIT[m].l + '</span><span><b>' + fitFmt(v, m) + '</b>' + (g ? ' <em>/ ' + fitFmt(g, m) + '</em>' : '') + '</span></div>'; };
+    document.getElementById('fitNums').innerHTML = row('kcal', kc, fitGoals.kcal) + row('exMin', ex, fitGoals.exMin) + row('steps', st, fitGoals.steps) + row('distKm', di, null);
+    var keys = Object.keys(healthData).sort(), lastK = keys[keys.length - 1];
+    var sync = document.getElementById('fitSync');
+    if(!keys.length) sync.innerHTML = '⚙️ Încă nu au venit date din Sănătate. După ce configurezi scurtătura de pe iPhone, apar aici automat.';
+    else { var up = healthData[lastK] && healthData[lastK]._at ? new Date(healthData[lastK]._at) : null;
+      sync.innerHTML = '🔄 Ultima sincronizare: ' + (up ? up.getDate() + ' ' + monthShort[up.getMonth()] + ' la ' + hhmm(up) : lastK) + (lastK !== tk ? ' · azi încă nu s-a sincronizat' : ''); }
+    // chart
+    var days = []; for(var i = fitRange - 1; i >= 0; i--){ var d = new Date(); d.setDate(d.getDate() - i); days.push(dateKey(d)); }
+    var vals = days.map(function(k){ return fitVal(k, fitMetric); });
+    var goal = fitGoals[fitMetric] || null, mx = Math.max.apply(null, vals.map(function(v){ return v || 0; }).concat([goal || 0, 1]));
+    var W = 320, H = 150, pad = 18, bw = (W - 8) / days.length;
+    var bars = days.map(function(k, i){ var v = vals[i], hgt = v ? (H - pad - 10) * v / mx : 0, x = 4 + i * bw;
+      var hit = goal && v >= goal;
+      return '<rect x="' + (x + bw * 0.15).toFixed(1) + '" y="' + (H - pad - hgt).toFixed(1) + '" width="' + (bw * 0.7).toFixed(1) + '" height="' + Math.max(v ? 2 : 0, hgt).toFixed(1) + '" rx="3" fill="' + FIT[fitMetric].col + '" opacity="' + (hit ? 1 : 0.55) + '"' + (k === tk ? ' stroke="var(--gold)" stroke-width="1.2"' : '') + '/>' +
+        ((fitRange === 7 || i % 5 === 0 || i === days.length - 1) ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="8" fill="var(--text-faint)" font-family="monospace">' + (fitRange === 7 ? ['Du','Lu','Ma','Mi','Jo','Vi','Sâ'][new Date(k + 'T00:00:00').getDay()] : k.slice(8)) + '</text>' : '') +
+        (fitRange === 7 && v != null ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - pad - hgt - 3).toFixed(1) + '" text-anchor="middle" font-size="7.5" fill="var(--text-dim)" font-family="monospace">' + (fitMetric === 'steps' ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v)) : fitFmt(v, fitMetric).replace(FIT[fitMetric].u, '')) + '</text>' : ''); }).join('');
+    var gl = goal ? '<line x1="4" x2="' + (W - 4) + '" y1="' + (H - pad - (H - pad - 10) * goal / mx).toFixed(1) + '" y2="' + (H - pad - (H - pad - 10) * goal / mx).toFixed(1) + '" stroke="var(--gold)" stroke-dasharray="4 3" stroke-width="0.8"/>' : '';
+    document.getElementById('fitChart').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '">' + gl + bars + '</svg>';
+    var have = vals.filter(function(v){ return v != null; }), tot = have.reduce(function(a, b){ return a + b; }, 0);
+    var bestI = -1; vals.forEach(function(v, i){ if(v != null && (bestI < 0 || v > vals[bestI])) bestI = i; });
+    var hits = goal ? have.filter(function(v){ return v >= goal; }).length : null;
+    document.getElementById('fitStats').innerHTML = '<div><b>' + (have.length ? fitFmt(tot / have.length, fitMetric) : '–') + '</b><span>medie/zi</span></div>' +
+      '<div><b>' + (bestI >= 0 ? fitFmt(vals[bestI], fitMetric) : '–') + '</b><span>' + (bestI >= 0 ? 'max · ' + days[bestI].slice(8) + '.' + days[bestI].slice(5, 7) : 'maxim') + '</span></div>' +
+      '<div><b>' + (hits != null ? hits + '/' + have.length : fitFmt(tot, fitMetric)) + '</b><span>' + (hits != null ? 'obiectiv atins' : 'total') + '</span></div>';
+    var gs = document.getElementById('fgSteps'), gk = document.getElementById('fgKcal'), ge = document.getElementById('fgEx');
+    if(document.activeElement !== gs) gs.value = fitGoals.steps; if(document.activeElement !== gk) gk.value = fitGoals.kcal; if(document.activeElement !== ge) ge.value = fitGoals.exMin;
+  }
+  document.querySelectorAll('#fitMetric button').forEach(function(b){ b.addEventListener('click', function(){ fitMetric = b.getAttribute('data-m'); document.querySelectorAll('#fitMetric button').forEach(function(x){ x.classList.toggle('on', x === b); }); renderFitness(); }); });
+  document.querySelectorAll('#fitRange button').forEach(function(b){ b.addEventListener('click', function(){ fitRange = +b.getAttribute('data-r'); document.querySelectorAll('#fitRange button').forEach(function(x){ x.classList.toggle('on', x === b); }); renderFitness(); }); });
+  [['fgSteps','steps'],['fgKcal','kcal'],['fgEx','exMin']].forEach(function(p){ document.getElementById(p[0]).addEventListener('input', function(){ var v = parseFloat(this.value); if(v > 0){ fitGoals[p[1]] = v; try{ localStorage.setItem('byzyp_fitgoals', JSON.stringify(fitGoals)); }catch(e){} renderFitness(); } }); });
+  renderFitness();
+
   function renderSport(){ renderSpToday(); renderWeek(); renderRun(); renderMobList('mobList', MOB, 'm'); renderMobList('coreList', CORE, 'c'); if(document.querySelector('[data-sseg-card="gym"].seg-show')) renderWo(); }
   renderSport();
   sshow('plan');
@@ -3543,7 +3640,10 @@ document.addEventListener('click', function(e){
     // gold price over the week (daily candles)
     var gc = (typeof gold !== 'undefined' && gold && gold.candles) ? gold.candles.filter(function(c){ return inRange(c[0], a, b); }) : [];
     var gPrev = (typeof gold !== 'undefined' && gold && gold.candles) ? gold.candles.filter(function(c){ return c[0] < a; }).pop() : null;
-    return { ws:ws, we:we, n:n, hab:hab, pct:pct, perfect:perfect, photos:photos, streak:streak, bestDay:bestDay, bestN:bestN,
+    var hd = (typeof healthData !== 'undefined') ? days.map(function(k){ return healthData[k]; }).filter(Boolean) : [];
+    var fsum = function(m){ return hd.reduce(function(a, x){ return a + (+x[m] || 0); }, 0); };
+    var fit = hd.length ? { n:hd.length, steps:fsum('steps') / hd.length, kcal:fsum('kcal'), exMin:fsum('exMin'), distKm:fsum('distKm') } : null;
+    return { fit:fit, ws:ws, we:we, n:n, hab:hab, pct:pct, perfect:perfect, photos:photos, streak:streak, bestDay:bestDay, bestN:bestN,
       prevW:prevW, wStart:wStart, wEnd:wEnd, worthStart:worthStart, worthEnd:worthEnd,
       tw:tw.length, pnl:pnl, wins:wins, best:best, worst:worst, inv:inv, gOpened:gOpened, gClosed:gClosed.length, gR:gR, gW:gW, bestS:bestS, bestSR:bestS ? byS[bestS] : null,
       goldFrom: gPrev ? gPrev[4] : (gc[0] ? gc[0][1] : null), goldTo: gc.length ? gc[gc.length - 1][4] : null, current: off === 0 };
@@ -3569,6 +3669,13 @@ document.addEventListener('click', function(e){
     h += '<div class="rp-sec"><h4>⚖️ Corp</h4><div class="rp-row"><span>Greutate la final</span><b>' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg' : 'nenotată') + '</b></div>' +
       '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null ? '' : wd <= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(wd, 1, '', ' kg') + '</b></div>' +
       '<div class="rp-row"><span>Antrenamente bifate</span><b>' + W.hab.training + ' / ' + W.n + '</b></div></div>';
+    if(W.fit){
+      var pf = P.fit;
+      h += '<div class="rp-sec"><h4>❤️ Fitness (din Sănătate)</h4><div class="rp-row"><span>Pași pe zi (medie)</span><b>' + Math.round(W.fit.steps).toLocaleString('ro-RO') + (pf ? ' <span class="' + (W.fit.steps >= pf.steps ? 'rp-good' : 'rp-bad') + '" style="font-size:10.5px">' + sgn(W.fit.steps - pf.steps, 0) + '</span>' : '') + '</b></div>' +
+        '<div class="rp-row"><span>Calorii active (total)</span><b>' + Math.round(W.fit.kcal).toLocaleString('ro-RO') + ' kcal</b></div>' +
+        '<div class="rp-row"><span>Minute de exercițiu (total)</span><b>' + Math.round(W.fit.exMin) + ' min</b></div>' +
+        '<div class="rp-row"><span>Distanță mers + alergat</span><b>' + W.fit.distKm.toFixed(1) + ' km</b></div></div>';
+    }
     // money
     var dw = (W.worthEnd != null && W.worthStart != null) ? W.worthEnd - W.worthStart : null;
     h += '<div class="rp-sec"><h4>💼 Bani</h4><div class="rp-row"><span>Avere totală</span><b>' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd).toLocaleString('ro-RO') : '–') + '</b></div>' +
@@ -3598,6 +3705,7 @@ document.addEventListener('click', function(e){
         '\nZile perfecte: ' + W.perfect + ' · fără țigări la rând: ' + W.streak +
         '\nGreutate: ' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg (' + sgn(wd, 1, '', ' kg') + ')' : '–') +
         '\nAvere: ' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd) + ' (' + sgn(dw, 0, '€') + ')' : '–') +
+        (W.fit ? '\nFitness: ' + Math.round(W.fit.steps) + ' pași/zi, ' + Math.round(W.fit.kcal) + ' kcal, ' + Math.round(W.fit.exMin) + ' min exercițiu' : '') +
         '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '$') +
         '\nStrategii aur (test): ' + W.gClosed + ' închise, ' + sgn(W.gR, 2, '', 'R') + (W.bestS ? ', cea mai bună: ' + W.bestS : '');
       var btn = this;
@@ -3954,6 +4062,12 @@ document.addEventListener('click', function(e){
       accounts = snap.docs.map(function(d){ return d.data(); });
       renderWorth();
     }, function(err){ console.error('accounts sub error', err); });
+
+    db.collection('health').onSnapshot(function(snap){
+      healthData = {}; snap.docs.forEach(function(d){ healthData[d.id] = d.data(); });
+      if(typeof renderFitness === 'function') renderFitness();
+      if(typeof renderWeekReport === 'function') renderWeekReport();
+    }, function(err){ console.error('health sub error', err); });
 
     db.collection('trades').orderBy('date','asc').onSnapshot(function(snap){
       trades = snap.docs.map(function(d){ var t = d.data(); t._id = d.id; return t; });
