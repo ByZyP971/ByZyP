@@ -846,6 +846,11 @@
   .nt-row:first-of-type{ border-top:none; }
   .nt-row span:first-child{ font-family:var(--mono); color:var(--text-dim); white-space:nowrap; }
   .nt-t{ color:var(--text-dim); } .nt-t em{ color:var(--danger); font-style:normal; }
+
+  .gold-pt{ background:linear-gradient(160deg, color-mix(in srgb, var(--gold) 10%, var(--bg-card)), var(--bg-card)) !important; }
+  .gpt-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:2px; }
+  .gpt-v{ font-family:var(--mono); font-weight:800; font-size:13px; white-space:nowrap; }
+  .gpt-v.BUY, .gpt-v.BULLISH{ color:var(--accent); } .gpt-v.SELL, .gpt-v.BEARISH{ color:var(--danger); } .gpt-v.AȘTEAPTĂ, .gpt-v.NEUTRU{ color:var(--gold); }
 </style>
 </head>
 <body>
@@ -1213,10 +1218,6 @@
         <a class="ghost-btn news-link" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">Deschide Forex Factory ↗</a>
       </div>
 
-      <div class="card gold-card gold-mini" data-seg-card="trading" id="goldMini">
-        <div class="card-title">XAUUSD</div>
-        <div class="hint" style="margin-top:0;">Se încarcă analiza…</div>
-      </div>
 
       <div class="card" data-seg-card="trading">
         <div class="card-title">Evoluția contului</div>
@@ -1450,7 +1451,7 @@
         next({ id:'current', exists:true, data:function(){ return { updated: label, source:'Forex Factory', events: clone(ev) }; } });
       }
       // 1) copy kept next to the site (refreshed by GitHub every 3h) → 2) Forex Factory directly → 3) saved copy
-      getJSON('news.json?t=' + Date.now()).then(function(arr){ deliver(arr, 'automat, la fiecare 3 ore'); })
+      getJSON('news.json?t=' + Date.now()).then(function(arr){ deliver(arr, 'automat, la fiecare 30 de minute'); })
         .catch(function(){ return getJSON(FF_URL).then(function(arr){ deliver(arr, 'direct de pe Forex Factory'); }); })
         .catch(function(e){ console.warn('news unavailable', e); whenLoaded(function(){ next(snapDoc('news','current')); }); });
     }
@@ -1902,20 +1903,38 @@
       var hot = nt.i === 'High' && (nt.t.getTime() - Date.now()) < 2*3600000;
       newsHtml = '<div class="pt wide' + (hot?' hot':'') + '" data-go="news"><div class="pt-l">📰 Următoarea știre ' + (nt.i==='High'?'roșie':'importantă') + '</div><div class="pt-t">' + nt.c + ' — ' + nt.title + '</div><div class="pt-s">' + ['Du','Lu','Ma','Mi','Jo','Vi','Sâ'][nt.t.getDay()] + ' ' + nt.t.getDate() + ' ' + monthShort[nt.t.getMonth()] + ' la ' + hhmm(nt.t) + '</div><div class="pt-a">Vezi toate știrile →</div></div>';
     } else {
-      newsHtml = '<div class="pt wide" data-go="news"><div class="pt-l">📰 Știri</div><div class="pt-t">Nicio știre importantă încărcată</div><div class="pt-a">Scrie-mi „actualizează știrile” →</div></div>';
+      newsHtml = '<div class="pt wide" data-go="news"><div class="pt-l">📰 Știri</div><div class="pt-t">Nicio știre importantă încărcată</div><div class="pt-a">Se actualizează automat · vezi știrile →</div></div>';
     }
     el.innerHTML =
       '<div class="pt" data-go="sport"><div class="pt-l">🏋️ Sport azi</div><div class="pt-t">' + woLabel(code) + '</div><div class="pt-s">' + sportSub + '</div><div class="pt-a">' + sportA + '</div></div>' +
       '<div class="pt" data-go="food"><div class="pt-l">🍽️ Prânz azi</div><div class="pt-t">' + (lunch || 'Vezi meniul') + '</div><div class="pt-s">' + (dinner ? 'Seara: ' + dinner : '') + '</div><div class="pt-a">Meniul complet →</div></div>' +
-      newsHtml;
+      newsHtml + goldTileHtml();
     el.querySelectorAll('.pt').forEach(function(t){ t.addEventListener('click', function(){
       var g = t.getAttribute('data-go');
+      if(g === 'gold'){ var gt = document.querySelector('.tab[data-view="gold"]'); if(gt) gt.click(); try{ window.scrollTo(0,0); }catch(e){} return; }
       if(g === 'sport') goTab('sport', WO[code] ? '[data-sseg="gym"]' : code === 'mob' ? '[data-sseg="mob"]' : (code === 'run' || code === 'runL') ? '[data-sseg="run"]' : '[data-sseg="plan"]');
       else if(g === 'food') goTab('food', '[data-fseg="menu"]');
       else goTab('money', '[data-seg="trading"]');
     }); });
   }
 
+
+  function goldTileHtml(){
+    if(typeof gold === 'undefined' || !gold) return '<div class="pt wide" data-go="gold"><div class="pt-l">🥇 Aur · XAUUSD</div><div class="pt-t">Se încarcă analiza…</div><div class="pt-a">Deschide fila Aur →</div></div>';
+    var g = gold, p = (typeof liveSpot !== 'undefined' && liveSpot != null) ? liveSpot : g.price;
+    var prevClose = g.price - g.change, ch = p - prevClose, up = ch >= 0;
+    var v = (g.confluence || {}).verdict || g.bias;
+    var vt = v === 'BUY' ? '🟢 BUY' : v === 'SELL' ? '🔴 SELL' : '⏳ AȘTEAPTĂ';
+    var act = (g.ptrades || []).filter(function(t){ return !t.closed; });
+    var open = act.filter(function(t){ return t.status !== 'în așteptare'; }).length, pend = act.length - open;
+    var T = g.ptotal || {};
+    return '<div class="pt wide gold-pt" data-go="gold"><div class="pt-l">🥇 Aur · XAUUSD' + (typeof liveSpot !== 'undefined' && liveSpot != null ? ' <span class="live-tag">● LIVE</span>' : '') + '</div>' +
+      '<div class="gpt-row"><div class="pt-t" style="font-family:var(--mono);font-size:22px;">' + p.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '</div>' +
+      '<div class="gpt-v ' + v + '">' + vt + '</div></div>' +
+      '<div class="pt-s"><span style="color:' + (up ? 'var(--accent)' : 'var(--danger)') + '">' + (up ? '+' : '') + ch.toFixed(2) + ' (' + (up ? '+' : '') + (prevClose ? ch / prevClose * 100 : 0).toFixed(2) + '%)</span> azi · ' +
+      (open ? open + ' tranzacții de test deschise' : 'nicio tranzacție de test deschisă') + (pend ? ' · ' + pend + ' ordine în așteptare' : '') +
+      (T.n ? ' · ' + T.rate + '% câștigate' : '') + '</div><div class="pt-a">Deschide analiza completă →</div></div>';
+  }
   var pastVisible = false;
   var pastDaysList = document.getElementById('pastDaysList');
   var pastDaysCard = document.getElementById('pastDaysCard');
@@ -2970,6 +2989,7 @@
         (warn ? '<br>⚠️ Prețul s-a mișcat ' + (moved > 0 ? '+' : '') + f2(moved) + ' $ de atunci: unele niveluri pot fi deja depășite. Verifică pe Live înainte de orice intrare.' : '');
     }
     var mp = document.getElementById('gmPrice'); if(mp) mp.textContent = f2(p);
+    if(typeof renderPlanTiles === 'function' && document.getElementById('view-today') && document.getElementById('view-today').classList.contains('active')) renderPlanTiles();
   }
   fetchSpot(); setInterval(fetchSpot, 60000); setInterval(paintLive, 15000);
 
@@ -3347,6 +3367,7 @@
       sec('strat', '<div class="card-title">Strategii · alege una din bară</div>' + (B.strat || '')) +
       sec('risk', (B.risk || '')) +
       sec('hist', (B.hist || '<div class="hint" style="margin-top:0;">Istoricul apare după primele zile de analiză.</div>'));
+    if(typeof renderPlanTiles === 'function') renderPlanTiles();
     applyGoldSeg();
     box.querySelectorAll('.lb-r').forEach(function(r){ r.addEventListener('click', function(){ goldStrat = r.getAttribute('data-sx'); try{ localStorage.setItem('byzyp_gstrat', goldStrat); }catch(e){}
       goldSeg = 'strat'; try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){} applyGoldSeg(); renderStratPage(); try{ window.scrollTo(0,0); }catch(e){} }); });
