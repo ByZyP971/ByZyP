@@ -34,6 +34,23 @@ def load_yahoo():
     if len(out) < 220: raise ValueError('yahoo: too few rows')
     return out[-400:], 'Aur futures GC=F (Yahoo, aproximativ)'
 
+
+def load_spot():
+    """Live XAU/USD spot (keyless public APIs). Returns float or None."""
+    try:
+        j = json.loads(get('https://xaus.com/api/v1/spot?compact=1'))
+        st = (j.get('data_state') or {}).get('status')
+        v = j.get('spot_usd_oz') or (j.get('xau') or {}).get('price')
+        if v and st != 'unavailable': return float(v)
+    except Exception as e:
+        print('xaus spot failed:', e, file=sys.stderr)
+    try:
+        j = json.loads(get('https://api.gold-api.com/price/XAU'))
+        if j.get('price'): return float(j['price'])
+    except Exception as e:
+        print('gold-api spot failed:', e, file=sys.stderr)
+    return None
+
 def ema(vals, n):
     k = 2 / (n + 1); e = sum(vals[:n]) / n; out = [None] * (n - 1) + [e]
     for v in vals[n:]:
@@ -126,6 +143,17 @@ def main():
     try: bars, src = load_stooq()
     except Exception as e:
         print('stooq failed:', e, file=sys.stderr); bars, src = load_yahoo()
+    spot = load_spot()
+    spot_used = False
+    if spot and abs(spot - bars[-1]['c']) / bars[-1]['c'] < 0.08:      # sanity check vs daily data
+        today_u = dt.datetime.utcnow().strftime('%Y-%m-%d')
+        if bars[-1]['d'] == today_u:
+            bars[-1]['c'] = spot; bars[-1]['h'] = max(bars[-1]['h'], spot); bars[-1]['l'] = min(bars[-1]['l'], spot)
+        elif dt.datetime.utcnow().weekday() < 5 or dt.datetime.utcnow().weekday() == 6 and dt.datetime.utcnow().hour >= 22:
+            pc = bars[-1]['c']; bars.append({'d': today_u, 'o': pc, 'h': max(pc, spot), 'l': min(pc, spot), 'c': spot})
+        else:
+            bars[-1]['c'] = spot
+        spot_used = True
     closes = [b['c'] for b in bars]
     price = closes[-1]; prev = closes[-2]
     e20, e50, e200 = ema(closes, 20)[-1], ema(closes, 50)[-1], ema(closes, 200)[-1]
@@ -632,7 +660,7 @@ def main():
     tot['rate'] = round(tot['wins'] / tot['n'] * 100) if tot['n'] else None
 
     out = {
-        'symbol': 'XAUUSD', 'source': src, 'barDate': bars[-1]['d'],
+        'symbol': 'XAUUSD', 'source': src + (' + preț live' if spot_used else ''), 'spotUsed': spot_used, 'barDate': bars[-1]['d'],
         'updated': dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
         'price': r2(price), 'change': r2(price - prev), 'changePct': round((price - prev) / prev * 100, 2),
         'dayHigh': r2(bars[-1]['h']), 'dayLow': r2(bars[-1]['l']),

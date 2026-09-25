@@ -832,6 +832,10 @@
   .lb-r2{ font-family:var(--mono); font-weight:800; font-size:13px; }
   .sx-wr{ font-style:normal; font-family:var(--mono); font-size:10px; color:var(--text-faint); }
   .hist-sum{ flex-wrap:wrap; }
+
+  .live-tag{ color:#FF4D4D; font-size:10px; letter-spacing:.08em; margin-left:6px; animation:livepulse 1.6s ease-in-out infinite; }
+  .gd-fresh{ font-size:11px; color:var(--text-faint); margin-top:10px; line-height:1.5; }
+  .gd-fresh.warn{ color:var(--gold); }
 </style>
 </head>
 <body>
@@ -2927,10 +2931,41 @@
     applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart();
   }); });
   document.querySelectorAll('.tab[data-view="gold"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart(); }, 30); }); });
+
+  var liveSpot = null, liveAt = 0;
+  function fetchSpot(){
+    fetch('https://xaus.com/api/v1/spot?compact=1', { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
+      var v = j.spot_usd_oz || (j.xau && j.xau.price); if(!v) throw 0; liveSpot = +v; liveAt = Date.now(); paintLive();
+    }).catch(function(){
+      fetch('https://api.gold-api.com/price/XAU', { cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){ if(j && j.price){ liveSpot = +j.price; liveAt = Date.now(); paintLive(); } }).catch(function(){});
+    });
+  }
+  function paintLive(){
+    if(!gold) return;
+    var g = gold, prevClose = g.price - g.change;
+    var p = liveSpot != null ? liveSpot : g.price;
+    var ch = p - prevClose, pc = prevClose ? ch / prevClose * 100 : 0, up = ch >= 0;
+    var el = document.getElementById('gdPrice'); if(el) el.textContent = f2(p);
+    var c = document.getElementById('gdChg'); if(c){ c.className = 'gd-chg ' + (up ? 'pos' : 'neg'); c.textContent = (up?'+':'') + f2(ch) + ' (' + (up?'+':'') + pc.toFixed(2) + '%) azi'; }
+    var tg = document.getElementById('gdLiveTag'); if(tg) tg.innerHTML = liveSpot != null ? '● LIVE' : '';
+    var fr = document.getElementById('gdFresh');
+    if(fr){
+      var upd = new Date(g.updated), mins = Math.round((Date.now() - upd.getTime()) / 60000);
+      var age = mins < 60 ? mins + ' min' : Math.floor(mins / 60) + ' h ' + (mins % 60) + ' min';
+      var moved = liveSpot != null ? liveSpot - g.price : 0;
+      var warn = liveSpot != null && Math.abs(moved) > 0.35 * (g.atr || 30);
+      fr.className = 'gd-fresh' + (warn ? ' warn' : '');
+      fr.innerHTML = (liveSpot != null ? 'Preț live actualizat acum ' + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + ' s · ' : '') +
+        'Analiza (niveluri, strategii) calculată la ' + hhmm(upd) + ', acum ' + age + ' la prețul ' + f2(g.price) + '.' +
+        (warn ? '<br>⚠️ Prețul s-a mișcat ' + (moved > 0 ? '+' : '') + f2(moved) + ' $ de atunci: unele niveluri pot fi deja depășite. Verifică pe Live înainte de orice intrare.' : '');
+    }
+    var mp = document.getElementById('gmPrice'); if(mp) mp.textContent = f2(p);
+  }
+  fetchSpot(); setInterval(fetchSpot, 60000); setInterval(paintLive, 15000);
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
-    m.innerHTML = '<div class="card-title">XAUUSD · Aur</div><div class="gm-row"><div><div class="gm-p">' + f2(g.price) + '</div>' +
+    m.innerHTML = '<div class="card-title">XAUUSD · Aur</div><div class="gm-row"><div><div class="gm-p" id="gmPrice">' + f2(liveSpot != null ? liveSpot : g.price) + '</div>' +
       '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%)</div></div>' +
       '<div style="text-align:right"><div class="gm-v ' + c.verdict + '">' + (c.verdict === 'BUY' ? '🟢 BUY' : c.verdict === 'SELL' ? '🔴 SELL' : '⏳ AȘTEAPTĂ') + '</div>' +
       '<div class="gd-sub">' + (g.strategies ? g.strategies.length + ' strategii' : '') + '</div></div></div>' +
@@ -3036,8 +3071,8 @@
     var g = gold, up = g.change >= 0;
     var meter = ''; for(var i=-5;i<=5;i++){ if(i===0) continue; var on = (g.score>0 && i>0 && i<=g.score) || (g.score<0 && i<0 && i>=g.score); meter += '<i class="' + (on ? (i>0?'on-b':'on-s') : '') + '"></i>'; }
     var upd = new Date(g.updated);
-    var html = '<div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR</div><div class="gd-price">' + f2(g.price) + '</div>' +
-      '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
+    var html = '<div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
+      '<div class="gd-chg ' + (up?'pos':'neg') + '" id="gdChg">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
       '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
 
     html += '\u0001head\u0002';
@@ -3173,7 +3208,8 @@
     var parts = html.split(/\u0001(\w+)\u0002/), B = { top:'' }, key = 'top';
     for(var pi=0; pi<parts.length; pi++){ if(pi % 2 === 1){ key = parts[pi]; } else { B[key] = (B[key] || '') + parts[pi]; } }
     var top = document.getElementById('goldTop');
-    if(top) top.innerHTML = (B.top || '') + (B.head || '');
+    if(top) top.innerHTML = (B.top || '') + '<div class="gd-fresh" id="gdFresh"></div>' + (B.head || '');
+    paintLive();
     var sec = function(k, inner){ return '<div class="card" data-gsp="' + k + '">' + inner + '</div>'; };
     box.innerHTML =
       sec('plan', (B.conf || '') + (B.nar || '') + (B.avoid || '') + (B.foot || '')) +
