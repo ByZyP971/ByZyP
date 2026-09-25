@@ -836,6 +836,16 @@
   .live-tag{ color:#FF4D4D; font-size:10px; letter-spacing:.08em; margin-left:6px; animation:livepulse 1.6s ease-in-out infinite; }
   .gd-fresh{ font-size:11px; color:var(--text-faint); margin-top:10px; line-height:1.5; }
   .gd-fresh.warn{ color:var(--gold); }
+
+  .ch-tf{ display:flex; gap:4px; padding:8px 10px 0; align-items:center; }
+  .ch-tf button{ background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:7px; padding:5px 9px; font-size:11px; font-family:var(--mono); cursor:pointer; }
+  .ch-tf button.on{ border-color:var(--accent); color:var(--accent); }
+  .ch-live{ margin-left:auto; font-family:var(--mono); font-size:10px; color:#FF4D4D; }
+
+  .nt-row{ display:flex; gap:10px; padding:7px 0; border-top:1px solid var(--line); font-size:12px; }
+  .nt-row:first-of-type{ border-top:none; }
+  .nt-row span:first-child{ font-family:var(--mono); color:var(--text-dim); white-space:nowrap; }
+  .nt-t{ color:var(--text-dim); } .nt-t em{ color:var(--danger); font-style:normal; }
 </style>
 </head>
 <body>
@@ -2880,7 +2890,7 @@
     el.innerHTML = h;
     if(x.entry != null){
       var A = gold.atr || Math.abs(x.entry - x.sl);
-      drawGoldChart('sxChart', { side:x.verdict, entry:x.entry, sl:x.sl, tp1:x.tp1, tp2:x.tp2, zone:[x.entry - 0.15*A, x.entry + 0.15*A] });
+      drawGoldChart('sxChart', { side:x.verdict, entry:x.entry, sl:x.sl, tp1:x.tp1, tp2:x.tp2, zone:[x.entry - 0.15*A, x.entry + 0.15*A] }, { tf: goldTf.sxChart || 'D1' });
     }
   }
 
@@ -2928,9 +2938,9 @@
   }
   document.querySelectorAll('#goldSeg button').forEach(function(b){ b.addEventListener('click', function(){
     goldSeg = b.getAttribute('data-gs'); try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){}
-    applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart();
+    applyGoldSeg(); redrawLiveCharts();
   }); });
-  document.querySelectorAll('.tab[data-view="gold"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ applyGoldSeg(); if(goldSeg === 'chart') drawGoldChart(); }, 30); }); });
+  document.querySelectorAll('.tab[data-view="gold"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ applyGoldSeg(); fetchIntraday(); redrawLiveCharts(); }, 30); }); });
 
   var liveSpot = null, liveAt = 0;
   function fetchSpot(){
@@ -2962,6 +2972,16 @@
     var mp = document.getElementById('gmPrice'); if(mp) mp.textContent = f2(p);
   }
   fetchSpot(); setInterval(fetchSpot, 60000); setInterval(paintLive, 15000);
+
+  function drawPlanChart(){
+    if(!gold || !document.getElementById('planChart')) return;
+    var g = gold, v = (g.confluence || {}).verdict;
+    var sc = (v === 'BUY' || v === 'SELL') ? g.scenarios.filter(function(x){ return x.side === v; })[0] : (g.scenarios.filter(function(x){ return x.main; })[0] || g.scenarios[0]);
+    drawGoldChart('planChart', sc, { tf: goldTf.planChart || '15m', plan:true });
+    var n = document.getElementById('planChartNote');
+    if(n) n.textContent = (v === 'BUY' || v === 'SELL' ? 'Planul de azi: ' + (v === 'BUY' ? '🟢 BUY' : '🔴 SELL') : '⏳ Plan în așteptare, arăt scenariul ' + sc.side) +
+      ' · zonă ' + f2(sc.zone[0]) + '–' + f2(sc.zone[1]) + ' · SL ' + f2(sc.sl) + ' · TP1 ' + f2(sc.tp1) + '. Lumânările se actualizează live, la fiecare minut; nivelurile se recalculează la fiecare 30 de minute. Săgețile ↑↓ arată nivelurile aflate în afara graficului.';
+  }
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
@@ -2972,7 +2992,8 @@
       '<button class="primary-btn" id="gmOpen" style="margin-top:12px;">Deschide analiza completă →</button>';
     document.getElementById('gmOpen').addEventListener('click', function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); try{ window.scrollTo(0,0); }catch(e){} });
   }
-  function drawGoldChart(wrapId, scOv){
+  function drawGoldChart(wrapId, scOv, opt){
+    opt = opt || {};
     var wrap = document.getElementById(wrapId || 'chWrap'); if(!wrap || !gold) return;
     if(!wrapId && goldChart === 'tv'){
       if(wrap.getAttribute('data-tv') === '1') return;
@@ -2989,14 +3010,31 @@
     wrap.removeAttribute('data-tv');
     var g = gold, C = g.candles || [];
     if(!C.length){ wrap.innerHTML = '<div class="hint" style="padding:12px;margin:0;">Graficul apare la următoarea actualizare automată.</div>'; return; }
-    C = C.slice(-60);
-    var e20 = (g.ema20s || []).slice(-60), e50 = (g.ema50s || []).slice(-60);
+    var tf = opt.tf || 'D1', intra = tf !== 'D1';
+    var e20, e50;
+    if(intra){
+      C = intradayCandles(tf);
+      if(C.length < 3){ wrap.innerHTML = '<div class="hint" style="padding:12px;margin:0;">Se încarcă prețurile live…</div>'; return; }
+      var cl = C.map(function(k){ return k[4]; });
+      e20 = emaJS(cl, 20); e50 = emaJS(cl, 50);
+    } else {
+      C = liveD1(C).slice(-60);
+      e20 = (g.ema20s || []).slice(-60); e50 = (g.ema50s || []).slice(-60);
+      if(e20.length < C.length){ e20 = e20.concat([null]); e50 = e50.concat([null]); }
+      e20 = e20.slice(-C.length); e50 = e50.slice(-C.length);
+    }
+    var nowP = liveSpot != null ? liveSpot : g.price;
     var side = goldChartSide || (g.scenarios.filter(function(x){ return x.main; })[0] || g.scenarios[0]).side;
     var sc2 = scOv || g.scenarios.filter(function(x){ return x.side === side; })[0];
     var W = 360, H = 230, padL = 4, padR = 64, padT = 10, padB = 18;
     var lo = Infinity, hi = -Infinity;
     C.forEach(function(k){ lo = Math.min(lo, k[3]); hi = Math.max(hi, k[2]); });
-    [g.levels.R1, g.levels.S1, sc2.sl, sc2.tp1].forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); });
+    lo = Math.min(lo, nowP); hi = Math.max(hi, nowP);
+    if(!intra){ [g.levels.R1, g.levels.S1, sc2.sl, sc2.tp1].forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); }); }
+    else {
+      var span = Math.max(hi - lo, (g.atr || 30) * 0.25);
+      [sc2.entry, sc2.sl, sc2.tp1, g.levels.R1, g.levels.S1, g.pivots && g.pivots.P].forEach(function(v){ if(v != null && v > lo - span * 0.8 && v < hi + span * 0.8){ lo = Math.min(lo, v); hi = Math.max(hi, v); } });
+    }
     var pad = (hi - lo) * 0.04; lo -= pad; hi += pad;
     var cw = (W - padL - padR) / C.length;
     var X = function(i){ return padL + i * cw + cw / 2; };
@@ -3006,11 +3044,17 @@
     for(var gi=0; gi<=4; gi++){ var gv = lo + (hi - lo) * gi / 4, gy = Y(gv).toFixed(1);
       svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="var(--line)" stroke-width="0.5"/>'; }
     // entry zone band
-    var zy1 = Y(sc2.zone[1]), zy2 = Y(sc2.zone[0]);
+    var clampY = function(v){ return Math.max(padT, Math.min(H - padB, Y(v))); };
+    var zy1 = clampY(sc2.zone[1]), zy2 = clampY(sc2.zone[0]);
     svg += '<rect x="' + padL + '" y="' + zy1.toFixed(1) + '" width="' + (W - padL - padR) + '" height="' + Math.max(1, zy2 - zy1).toFixed(1) + '" fill="var(--gold)" opacity="0.13"/>';
     // horizontal levels
-    var labels = [];
+    var labels = [], offTop = [], offBot = [];
     function hline(v, col, dash, label, strong){
+      if(v == null) return;
+      if(v > hi || v < lo){
+        var arr = v > hi ? offTop : offBot, ex = arr.filter(function(o){ return Math.abs(o.v - v) < 0.01; })[0];
+        if(ex) ex.t = label + '·' + ex.t; else arr.push({ v:v, t:label, col:col }); return;
+      }
       var y = Y(v).toFixed(1);
       svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y + '" y2="' + y + '" stroke="' + col + '" stroke-width="' + (strong ? 1.1 : 0.7) + '"' + (dash ? ' stroke-dasharray="4 3"' : '') + ' opacity="0.9"/>';
       var same = labels.filter(function(l){ return Math.abs(l.v - v) < (hi - lo) * 0.004; })[0];
@@ -3043,18 +3087,74 @@
         '<rect x="' + (x - cw * 0.34).toFixed(1) + '" y="' + Math.min(yo, yc).toFixed(1) + '" width="' + (cw * 0.68).toFixed(1) + '" height="' + Math.max(0.8, Math.abs(yc - yo)).toFixed(1) + '" fill="' + col + '"/>';
     });
     // last price marker
-    var lp = Y(g.price).toFixed(1);
+    var lp = Y(nowP).toFixed(1);
     svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + lp + '" y2="' + lp + '" stroke="var(--text)" stroke-width="0.5" stroke-dasharray="1 2"/>';
     // date labels
-    [0, Math.floor(C.length / 2), C.length - 1].forEach(function(i){ var dd = new Date(C[i][0] + 'T00:00:00');
-      svg += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 5) + '" font-size="7.5" fill="var(--text-faint)" text-anchor="' + (i === 0 ? 'start' : i === C.length - 1 ? 'end' : 'middle') + '" font-family="monospace">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + '</text>'; });
-    labels.push({ v:g.price, y:+lp, t:'ACUM', col:'var(--text)' });
+    [0, Math.floor(C.length / 2), C.length - 1].forEach(function(i){ var dd = intra ? new Date(C[i][5] * 1000) : new Date(C[i][0] + 'T00:00:00');
+      svg += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 5) + '" font-size="7.5" fill="var(--text-faint)" text-anchor="' + (i === 0 ? 'start' : i === C.length - 1 ? 'end' : 'middle') + '" font-family="monospace">' + (intra ? hhmm(dd) : dd.getDate() + ' ' + monthShort[dd.getMonth()]) + '</text>'; });
+    labels.push({ v:nowP, y:+lp, t:(liveSpot != null ? 'LIVE' : 'ACUM'), col:'var(--text)' });
     drawLabels();
+    function offText(arr, y, arrow){
+      if(!arr.length) return;
+      arr.sort(function(a,b){ return arrow === '↑' ? a.v - b.v : b.v - a.v; });
+      var x = padL + 4;
+      svg += '<rect x="' + padL + '" y="' + (y - 8) + '" width="' + (W - padL - padR) + '" height="11" fill="var(--bg-card-2)" opacity="0.75"/>';
+      arr.forEach(function(o){ var t = arrow + ' ' + o.t + ' ' + o.v.toFixed(0);
+        svg += '<text x="' + x + '" y="' + y + '" font-size="7" font-weight="700" fill="' + o.col + '" font-family="monospace">' + t + '</text>'; x += t.length * 4.3 + 8; });
+    }
+    offText(offTop, padT + 1, '↑'); offText(offBot, H - padB - 2, '↓');
     svg += '</svg>';
-    wrap.innerHTML = (scOv ? '' : '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>') + svg +
-      '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>60 zile · D1</span></div>';
-    wrap.querySelectorAll('.ch-scn button').forEach(function(b){ b.addEventListener('click', function(){ goldChartSide = b.getAttribute('data-s'); drawGoldChart(); }); });
+    var tfBar = opt.noTf ? '' : '<div class="ch-tf">' + ['5m','15m','1h','D1'].map(function(t){ return '<button data-tf="' + t + '" class="' + (t === tf ? 'on' : '') + '">' + t + '</button>'; }).join('') + '<span class="ch-live">' + (intra ? '● LIVE' : 'D1 + preț live') + '</span></div>';
+    wrap.innerHTML = tfBar + (scOv && !opt.plan ? '' : opt.plan ? '' : '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>') + svg +
+      '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>' + (intra ? C.length + ' lumânări · ' + tf : '60 zile · D1') + '</span></div>';
+    var myId = wrapId || 'chWrap';
+    wrap.querySelectorAll('.ch-scn button').forEach(function(b){ b.addEventListener('click', function(){ goldChartSide = b.getAttribute('data-s'); drawGoldChart(wrapId, scOv, opt); }); });
+    wrap.querySelectorAll('.ch-tf button').forEach(function(b){ b.addEventListener('click', function(){
+      goldTf[myId] = b.getAttribute('data-tf'); try{ localStorage.setItem('byzyp_gtf', JSON.stringify(goldTf)); }catch(e){}
+      var o2 = {}; for(var k in opt) o2[k] = opt[k]; o2.tf = goldTf[myId];
+      if(o2.tf !== 'D1') fetchIntraday();
+      drawGoldChart(wrapId, scOv, o2); }); });
+    goldCharts[myId] = { scOv:scOv, opt:opt };
   }
+  /* ---- live intraday data (xaus.com, 2-min samples, 48h) ---- */
+  var goldTf = { chWrap:'15m', planChart:'15m', sxChart:'D1' }, goldCharts = {}, intraPts = [], intraAt = 0;
+  try{ var _t = JSON.parse(localStorage.getItem('byzyp_gtf') || '{}'); for(var _k in _t) goldTf[_k] = _t[_k]; }catch(e){}
+  function fetchIntraday(){
+    if(Date.now() - intraAt < 50000 && intraPts.length) return;
+    intraAt = Date.now();
+    fetch('https://xaus.com/api/v1/intraday?symbol=xau&hours=48', { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
+      intraPts = (j.points || []).filter(function(x){ return x && x.t && x.p; }).sort(function(a,b){ return a.t - b.t; });
+      redrawLiveCharts();
+    }).catch(function(){});
+  }
+  function intradayCandles(tf){
+    var sec = tf === '5m' ? 300 : tf === '1h' ? 3600 : 900, maxN = tf === '1h' ? 48 : 64;
+    var pts = intraPts.slice();
+    if(liveSpot != null) pts.push({ t: Math.floor(Date.now() / 1000), p: liveSpot });
+    var out = [], cur = null;
+    pts.forEach(function(x){ var b = Math.floor(x.t / sec) * sec;
+      if(!cur || cur[5] !== b){ cur = ['', x.p, x.p, x.p, x.p, b]; out.push(cur); }
+      else { cur[2] = Math.max(cur[2], x.p); cur[3] = Math.min(cur[3], x.p); cur[4] = x.p; } });
+    return out.slice(-maxN);
+  }
+  function emaJS(v, n){ var k = 2 / (n + 1), e = null, out = [];
+    v.forEach(function(x, i){ e = e == null ? x : x * k + e * (1 - k); out.push(i >= Math.min(n, v.length) - 1 ? e : null); }); return out; }
+  function liveD1(C){
+    C = (C || []).map(function(k){ return k.slice(); });
+    if(liveSpot == null || !C.length) return C;
+    var today = new Date().toISOString().slice(0, 10), last = C[C.length - 1];
+    if(last[0] === today){ last[4] = liveSpot; last[2] = Math.max(last[2], liveSpot); last[3] = Math.min(last[3], liveSpot); }
+    else if(new Date().getUTCDay() !== 6){ C.push([today, last[4], Math.max(last[4], liveSpot), Math.min(last[4], liveSpot), liveSpot]); }
+    return C;
+  }
+  function redrawLiveCharts(){
+    Object.keys(goldCharts).forEach(function(id){
+      var el = document.getElementById(id); if(!el || el.offsetParent === null) return;
+      var c = goldCharts[id], o2 = {}; for(var k in c.opt) o2[k] = c.opt[k]; o2.tf = goldTf[id] || o2.tf || 'D1';
+      drawGoldChart(id === 'chWrap' ? undefined : id, c.scOv, o2);
+    });
+  }
+  setInterval(function(){ fetchIntraday(); redrawLiveCharts(); }, 60000);
   try{ goldRisk = parseFloat(localStorage.getItem('byzyp_gold_risk')) || 1; }catch(e){}
   function f2(n){ return Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
   function curBalance(){
@@ -3096,6 +3196,7 @@
 
     html += '\u0001conf\u0002';
     // confluence + multi-timeframe + session
+    html += '<div class="gd-sec" style="margin-top:0;">📡 Planul pe graficul live</div><div class="ch-wrap" id="planChart" style="margin-top:0;"></div><div class="hint" id="planChartNote" style="margin-top:6px;"></div>';
     if(g.confluence){
       var c = g.confluence, tw = Math.max(1, c.total), wait = tw - c.buy - c.sell;
       var cvText = c.verdict === 'BUY' ? 'Mai multe strategii spun CUMPĂRARE' : c.verdict === 'SELL' ? 'Mai multe strategii spun VÂNZARE' : 'Strategiile nu sunt de acord: răbdare';
@@ -3220,7 +3321,9 @@
     applyGoldSeg();
     box.querySelectorAll('.lb-r').forEach(function(r){ r.addEventListener('click', function(){ goldStrat = r.getAttribute('data-sx'); try{ localStorage.setItem('byzyp_gstrat', goldStrat); }catch(e){}
       goldSeg = 'strat'; try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){} applyGoldSeg(); renderStratPage(); try{ window.scrollTo(0,0); }catch(e){} }); });
-    goldChart = 'a'; drawGoldChart();
+    goldChart = 'a'; drawGoldChart(undefined, undefined, { tf: goldTf.chWrap });
+    drawPlanChart();
+    fetchIntraday();
     renderGoldMini();
     box.querySelectorAll('.sx-chip').forEach(function(c){ c.addEventListener('click', function(){ goldStrat = c.getAttribute('data-sx'); try{ localStorage.setItem('byzyp_gstrat', goldStrat); }catch(e){} renderStratPage(); }); });
     if(goldStrat !== 'all' && !(g.strategies || []).some(function(x){ return x.id === goldStrat; })) goldStrat = 'all';
@@ -3691,6 +3794,20 @@
     }).catch(function(e){ st.textContent = 'Eroare: ' + e.message; });
   });
   te.addEventListener('click', function(){ if(reg) reg.showNotification('By ZyP ✅', { body:'Așa arată o notificare de la aplicația ta.', icon:'icon.png' }); });
+  // delivery log written by the push robot (sent.json, same site)
+  var logEl = document.createElement('div'); logEl.className = 'nt-log'; hint.parentNode.insertBefore(logEl, hint.nextSibling);
+  function loadPushLog(){
+    fetch('sent.json?t=' + Date.now(), { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
+      var st = (j._status || []).slice(-8).reverse();
+      if(!st.length){ logEl.innerHTML = '<div class="hint" style="margin-top:0;">Robotul n-a trimis încă notificări.</div>'; return; }
+      var bad = st.filter(function(x){ return !x.ok && (x.code === 404 || x.code === 410); }).length;
+      logEl.innerHTML = '<div class="gd-sec" style="margin-top:14px;">Ultimele notificări trimise de robot</div>' + st.map(function(x){ var d = new Date(x.t);
+        return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : ' <em>(eroare ' + x.code + ')</em>') + '</span></div>'; }).join('') +
+        (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
+    }).catch(function(){});
+  }
+  function hh(d){ return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+  loadPushLog(); setInterval(loadPushLog, 120000);
   document.getElementById('ntCopy').addEventListener('click', function(){
     var done = function(){ document.getElementById('ntCopy').textContent = '✓ Copiat'; };
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, function(){ ta.select(); document.execCommand('copy'); done(); });

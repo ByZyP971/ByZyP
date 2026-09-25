@@ -21,11 +21,16 @@ function local(d) {
     .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
   return { date: `${p.year}-${p.month}-${p.day}`, hm: +p.hour * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
 }
+const status = Array.isArray(sent._status) ? sent._status : [];
 async function send(title, body, tag) {
+  let ok = false;
   for (const s of subs) {
-    try { await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: './' }), { TTL: 1800 }); console.log('sent:', title); }
-    catch (e) { console.log('push error', e.statusCode, e.body || e.message); }
+    try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: './' }), { TTL: 1800, urgency: 'high' });
+      ok = true; console.log('sent:', title, r && r.statusCode); status.push({ t: new Date().toISOString(), title, ok: true, code: r && r.statusCode }); }
+    catch (e) { console.log('push error', e.statusCode, e.body || e.message); status.push({ t: new Date().toISOString(), title, ok: false, code: e.statusCode || 0, err: String(e.body || e.message).slice(0, 120) }); }
   }
+  changed = true;
+  return ok;
 }
 
 const now = new Date();
@@ -47,26 +52,41 @@ const SLOTS = [8 * 60 + 30, 14 * 60 + 30, 21 * 60 + 30];
 for (let i = 0; i < SLOTS.length; i++) {
   const key = `m-${L.date}-${i}`;
   if (L.hm >= SLOTS[i] && L.hm < SLOTS[i] + 40 && !sent[key]) {
-    await send('By ZyP', MOT[L.wd][i], 'motivatie'); sent[key] = Date.now(); changed = true;
+    if (await send('By ZyP', MOT[L.wd][i], 'motivatie')) { sent[key] = Date.now(); changed = true; }
   }
 }
 
 // ---------- red news, ~10 min before ----------
 let news = []; try { news = JSON.parse(fs.readFileSync('news.json', 'utf8')); } catch (e) {}
-const soon = news.filter(e => e.impact === 'High').map(e => ({ ...e, t: new Date(e.date) }))
-  .filter(e => { const m = (e.t - now) / 60000; return m >= -2 && m <= 20; });
+const soon = news.filter(e => e.impact === 'High' || (e.impact === 'Medium' && e.country === 'USD')).map(e => ({ ...e, t: new Date(e.date) }))
+  .filter(e => { const m = (e.t - now) / 60000; return m >= -1 && m <= 13; });
 const groups = {};
 soon.forEach(e => { const k = e.date; (groups[k] = groups[k] || []).push(e); });
 for (const k of Object.keys(groups)) {
   const key = `n-${k}`;
   if (sent[key]) continue;
   const g = groups[k], mins = Math.max(0, Math.round((g[0].t - now) / 60000));
-  const title = mins > 0 ? `🔴 Știre roșie în ${mins} min · ${local(g[0].t).hhmm}` : '🔴 Știre roșie ACUM';
-  const body = g.map(e => `${e.country} — ${e.title}`).join('\n') + '\nAtenție la tranzacții.';
-  await send(title, body, 'stire-' + k); sent[key] = Date.now(); changed = true;
+  const red = g.some(e => e.impact === 'High'), ic = red ? '🔴' : '🟠', kind = red ? 'roșie' : 'portocalie (USD)';
+  const title = mins > 0 ? `${ic} Știre ${kind} în ${mins} min · ${local(g[0].t).hhmm}` : `${ic} Știre ${kind} ACUM`;
+  const body = g.map(e => `${e.impact === 'High' ? '🔴' : '🟠'} ${e.country} — ${e.title}` + (e.forecast ? ` (prognoză ${e.forecast})` : '')).join('\n') + '\nAurul se poate mișca brusc. Atenție la tranzacții.';
+  if (await send(title, body, 'stire-' + k)) { sent[key] = Date.now(); changed = true; }
+}
+
+// ---------- strategy paper-trade events (written by analyze.py) ----------
+let gold = {}; try { gold = JSON.parse(fs.readFileSync('xauusd.json', 'utf8')); } catch (e) {}
+const evs = (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
+const MAXN = 5;
+for (const e of evs.slice(0, MAXN)) {
+  if (await send(e.title, e.body, 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
+}
+if (evs.length > MAXN) {
+  if (await send('🧪 Strategii XAUUSD', `Încă ${evs.length - MAXN} actualizări la tranzacțiile de test. Deschide fila Aur → Istoric.`, 'strat-more')) {
+    for (const e of evs.slice(MAXN)) sent['e-' + e.id] = Date.now(); changed = true;
+  }
 }
 
 // keep state small (last 4 days)
-for (const k of Object.keys(sent)) if (Date.now() - sent[k] > 4 * 86400000) { delete sent[k]; changed = true; }
+for (const k of Object.keys(sent)) if (!k.startsWith('_') && Date.now() - sent[k] > 4 * 86400000) { delete sent[k]; changed = true; }
+sent._status = status.slice(-15);
 if (changed) fs.writeFileSync(STATE, JSON.stringify(sent));
 console.log('local time', L.date, L.hhmm, L.wd, '| changed:', changed);

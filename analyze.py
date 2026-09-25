@@ -623,6 +623,12 @@ def main():
         t['exit'] = r2(exit_p) if exit_p is not None else None
         return t
 
+    old_status = {t['id']: t.get('status') for t in ptrades}
+    events = []
+    try:
+        events = old.get('events', [])
+    except Exception:
+        events = []
     ptrades = [sim(t) for t in ptrades]
     open_ids = {t['sid'] for t in ptrades if not t['closed']}
     for x in strategies:
@@ -639,6 +645,34 @@ def main():
         if (t['side'] == 'BUY' and not (t['sl'] < t['entry'] < t['tp1'])) or (t['side'] == 'SELL' and not (t['sl'] > t['entry'] > t['tp1'])): continue
         ptrades.append(sim(t)); open_ids.add(x['id'])
     ptrades = ptrades[-600:]
+
+    # ---------- events for push notifications (new trade / fill / TP / SL / expiry) ----------
+    ICON = {'BUY': '🟢', 'SELL': '🔴'}
+    for t in ptrades:
+        pst = old_status.get(t['id']); cur = t['status']
+        if pst == cur: continue
+        lv = f"Intrare {t['entry']} · SL {t['sl']} · TP1 {t['tp1']} · TP2 {t['tp2']}"
+        if pst is None:
+            if t['type'] == 'market' and cur == 'deschisă':
+                title = f"{ICON[t['side']]} {t['side']} deschis · {t['strat']}"; body = f"Strategia a intrat acum pe XAUUSD. {lv}"
+            elif cur == 'în așteptare':
+                title = f"🕒 Ordin {t['side']} pus · {t['strat']}"; body = f"Așteaptă prețul la {t['entry']}. SL {t['sl']} · TP1 {t['tp1']}"
+            else:
+                title = f"{ICON[t['side']]} {t['side']} · {t['strat']}"; body = f"{cur}. {lv}"
+        elif cur == 'deschisă':
+            title = f"{ICON[t['side']]} {t['side']} intrat · {t['strat']}"; body = f"Ordinul s-a executat la {t['entry']}. SL {t['sl']} · TP1 {t['tp1']}"
+        elif cur.startswith('TP1 atins'):
+            title = f"✅ TP1 atins · {t['strat']}"; body = f"{t['side']} de la {t['entry']}: jumătate închisă la {t['tp1']}, SL mutat la intrare."
+        elif t['closed'] and t.get('resultR') is not None:
+            won = t['resultR'] > 0
+            title = f"{'🏆' if won else '❌'} {'Câștig' if won else 'Pierdere'} {('+' if won else '')}{t['resultR']}R · {t['strat']}"
+            body = f"{t['side']} {t['entry']} → {t.get('exit')}: {cur}. {('+' if t['pnlOz'] >= 0 else '')}{t['pnlOz']}$ la 0.01 lot."
+        elif t['closed']:
+            title = f"⏸ Ordin expirat · {t['strat']}"; body = f"{t['side']} la {t['entry']} nu s-a executat în 5 zile."
+        else:
+            continue
+        events.append({'id': f"{t['id']}|{cur}", 'sid': t['sid'], 't': now_iso, 'title': title, 'body': body})
+    events = events[-80:]
 
     pstats = {}
     for t in ptrades:
@@ -671,7 +705,7 @@ def main():
         'scenarios': [scen('BUY'), scen('SELL')],
         'strategies': strategies, 'confluence': confluence, 'mtf': mtf, 'session': session_now(),
         'fib': {'high': r2(H), 'low': r2(Lw)},
-        'ptrades': ptrades, 'pstats': pstats, 'ptotal': tot,
+        'ptrades': ptrades, 'pstats': pstats, 'ptotal': tot, 'events': events,
         'story': story, 'where': where, 'plan': plan, 'avoid': avoid, 'history': history, 'track': track,
         'candles': [[b['d'], r2(b['o']), r2(b['h']), r2(b['l']), r2(b['c'])] for b in bars[-90:]],
         'ema20s': [r2(x) for x in ema(closes, 20)[-90:]],
