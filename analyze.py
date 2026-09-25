@@ -2,7 +2,7 @@
 """By ZyP — XAUUSD technical snapshot (runs in GitHub Actions, stdlib only).
 Writes xauusd.json: price, indicators, key levels and two rule-based scenarios.
 Educational, rule-based output — not financial advice."""
-import csv, io, json, math, sys, urllib.request, datetime as dt
+import csv, io, json, math, sys, urllib.request, urllib.parse, datetime as dt
 
 UA = {'User-Agent': 'Mozilla/5.0'}
 
@@ -88,6 +88,49 @@ def merge(levels, tol):
     return out  # (level, touches)
 
 def r2(x): return round(x, 2)
+
+def load_yahoo_daily(sym, rng='1y'):
+    j = json.loads(get('https://query1.finance.yahoo.com/v8/finance/chart/' + urllib.parse.quote(sym) + '?interval=1d&range=' + rng))
+    res = j['chart']['result'][0]; q = res['indicators']['quote'][0]
+    return [c for c in q['close'] if c is not None]
+
+def sma_s(v, n): return [None] * (n - 1) + [sum(v[i - n + 1:i + 1]) / n for i in range(n - 1, len(v))]
+
+def psar(bars, step=0.02, mx=0.2):
+    up = bars[1]['c'] > bars[0]['c']; af = step; ep = bars[0]['h'] if up else bars[0]['l']; sar = bars[0]['l'] if up else bars[0]['h']
+    flips = []
+    for i in range(1, len(bars)):
+        b = bars[i]; sar = sar + af * (ep - sar)
+        if up:
+            sar = min(sar, bars[i - 1]['l'], bars[i - 2]['l'] if i > 1 else bars[i - 1]['l'])
+            if b['l'] < sar: up = False; sar = ep; ep = b['l']; af = step; flips.append(i)
+            elif b['h'] > ep: ep = b['h']; af = min(mx, af + step)
+        else:
+            sar = max(sar, bars[i - 1]['h'], bars[i - 2]['h'] if i > 1 else bars[i - 1]['h'])
+            if b['h'] > sar: up = True; sar = ep; ep = b['h']; af = step; flips.append(i)
+            elif b['l'] < ep: ep = b['l']; af = min(mx, af + step)
+    return up, sar, flips
+
+def cci(bars, n=20):
+    tp = [(b['h'] + b['l'] + b['c']) / 3 for b in bars]
+    m = sum(tp[-n:]) / n; md = sum(abs(x - m) for x in tp[-n:]) / n
+    return (tp[-1] - m) / (0.015 * md) if md else 0
+
+def williams(bars, n=14):
+    hh = max(b['h'] for b in bars[-n:]); ll = min(b['l'] for b in bars[-n:])
+    return -100 * (hh - bars[-1]['c']) / max(1e-9, hh - ll)
+
+def heikin(bars):
+    out = []; po = (bars[0]['o'] + bars[0]['c']) / 2; pc = (bars[0]['o'] + bars[0]['h'] + bars[0]['l'] + bars[0]['c']) / 4
+    for b in bars[1:]:
+        c = (b['o'] + b['h'] + b['l'] + b['c']) / 4; o = (po + pc) / 2
+        out.append({'o': o, 'c': c, 'h': max(b['h'], o, c), 'l': min(b['l'], o, c)}); po, pc = o, c
+    return out
+
+def aroon(bars, n=25):
+    seg = bars[-(n + 1):]
+    ih = max(range(len(seg)), key=lambda i: seg[i]['h']); il = min(range(len(seg)), key=lambda i: seg[i]['l'])
+    return 100 * ih / n, 100 * il / n
 
 def load_h1():
     """Gold futures hourly (Yahoo) — used only for direction on H1/H4, not for levels."""
@@ -217,10 +260,27 @@ def main():
     strategies = []
     SID = [('Trend following', 'trend'), ('Suport', 'sr'), ('Breakout', 'breakout'), ('RSI', 'rsi'), ('MACD', 'macd'), ('Bollinger', 'bb'),
            ('Fibonacci', 'fib'), ('Pivot', 'pivot'), ('Smart Money', 'fvg'), ('Aliniere', 'mtf'), ('Ichimoku', 'ichi'), ('Stochastic', 'stoch'),
-           ('Price action', 'pa'), ('ADX', 'adx'), ('Supertrend', 'st'), ('London', 'london'), ('Niveluri psihologice', 'round'), ('EMA 9/21', 'ema921')]
+           ('Price action', 'pa'), ('ADX', 'adx'), ('Supertrend', 'st'), ('London', 'london'), ('Niveluri psihologice', 'round'), ('EMA 9/21', 'ema921'),
+           ('Parabolic SAR', 'psar'), ('Turtle', 'turtle'), ('Keltner', 'keltner'), ('Williams', 'wr'), ('CCI', 'cci'), ('Heikin', 'ha'),
+           ('Golden', 'gcross'), ('Divergență', 'div'), ('Dublu', 'dbl'), ('Order Block', 'ob'), ('Structura', 'bos'), ('Liquidity', 'sweep'),
+           ('Dolarul', 'dxy'), ('Randamente', 'yields'), ('Camarilla', 'cam'), ('NR7', 'nr7'), ('Gap', 'gap'), ('Elder', 'elder'), ('Aroon', 'aroon'), ('Chandelier', 'chand')]
     def S(name, verdict, strength, why, entry=None, sl=None, tp1=None, tp2=None, info=''):
         sid = next((v for k, v in SID if name.startswith(k)), 'x')
         d = {'id': sid, 'name': name, 'verdict': verdict, 'strength': strength, 'why': why, 'info': info}
+        if entry is not None:
+            # sanity: SL on the losing side, TPs on the winning side, TP2 beyond TP1
+            if verdict == 'BUY':
+                if not sl < entry: entry = None
+                else:
+                    rk = entry - sl
+                    if not tp1 > entry + 0.5 * rk: tp1 = entry + 1.5 * rk
+                    if not tp2 > tp1: tp2 = tp1 + rk
+            elif verdict == 'SELL':
+                if not sl > entry: entry = None
+                else:
+                    rk = sl - entry
+                    if not tp1 < entry - 0.5 * rk: tp1 = entry - 1.5 * rk
+                    if not tp2 < tp1: tp2 = tp1 - rk
         if entry is not None:
             d.update({'entry': r2(entry), 'sl': r2(sl), 'tp1': r2(tp1), 'tp2': r2(tp2),
                       'rr': round(abs(tp1 - entry) / max(1e-9, abs(entry - sl)), 2)})
@@ -469,6 +529,245 @@ def main():
     if cu: S('EMA 9/21 (încrucișare)', 'BUY', 2, f'EMA9 a trecut peste EMA21 în ultimele 3 zile: impuls nou în sus. EMA21 = {r2(e21s[-1])}.', e21s[-1], e21s[-1] - 0.8 * A, e21s[-1] + 1.5 * A, e21s[-1] + 3 * A)
     elif cd: S('EMA 9/21 (încrucișare)', 'SELL', 2, f'EMA9 a trecut sub EMA21 în ultimele 3 zile: impuls nou în jos. EMA21 = {r2(e21s[-1])}.', e21s[-1], e21s[-1] + 0.8 * A, e21s[-1] - 1.5 * A, e21s[-1] - 3 * A)
     else: S('EMA 9/21 (încrucișare)', 'BUY' if e9s[-1] > e21s[-1] else 'SELL', 1, 'EMA9 e ' + ('peste' if e9s[-1] > e21s[-1] else 'sub') + f' EMA21 ({r2(e9s[-1])} vs {r2(e21s[-1])}), fără încrucișare recentă.')
+
+
+    # ================= 19–38: more distinct gold strategies =================
+    try:
+        # 19. Parabolic SAR
+        ps_up, ps_v, ps_fl = psar(bars[-120:])
+        ps_new = ps_fl and ps_fl[-1] >= len(bars[-120:]) - 3
+        if ps_up: S('Parabolic SAR', 'BUY', 3 if ps_new else 2, ('SAR tocmai a întors sub preț: semnal nou de cumpărare. ' if ps_new else 'Punctele SAR sunt sub preț: trend în sus. ') + f'SAR = {r2(ps_v)}.', price, ps_v, price + 1.5 * (price - ps_v), price + 3 * (price - ps_v), 'SL pe punctul SAR, mutat zilnic.')
+        else: S('Parabolic SAR', 'SELL', 3 if ps_new else 2, ('SAR tocmai a întors peste preț: semnal nou de vânzare. ' if ps_new else 'Punctele SAR sunt peste preț: trend în jos. ') + f'SAR = {r2(ps_v)}.', price, ps_v, price - 1.5 * (ps_v - price), price - 3 * (ps_v - price), 'SL pe punctul SAR, mutat zilnic.')
+    except Exception as _e:
+        print('strategy failed:', '# 19. Parabolic SAR', _e, file=sys.stderr)
+
+    try:
+        # 20. Turtle (55-day breakout, exit 20-day)
+        h55 = max(b['h'] for b in bars[-56:-1]); l55 = min(b['l'] for b in bars[-56:-1])
+        if price > h55: S('Turtle (spargere 55 zile)', 'BUY', 3, f'Prețul a spart maximul pe 55 de zile ({r2(h55)}): sistemul Turtle cumpără.', price, price - 2 * A, price + 2 * A, price + 4 * A, 'SL la 2×ATR, ieșire la minimul pe 20 de zile.')
+        elif price < l55: S('Turtle (spargere 55 zile)', 'SELL', 3, f'Prețul a spart minimul pe 55 de zile ({r2(l55)}): sistemul Turtle vinde.', price, price + 2 * A, price - 2 * A, price - 4 * A, 'SL la 2×ATR, ieșire la maximul pe 20 de zile.')
+        else: S('Turtle (spargere 55 zile)', 'AȘTEAPTĂ', 1, f'Canal 55 de zile: {r2(l55)} – {r2(h55)}. Turtle intră doar la spargere.')
+    except Exception as _e:
+        print('strategy failed:', '# 20. Turtle (55-day breakout, exit 20-day)', _e, file=sys.stderr)
+
+    try:
+        # 21. Keltner channel (EMA20 ± 2 ATR)
+        kU, kL = e20 + 2 * A, e20 - 2 * A
+        if price > kU: S('Keltner Channel', 'BUY', 2, f'Închidere peste canalul Keltner ({r2(kU)}): impuls puternic în sus.', price, e20, price + 1.5 * (price - e20), price + 2.5 * (price - e20), 'SL la mijlocul canalului (EMA20).')
+        elif price < kL: S('Keltner Channel', 'SELL', 2, f'Închidere sub canalul Keltner ({r2(kL)}): impuls puternic în jos.', price, e20, price - 1.5 * (e20 - price), price - 2.5 * (e20 - price), 'SL la mijlocul canalului (EMA20).')
+        else: S('Keltner Channel', 'NEUTRU', 1, f'Prețul e în interiorul canalului Keltner ({r2(kL)} – {r2(kU)}).')
+    except Exception as _e:
+        print('strategy failed:', '# 21. Keltner channel (EMA20 ± 2 ATR)', _e, file=sys.stderr)
+
+    try:
+        # 22. Williams %R
+        wr_v = williams(bars)
+        if wr_v < -80: S('Williams %R', 'BUY', 1 if price < e50 else 2, f'Williams %R {round(wr_v)}: supravândut. Revenire posibilă spre mijlocul intervalului.', price, price - A, price + A, price + 1.8 * A)
+        elif wr_v > -20: S('Williams %R', 'SELL', 1 if price > e50 else 2, f'Williams %R {round(wr_v)}: supracumpărat. Corecție posibilă.', price, price + A, price - A, price - 1.8 * A)
+        else: S('Williams %R', 'NEUTRU', 1, f'Williams %R {round(wr_v)}: zonă neutră.')
+    except Exception as _e:
+        print('strategy failed:', '# 22. Williams %R', _e, file=sys.stderr)
+
+    try:
+        # 23. CCI (20)
+        cc = cci(bars)
+        if cc > 100: S('CCI (20)', 'BUY', 2 if cc < 250 else 1, f'CCI {round(cc)}: peste +100, momentum puternic în sus.' + (' Foarte întins, atenție.' if cc >= 250 else ''))
+        elif cc < -100: S('CCI (20)', 'SELL', 2 if cc > -250 else 1, f'CCI {round(cc)}: sub −100, momentum puternic în jos.' + (' Foarte întins, atenție.' if cc <= -250 else ''))
+        else: S('CCI (20)', 'NEUTRU', 1, f'CCI {round(cc)}: între −100 și +100, fără impuls clar.')
+    except Exception as _e:
+        print('strategy failed:', '# 23. CCI (20)', _e, file=sys.stderr)
+
+    try:
+        # 24. Heikin-Ashi
+        ha = heikin(bars[-40:])
+        last3 = ha[-3:]
+        greens = sum(1 for x in last3 if x['c'] > x['o']); strong_up = all(x['c'] > x['o'] and abs(x['l'] - min(x['o'], x['c'])) < 1e-6 * price + 0.05 * A for x in last3)
+        strong_dn = all(x['c'] < x['o'] and abs(x['h'] - max(x['o'], x['c'])) < 1e-6 * price + 0.05 * A for x in last3)
+        if strong_up: S('Heikin-Ashi', 'BUY', 3, 'Ultimele 3 lumânări Heikin-Ashi sunt verzi, fără fitil jos: trend în sus foarte curat.')
+        elif strong_dn: S('Heikin-Ashi', 'SELL', 3, 'Ultimele 3 lumânări Heikin-Ashi sunt roșii, fără fitil sus: trend în jos foarte curat.')
+        elif greens == 3: S('Heikin-Ashi', 'BUY', 2, 'Ultimele 3 lumânări Heikin-Ashi sunt verzi.')
+        elif greens == 0: S('Heikin-Ashi', 'SELL', 2, 'Ultimele 3 lumânări Heikin-Ashi sunt roșii.')
+        else: S('Heikin-Ashi', 'AȘTEAPTĂ', 1, 'Lumânările Heikin-Ashi alternează culorile: piață indecisă.')
+    except Exception as _e:
+        print('strategy failed:', '# 24. Heikin-Ashi', _e, file=sys.stderr)
+
+    try:
+        # 25. Golden / Death cross (SMA 50/200)
+        s50, s200 = sma_s(closes, 50), sma_s(closes, 200)
+        gc = any(s50[-k] > s200[-k] and s50[-k - 1] <= s200[-k - 1] for k in range(1, 11))
+        dc = any(s50[-k] < s200[-k] and s50[-k - 1] >= s200[-k - 1] for k in range(1, 11))
+        if gc: S('Golden Cross (SMA 50/200)', 'BUY', 3, f'Golden Cross în ultimele 10 zile: SMA50 ({r2(s50[-1])}) a trecut peste SMA200 ({r2(s200[-1])}). Semnal de trend lung.')
+        elif dc: S('Golden Cross (SMA 50/200)', 'SELL', 3, f'Death Cross în ultimele 10 zile: SMA50 ({r2(s50[-1])}) a trecut sub SMA200 ({r2(s200[-1])}).')
+        else: S('Golden Cross (SMA 50/200)', 'BUY' if s50[-1] > s200[-1] else 'SELL', 1, 'SMA50 e ' + ('peste' if s50[-1] > s200[-1] else 'sub') + f' SMA200 ({r2(s50[-1])} vs {r2(s200[-1])}), fără încrucișare recentă.')
+    except Exception as _e:
+        print('strategy failed:', '# 25. Golden / Death cross (SMA 50/200)', _e, file=sys.stderr)
+
+    try:
+        # 26. RSI divergence (last two swing lows / highs within 40 days)
+        rsi_s = []
+        for i in range(len(closes) - 45, len(closes) + 1): rsi_s.append(rsi(closes[:i]))
+        seg = bars[-45:]
+        lows = [i for i in range(2, len(seg) - 2) if all(seg[i]['l'] <= seg[j]['l'] for j in range(i - 2, i + 3))]
+        highs = [i for i in range(2, len(seg) - 2) if all(seg[i]['h'] >= seg[j]['h'] for j in range(i - 2, i + 3))]
+        dv = None
+        if len(lows) >= 2:
+            a_, b_ = lows[-2], lows[-1]
+            if seg[b_]['l'] < seg[a_]['l'] and rsi_s[b_] > rsi_s[a_] + 2: dv = ('BUY', f'Divergență bullish: prețul a făcut un minim mai jos ({r2(seg[b_]["l"])}), dar RSI un minim mai sus. Vânzătorii obosesc.', seg[b_]['l'])
+        if len(highs) >= 2 and not dv:
+            a_, b_ = highs[-2], highs[-1]
+            if seg[b_]['h'] > seg[a_]['h'] and rsi_s[b_] < rsi_s[a_] - 2: dv = ('SELL', f'Divergență bearish: prețul a făcut un maxim mai sus ({r2(seg[b_]["h"])}), dar RSI un maxim mai jos. Cumpărătorii obosesc.', seg[b_]['h'])
+        if dv and dv[0] == 'BUY': S('Divergență RSI', 'BUY', 2, dv[1], price, dv[2] - 0.3 * A, price + 1.5 * (price - dv[2] + 0.3 * A), price + 2.5 * (price - dv[2] + 0.3 * A), 'SL sub minimul divergenței.')
+        elif dv: S('Divergență RSI', 'SELL', 2, dv[1], price, dv[2] + 0.3 * A, price - 1.5 * (dv[2] + 0.3 * A - price), price - 2.5 * (dv[2] + 0.3 * A - price), 'SL peste maximul divergenței.')
+        else: S('Divergență RSI', 'NEUTRU', 1, 'Nicio divergență între preț și RSI pe ultimele ~2 luni.')
+    except Exception as _e:
+        print('strategy failed:', '# 26. RSI divergence (last two swing lows / highs within 40 days)', _e, file=sys.stderr)
+
+    try:
+        # 27. Double top / double bottom
+        dbl = None
+        if len(highs) >= 2 and abs(seg[highs[-1]]['h'] - seg[highs[-2]]['h']) <= 0.35 * A and highs[-1] - highs[-2] >= 5:
+            neck = min(b['l'] for b in seg[highs[-2]:highs[-1] + 1]); top = max(seg[highs[-1]]['h'], seg[highs[-2]]['h'])
+            dbl = ('SELL', f'Dublu maxim (double top) la ~{r2(top)}, linia gâtului la {r2(neck)}.', neck, top)
+        if len(lows) >= 2 and abs(seg[lows[-1]]['l'] - seg[lows[-2]]['l']) <= 0.35 * A and lows[-1] - lows[-2] >= 5 and not dbl:
+            neck = max(b['h'] for b in seg[lows[-2]:lows[-1] + 1]); bot = min(seg[lows[-1]]['l'], seg[lows[-2]]['l'])
+            dbl = ('BUY', f'Dublu minim (double bottom) la ~{r2(bot)}, linia gâtului la {r2(neck)}.', neck, bot)
+        if dbl:
+            side, txt, neck, ext = dbl; hgt = abs(neck - ext)
+            broke = (price < neck) if side == 'SELL' else (price > neck)
+            if broke: S('Dublu maxim / dublu minim', side, 3, txt + ' Linia gâtului a fost spartă: formația e confirmată.', neck, ext + (0.2 * A if side == 'SELL' else -0.2 * A), neck - hgt if side == 'SELL' else neck + hgt, neck - 1.6 * hgt if side == 'SELL' else neck + 1.6 * hgt, 'Țintă = înălțimea formației proiectată de la gât.')
+            else: S('Dublu maxim / dublu minim', 'AȘTEAPTĂ', 2, txt + ' Se confirmă doar când prețul închide dincolo de linia gâtului.')
+        else: S('Dublu maxim / dublu minim', 'NEUTRU', 1, 'Nicio formație de dublu maxim sau dublu minim recentă.')
+    except Exception as _e:
+        print('strategy failed:', '# 27. Double top / double bottom', _e, file=sys.stderr)
+
+    try:
+        # 28. Order Block (SMC): last opposite candle before a strong impulse
+        ob = None
+        for i in range(len(bars) - 3, len(bars) - 40, -1):
+            b, n1 = bars[i], bars[i + 1]
+            move = n1['c'] - n1['o']
+            if b['c'] < b['o'] and move > 1.2 * A * 0.6 and n1['c'] > b['h']: ob = ('BUY', b['l'], b['h']); break
+            if b['c'] > b['o'] and -move > 1.2 * A * 0.6 and n1['c'] < b['l']: ob = ('SELL', b['l'], b['h']); break
+        if ob:
+            side, lo_, hi_ = ob; inside = lo_ - 0.1 * A <= price <= hi_ + 0.1 * A
+            if side == 'BUY': S('Order Block (Smart Money)', 'BUY' if inside else 'AȘTEAPTĂ', 2 if inside else 1, f'Order block bullish (zonă de cumpărare instituțională) la {r2(lo_)} – {r2(hi_)}.' + (' Prețul e chiar în zonă.' if inside else ' Se așteaptă revenirea prețului în zonă.'), (lo_ + hi_) / 2, lo_ - 0.4 * A, (lo_ + hi_) / 2 + 1.5 * A, (lo_ + hi_) / 2 + 3 * A)
+            else: S('Order Block (Smart Money)', 'SELL' if inside else 'AȘTEAPTĂ', 2 if inside else 1, f'Order block bearish (zonă de vânzare instituțională) la {r2(lo_)} – {r2(hi_)}.' + (' Prețul e chiar în zonă.' if inside else ' Se așteaptă revenirea prețului în zonă.'), (lo_ + hi_) / 2, hi_ + 0.4 * A, (lo_ + hi_) / 2 - 1.5 * A, (lo_ + hi_) / 2 - 3 * A)
+        else: S('Order Block (Smart Money)', 'NEUTRU', 1, 'Niciun order block clar în ultimele ~40 de zile.')
+    except Exception as _e:
+        print('strategy failed:', '# 28. Order Block (SMC): last opposite candle before a strong impulse', _e, file=sys.stderr)
+
+    try:
+        # 29. Market structure: Break of Structure / Change of Character
+        hs_ = [seg[i]['h'] for i in highs[-3:]]; ls_ = [seg[i]['l'] for i in lows[-3:]]
+        if len(hs_) >= 2 and len(ls_) >= 2:
+            hh_hl = hs_[-1] > hs_[-2] and ls_[-1] > ls_[-2]; lh_ll = hs_[-1] < hs_[-2] and ls_[-1] < ls_[-2]
+            if hh_hl and price < ls_[-1]: S('Structura pieței (BOS / CHoCH)', 'SELL', 3, f'CHoCH: după maxime și minime tot mai sus, prețul a spart ultimul minim ({r2(ls_[-1])}). Posibilă schimbare de trend în jos.')
+            elif lh_ll and price > hs_[-1]: S('Structura pieței (BOS / CHoCH)', 'BUY', 3, f'CHoCH: după maxime și minime tot mai jos, prețul a spart ultimul maxim ({r2(hs_[-1])}). Posibilă schimbare de trend în sus.')
+            elif hh_hl: S('Structura pieței (BOS / CHoCH)', 'BUY', 2, f'Structură ascendentă: maxime și minime tot mai sus. Ultimul minim de apărat: {r2(ls_[-1])}.')
+            elif lh_ll: S('Structura pieței (BOS / CHoCH)', 'SELL', 2, f'Structură descendentă: maxime și minime tot mai jos. Ultimul maxim de apărat: {r2(hs_[-1])}.')
+            else: S('Structura pieței (BOS / CHoCH)', 'AȘTEAPTĂ', 1, 'Structură mixtă, fără maxime/minime ordonate.')
+        else: S('Structura pieței (BOS / CHoCH)', 'NEUTRU', 1, 'Prea puține puncte de swing pentru a citi structura.')
+    except Exception as _e:
+        print('strategy failed:', '# 29. Market structure: Break of Structure / Change of Character', _e, file=sys.stderr)
+
+    try:
+        # 30. Liquidity sweep of previous day high/low
+        pdh, pdl = bars[-2]['h'], bars[-2]['l']; tb = bars[-1]
+        if tb['h'] > pdh and price < pdh: S('Liquidity sweep (maxim/minim ieri)', 'SELL', 2, f'Azi prețul a trecut peste maximul de ieri ({r2(pdh)}), a luat stop-urile și a revenit sub el: capcană pentru cumpărători.', price, tb['h'] + 0.2 * A, pdl + 0.3 * (pdh - pdl), pdl, 'SL peste maximul de azi.')
+        elif tb['l'] < pdl and price > pdl: S('Liquidity sweep (maxim/minim ieri)', 'BUY', 2, f'Azi prețul a coborât sub minimul de ieri ({r2(pdl)}), a luat stop-urile și a revenit peste el: capcană pentru vânzători.', price, tb['l'] - 0.2 * A, pdh - 0.3 * (pdh - pdl), pdh, 'SL sub minimul de azi.')
+        else: S('Liquidity sweep (maxim/minim ieri)', 'AȘTEAPTĂ', 1, f'Maximul de ieri {r2(pdh)}, minimul de ieri {r2(pdl)}. Se urmărește o trecere falsă dincolo de ele.')
+    except Exception as _e:
+        print('strategy failed:', '# 30. Liquidity sweep of previous day high/low', _e, file=sys.stderr)
+
+    try:
+        # 31. US Dollar (DXY) — gold usually moves opposite
+        try:
+            dxy = load_yahoo_daily('DX-Y.NYB', '6mo'); d20 = sum(dxy[-20:]) / 20; dchg = (dxy[-1] - dxy[-6]) / dxy[-6] * 100
+            if dxy[-1] < d20 and dchg < 0: S('Dolarul american (DXY)', 'BUY', 2, f'Indicele dolarului (DXY {round(dxy[-1], 2)}) scade ({round(dchg, 2)}% pe 5 zile) și e sub media de 20. Un dolar slab ajută de obicei aurul.')
+            elif dxy[-1] > d20 and dchg > 0: S('Dolarul american (DXY)', 'SELL', 2, f'Indicele dolarului (DXY {round(dxy[-1], 2)}) crește (+{round(dchg, 2)}% pe 5 zile) și e peste media de 20. Un dolar puternic apasă de obicei aurul.')
+            else: S('Dolarul american (DXY)', 'NEUTRU', 1, f'DXY {round(dxy[-1], 2)}, fără direcție clară ({round(dchg, 2)}% pe 5 zile).')
+        except Exception as e:
+            S('Dolarul american (DXY)', 'NEUTRU', 1, 'Datele despre dolar nu sunt disponibile acum.')
+    except Exception as _e:
+        print('strategy failed:', '# 31. US Dollar (DXY) — gold usually moves opposite', _e, file=sys.stderr)
+
+    try:
+        # 32. US 10-year yields — gold usually moves opposite to real yields
+        try:
+            ty = load_yahoo_daily('^TNX', '6mo'); tchg = ty[-1] - ty[-6]
+            if tchg < -0.05: S('Randamente SUA 10 ani', 'BUY', 2, f'Randamentul obligațiunilor SUA pe 10 ani a scăzut la {round(ty[-1], 2)}% ({round(tchg, 2)} pe 5 zile). Randamente mai mici fac aurul mai atractiv.')
+            elif tchg > 0.05: S('Randamente SUA 10 ani', 'SELL', 2, f'Randamentul obligațiunilor SUA pe 10 ani a crescut la {round(ty[-1], 2)}% (+{round(tchg, 2)} pe 5 zile). Randamente mai mari concurează aurul.')
+            else: S('Randamente SUA 10 ani', 'NEUTRU', 1, f'Randamentul pe 10 ani stă pe loc ({round(ty[-1], 2)}%).')
+        except Exception as e:
+            S('Randamente SUA 10 ani', 'NEUTRU', 1, 'Datele despre randamente nu sunt disponibile acum.')
+    except Exception as _e:
+        print('strategy failed:', '# 32. US 10-year yields — gold usually moves opposite to real yields', _e, file=sys.stderr)
+
+    try:
+        # 33. Camarilla pivots (intraday reversal/breakout levels)
+        yh, yl, yc = bars[-2]['h'], bars[-2]['l'], bars[-2]['c']; rg = yh - yl
+        H3, L3, H4, L4 = yc + rg * 1.1 / 4, yc - rg * 1.1 / 4, yc + rg * 1.1 / 2, yc - rg * 1.1 / 2
+        if price > H4: S('Camarilla pivots', 'BUY', 2, f'Peste H4 ({r2(H4)}): spargere Camarilla, se merge cu impulsul.', price, H3, price + (H4 - H3) * 2, price + (H4 - H3) * 3.5)
+        elif price < L4: S('Camarilla pivots', 'SELL', 2, f'Sub L4 ({r2(L4)}): spargere Camarilla în jos.', price, L3, price - (L3 - L4) * 2, price - (L3 - L4) * 3.5)
+        elif price >= H3: S('Camarilla pivots', 'SELL', 1, f'Între H3 ({r2(H3)}) și H4 ({r2(H4)}): zonă clasică de vânzare la respingere.', H3, H4 + 0.1 * A, yc, L3)
+        elif price <= L3: S('Camarilla pivots', 'BUY', 1, f'Între L4 ({r2(L4)}) și L3 ({r2(L3)}): zonă clasică de cumpărare la respingere.', L3, L4 - 0.1 * A, yc, H3)
+        else: S('Camarilla pivots', 'AȘTEAPTĂ', 1, f'Prețul e între L3 ({r2(L3)}) și H3 ({r2(H3)}). Se tranzacționează la atingerea lor.')
+    except Exception as _e:
+        print('strategy failed:', '# 33. Camarilla pivots (intraday reversal/breakout levels)', _e, file=sys.stderr)
+
+    try:
+        # 34. NR7 (narrowest range of 7 days) breakout
+        rngs = [b['h'] - b['l'] for b in bars[-8:-1]]
+        if rngs[-1] == min(rngs):
+            nh_, nl_ = bars[-2]['h'], bars[-2]['l']
+            if price > nh_: S('NR7 (zi îngustă)', 'BUY', 2, f'Ieri a fost cea mai îngustă zi din ultimele 7 (NR7), iar azi prețul i-a spart maximul ({r2(nh_)}).', nh_, nl_, nh_ + 2 * (nh_ - nl_), nh_ + 4 * (nh_ - nl_))
+            elif price < nl_: S('NR7 (zi îngustă)', 'SELL', 2, f'Ieri a fost cea mai îngustă zi din ultimele 7 (NR7), iar azi prețul i-a spart minimul ({r2(nl_)}).', nl_, nh_, nl_ - 2 * (nh_ - nl_), nl_ - 4 * (nh_ - nl_))
+            else: S('NR7 (zi îngustă)', 'AȘTEAPTĂ', 2, f'Ieri a fost cea mai îngustă zi din 7: urmează de obicei o mișcare mare. Cumpărare peste {r2(nh_)}, vânzare sub {r2(nl_)}.')
+        else: S('NR7 (zi îngustă)', 'NEUTRU', 1, 'Ieri n-a fost o zi NR7 (cea mai îngustă din 7).')
+    except Exception as _e:
+        print('strategy failed:', '# 34. NR7 (narrowest range of 7 days) breakout', _e, file=sys.stderr)
+
+    try:
+        # 35. Weekend gap
+        d_last = dt.date.fromisoformat(bars[-1]['d']); d_prev = dt.date.fromisoformat(bars[-2]['d'])
+        gapv = bars[-1]['o'] - bars[-2]['c']
+        if (d_last - d_prev).days >= 3 and abs(gapv) > 0.15 * A:
+            filled = (bars[-1]['l'] <= bars[-2]['c']) if gapv > 0 else (bars[-1]['h'] >= bars[-2]['c'])
+            if filled: S('Gap de weekend', 'NEUTRU', 1, f'Gap-ul de luni ({r2(gapv)} $) a fost deja umplut.')
+            elif gapv > 0: S('Gap de weekend', 'SELL', 1, f'Luni aurul a deschis cu {r2(gapv)} $ peste închiderea de vineri. Gap-urile se umplu des: țintă {r2(bars[-2]["c"])}.', price, price + 0.8 * A, bars[-2]['c'], bars[-2]['c'] - 0.5 * A)
+            else: S('Gap de weekend', 'BUY', 1, f'Luni aurul a deschis cu {r2(-gapv)} $ sub închiderea de vineri. Gap-urile se umplu des: țintă {r2(bars[-2]["c"])}.', price, price - 0.8 * A, bars[-2]['c'], bars[-2]['c'] + 0.5 * A)
+        else: S('Gap de weekend', 'NEUTRU', 1, 'Niciun gap de weekend deschis acum.')
+    except Exception as _e:
+        print('strategy failed:', '# 35. Weekend gap', _e, file=sys.stderr)
+
+    try:
+        # 36. Elder Impulse (EMA13 slope + MACD histogram slope)
+        ml_e, sg_e = macd(closes)
+        e13 = ema(closes, 13); hist = [a - b for a, b in zip(ml_e[-3:], sg_e[-3:])]
+        up13 = e13[-1] > e13[-2]; uph = hist[-1] > hist[-2]
+        if up13 and uph: S('Elder Impulse', 'BUY', 2, 'Bară verde Elder: EMA13 urcă și histograma MACD crește. Cumpărătorii controlează.')
+        elif (not up13) and (not uph): S('Elder Impulse', 'SELL', 2, 'Bară roșie Elder: EMA13 coboară și histograma MACD scade. Vânzătorii controlează.')
+        else: S('Elder Impulse', 'AȘTEAPTĂ', 1, 'Bară albastră Elder: semnale amestecate, nu se deschid poziții noi.')
+    except Exception as _e:
+        print('strategy failed:', '# 36. Elder Impulse (EMA13 slope + MACD histogram slope)', _e, file=sys.stderr)
+
+    try:
+        # 37. Aroon (25)
+        aU, aD = aroon(bars)
+        if aU > 70 and aD < 30: S('Aroon (25)', 'BUY', 2, f'Aroon Up {round(aU)} / Down {round(aD)}: maxime recente, trend în sus.')
+        elif aD > 70 and aU < 30: S('Aroon (25)', 'SELL', 2, f'Aroon Down {round(aD)} / Up {round(aU)}: minime recente, trend în jos.')
+        else: S('Aroon (25)', 'NEUTRU', 1, f'Aroon Up {round(aU)} / Down {round(aD)}: fără trend clar.')
+    except Exception as _e:
+        print('strategy failed:', '# 37. Aroon (25)', _e, file=sys.stderr)
+
+    try:
+        # 38. Chandelier exit (22, 3×ATR) — trend-following trailing stop
+        ch_long = max(b['h'] for b in bars[-22:]) - 3 * A; ch_short = min(b['l'] for b in bars[-22:]) + 3 * A
+        if price > ch_long and price > e50: S('Chandelier Exit', 'BUY', 2, f'Prețul e peste linia Chandelier pentru long ({r2(ch_long)}) și peste EMA50: trendul în sus rămâne valid.', price, ch_long, price + 1.5 * (price - ch_long), price + 2.5 * (price - ch_long), 'SL = linia Chandelier, mutată zilnic.')
+        elif price < ch_short and price < e50: S('Chandelier Exit', 'SELL', 2, f'Prețul e sub linia Chandelier pentru short ({r2(ch_short)}) și sub EMA50: trendul în jos rămâne valid.', price, ch_short, price - 1.5 * (ch_short - price), price - 2.5 * (ch_short - price), 'SL = linia Chandelier, mutată zilnic.')
+        else: S('Chandelier Exit', 'NEUTRU', 1, f'Liniile Chandelier: long {r2(ch_long)}, short {r2(ch_short)}. Fără semnal clar.')
+    except Exception as _e:
+        print('strategy failed:', '# 38. Chandelier exit (22, 3×ATR) — trend-following trailing stop', _e, file=sys.stderr)
 
     buy_w = sum(x['strength'] for x in strategies if x['verdict'] == 'BUY')
     sell_w = sum(x['strength'] for x in strategies if x['verdict'] == 'SELL')

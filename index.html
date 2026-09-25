@@ -2879,6 +2879,46 @@
       how:['Notează maximul și minimul dintre 00:00 și 07:00 UTC.','BUY la spargerea maximului, SELL la spargerea minimului.','SL la mijlocul intervalului.','TP = 1× și 2× mărimea intervalului.','Dacă nu se sparge până la prânz, anulezi.'] },
     round:{ ic:'🔢', short:'Niveluri rotunde', what:'Traderii pun ordine la prețuri rotunde (4300, 4350). Acolo prețul reacționează des: se oprește sau accelerează.',
       how:['Folosește nivelurile rotunde ca ținte (TP) și nu pune SL chiar pe ele.','Nivelurile de 100 sunt mai puternice decât cele de 50.','Respingere la nivel rotund + altă strategie = semnal mai bun.','O spargere clară a unui nivel de 100 duce deseori spre următorul.'] },
+    psar:{ ic:'🎯', short:'Parabolic SAR', what:'Puncte care urmăresc prețul: sub preț = trend în sus, peste preț = trend în jos. Când sar pe partea cealaltă, trendul s-a întors.',
+      how:['Intri în direcția punctelor după ce își schimbă partea.','SL pe ultimul punct SAR.','Mută SL-ul pe fiecare punct nou, în fiecare zi.','Ieși când punctele trec pe partea cealaltă.','Merge bine în trend, dă multe semnale false în piață laterală (verifică ADX).'] },
+    turtle:{ ic:'🐢', short:'Turtle 55', what:'Sistemul legendar al traderilor „Turtle” (anii ’80): cumperi la spargerea maximului pe 55 de zile și vinzi la spargerea minimului.',
+      how:['BUY când prețul trece de maximul ultimelor 55 de zile.','SELL când trece de minimul ultimelor 55 de zile.','SL la 2×ATR de la intrare.','Ieși când prețul atinge extrema opusă pe 20 de zile.','Acceptă multe pierderi mici: câștigă din puținele trenduri mari.'] },
+    keltner:{ ic:'📏', short:'Keltner', what:'Canal în jurul EMA20, lat de 2×ATR. O închidere în afara canalului arată un impuls puternic.',
+      how:['Închidere peste canal = impuls în sus, în jos invers.','Intri la închiderea lumânării, nu în mijlocul ei.','SL la mijlocul canalului (EMA20).','Ieși când prețul revine în interiorul canalului.'] },
+    wr:{ ic:'📉', short:'Williams %R', what:'Oscilator rapid care arată unde e prețul față de maximul și minimul pe 14 zile. Sub −80 = supravândut, peste −20 = supracumpărat.',
+      how:['Sub −80: caută cumpărări, mai ales la suport.','Peste −20: caută vânzări, mai ales la rezistență.','Intri când iese din zona extremă.','Nu te opune unui trend puternic.'] },
+    cci:{ ic:'🧭', short:'CCI', what:'Commodity Channel Index: măsoară cât de departe e prețul de media lui. Peste +100 = impuls în sus, sub −100 = impuls în jos.',
+      how:['Trecerea peste +100 = semnal de cumpărare pe impuls.','Trecerea sub −100 = semnal de vânzare pe impuls.','Peste ±250 prețul e foarte întins: nu intra târziu.','Ieși când CCI revine spre 0.'] },
+    ha:{ ic:'🟩', short:'Heikin-Ashi', what:'Lumânări „netezite” care filtrează zgomotul. Mai multe lumânări verzi la rând fără fitil jos = trend în sus curat.',
+      how:['Lumânări verzi fără fitil jos = rămâi pe BUY.','Lumânări roșii fără fitil sus = rămâi pe SELL.','Lumânările mici cu fitile în ambele părți arată indecizie: ieși sau așteaptă.','Folosește-le pentru a ține poziția, nu pentru intrări la preț exact.'] },
+    gcross:{ ic:'✨', short:'Golden Cross', what:'Când media de 50 de zile trece peste cea de 200 (Golden Cross), începe de obicei un trend lung în sus. Invers e Death Cross.',
+      how:['Golden Cross = favorizezi BUY săptămâni sau luni.','Death Cross = favorizezi SELL.','E un semnal lent: folosește-l pentru direcție, nu pentru intrare.','Intrările le cauți cu strategii mai rapide (EMA 9/21, S/R).'] },
+    div:{ ic:'↗️', short:'Divergență RSI', what:'Când prețul face un minim nou, dar RSI nu, vânzătorii obosesc (divergență bullish). Invers la maxime (bearish).',
+      how:['Compară ultimele două minime sau maxime ale prețului cu cele ale RSI.','Divergență bullish la suport = cumpărare.','Divergență bearish la rezistență = vânzare.','Așteaptă o lumânare de confirmare.','SL dincolo de extrema divergenței.'] },
+    dbl:{ ic:'〰️', short:'Dublu max/min', what:'Formație clasică: prețul lovește de două ori același nivel și nu trece. Dublu maxim = întoarcere în jos, dublu minim = în sus.',
+      how:['Identifică cele două vârfuri (sau funduri) la același nivel.','Marchează „linia gâtului” dintre ele.','Intri doar după închiderea dincolo de linia gâtului.','Ținta = înălțimea formației, proiectată de la gât.','SL dincolo de vârfuri sau funduri.'] },
+    ob:{ ic:'🏦', short:'Order Block', what:'Smart Money: ultima lumânare opusă înainte de o mișcare puternică. Acolo au intrat instituțiile, iar prețul revine des în zona asta.',
+      how:['Order block bullish = zonă de cumpărare când prețul revine în ea.','Order block bearish = zonă de vânzare.','Intri la prima revenire în zonă, cu confirmare pe H1.','SL puțin dincolo de zonă.','Nu mai e valid după ce a fost atins de câteva ori.'] },
+    bos:{ ic:'🏗️', short:'Structura', what:'Citești trendul din maxime și minime: tot mai sus = trend în sus. BOS = continuare, CHoCH = prima spargere în sens opus (posibilă întoarcere).',
+      how:['Maxime și minime tot mai sus = cauți doar BUY.','Maxime și minime tot mai jos = cauți doar SELL.','CHoCH (spargerea ultimului minim într-un trend în sus) = semnal de atenție sau de schimbare.','Intră după retestul nivelului spart.'] },
+    sweep:{ ic:'🪤', short:'Liquidity sweep', what:'Prețul trece puțin peste maximul (sau sub minimul) de ieri, declanșează stop-urile altora, apoi se întoarce. E o capcană care dă intrări bune în sens opus.',
+      how:['Urmărește maximul și minimul de ieri.','Dacă prețul trece de ele și închide înapoi, e un sweep.','Intri în sens opus, cu SL dincolo de fitil.','Ținta e partea opusă a zilei de ieri.'] },
+    dxy:{ ic:'💵', short:'Dolarul (DXY)', what:'Aurul e cotat în dolari: când dolarul se întărește, aurul tinde să scadă, iar când slăbește, aurul tinde să crească.',
+      how:['DXY în scădere = vânt din spate pentru BUY pe aur.','DXY în creștere = vânt din spate pentru SELL.','Folosește-l ca filtru: nu cumpăra aur când dolarul explodează.','Știrile USD (roșii) mișcă ambele.'] },
+    yields:{ ic:'🏛️', short:'Randamente 10Y', what:'Aurul nu plătește dobândă. Când randamentele obligațiunilor SUA cresc, aurul devine mai puțin atractiv, iar când scad, mai atractiv.',
+      how:['Randamente în scădere = favorabil pentru aur.','Randamente în creștere = presiune pe aur.','E un factor macro: îți dă contextul săptămânii, nu intrarea exactă.'] },
+    cam:{ ic:'📐', short:'Camarilla', what:'Pivoți intraday calculați din ziua de ieri. H3/L3 sunt zone de întoarcere, H4/L4 zone de spargere.',
+      how:['La H3: caută vânzare cu respingere, SL peste H4.','La L3: caută cumpărare cu respingere, SL sub L4.','Spargere peste H4 sau sub L4: mergi cu impulsul.','E pentru intraday: închide până seara.'] },
+    nr7:{ ic:'🗜️', short:'NR7', what:'Ziua cu cel mai mic interval din ultimele 7. După o comprimare ca asta vine de obicei o expansiune mare.',
+      how:['Marchează maximul și minimul zilei NR7.','Pui ordin de cumpărare peste maxim și de vânzare sub minim.','Când unul se execută, îl anulezi pe celălalt.','SL la capătul opus al zilei NR7.'] },
+    gap:{ ic:'🕳️', short:'Gap weekend', what:'Luni aurul poate deschide mai sus sau mai jos decât a închis vineri. Aceste „goluri” se umplu des în primele zile.',
+      how:['Gap în sus = posibilă vânzare spre închiderea de vineri.','Gap în jos = posibilă cumpărare spre închiderea de vineri.','Nu merge contra unui gap făcut de o știre mare din weekend.','Ținta e închiderea de vineri.'] },
+    elder:{ ic:'🔋', short:'Elder Impulse', what:'Sistemul lui Alexander Elder: combină direcția EMA13 cu histograma MACD. Verde = cumpărătorii au impuls, roșu = vânzătorii, albastru = neutru.',
+      how:['Pe bară verde nu vinzi.','Pe bară roșie nu cumperi.','Pe bară albastră poți intra în orice direcție, cu alte confirmări.','Se combină bine cu timeframe-uri multiple (D1 + H4).'] },
+    aroon:{ ic:'📡', short:'Aroon', what:'Arată cât de recent a făcut prețul un maxim sau un minim în ultimele 25 de zile. Aroon Up mare = maxime recente = trend în sus.',
+      how:['Up peste 70 și Down sub 30 = trend în sus.','Down peste 70 și Up sub 30 = trend în jos.','Ambele joase = piață laterală.','Încrucișarea liniilor arată schimbarea trendului.'] },
+    chand:{ ic:'🕯', short:'Chandelier', what:'Stop mobil agățat de cel mai mare maxim pe 22 de zile, minus 3×ATR. Te ține în trend și te scoate când se întoarce.',
+      how:['Cât timp prețul e peste linia long, trendul în sus e valid.','Folosește linia ca Stop Loss mobil.','Mut-o în fiecare zi, doar în direcția tranzacției.','Ieși când prețul închide dincolo de linie.'] },
     ema921:{ ic:'⚡', short:'EMA 9/21', what:'Varianta rapidă a strategiei de trend: încrucișarea mediilor de 9 și 21 de zile arată impulsul pe termen scurt.',
       how:['EMA9 trece peste EMA21 = impuls în sus; sub = în jos.','Intrare la prima retragere spre EMA21 după încrucișare.','SL puțin dincolo de EMA21.','Mai sigur când e în aceeași direcție cu EMA200.'] }
   };
@@ -3353,7 +3393,7 @@
         '<div class="hint">Verificat automat pe lumânările zilnice, după publicarea fiecărui plan. Rezultatele trecute nu garantează rezultate viitoare.</div></div>';
     }
     html += '\u0001foot\u0002';
-    html += '<div class="hint">Analiză automată pe reguli: 18 strategii (trend EMA, S/R, breakout, RSI, MACD, Bollinger, Fibonacci, pivot, FVG, timeframe-uri, Ichimoku, Stochastic, lumânări, ADX, Supertrend, London breakout, niveluri rotunde, EMA 9/21), actualizată din oră în oră · ' + g.source + ' · ' +
+    html += '<div class="hint">Analiză automată pe reguli: 38 de strategii tehnice, Smart Money și macro (dolar, randamente), actualizată din oră în oră · ' + g.source + ' · ' +
       upd.getDate() + ' ' + monthShort[upd.getMonth()] + ' ' + hhmm(upd) + '. Nu e sfat financiar: e un punct de plecare. Confirmă pe grafic și decide tu. Prețul brokerului poate diferi cu câțiva dolari.</div>';
     var parts = html.split(/\u0001(\w+)\u0002/), B = { top:'' }, key = 'top';
     for(var pi=0; pi<parts.length; pi++){ if(pi % 2 === 1){ key = parts[pi]; } else { B[key] = (B[key] || '') + parts[pi]; } }
