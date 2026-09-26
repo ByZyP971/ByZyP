@@ -2,7 +2,7 @@
 """By ZyP — XAUUSD technical snapshot (runs in GitHub Actions, stdlib only).
 Writes xauusd.json: price, indicators, key levels and two rule-based scenarios.
 Educational, rule-based output — not financial advice."""
-import csv, io, json, math, sys, urllib.request, urllib.parse, datetime as dt
+import csv, io, json, math, os, sys, urllib.request, urllib.parse, datetime as dt
 
 UA = {'User-Agent': 'Mozilla/5.0'}
 
@@ -826,9 +826,12 @@ def main():
 
     # ---------- history: how did previous plans do? ----------
     history = []
+    old = {}
+    old_sig = None
     ptrades = []
     try:
         with open('xauusd.json') as f: old = json.load(f)
+        old_sig = json.dumps([[t.get('id'), t.get('status')] for t in old.get('ptrades', [])] + [e.get('id') for e in old.get('events', [])])
         history = old.get('history', [])
         ptrades = old.get('ptrades', [])
     except Exception:
@@ -1039,6 +1042,14 @@ def main():
         'ema20s': [r2(x) for x in ema(closes, 20)[-90:]],
         'ema50s': [r2(x) for x in ema(closes, 50)[-90:]],
     }
+    # QUICK mode (every ~5 min, from the notifications workflow): only rewrite the file when a test trade changed
+    # or the last saved analysis is older than 25 min — keeps GitHub Pages rebuilds low while alerts stay fast.
+    if os.environ.get('QUICK') == '1' and old:
+        sig = lambda d: json.dumps([[t.get('id'), t.get('status')] for t in d.get('ptrades', [])] + [e.get('id') for e in d.get('events', [])])
+        try: age_min = (dt.datetime.utcnow() - dt.datetime.strptime(old.get('updated', ''), '%Y-%m-%dT%H:%M:%SZ')).total_seconds() / 60
+        except Exception: age_min = 999
+        if old_sig == sig(out) and age_min < 25:
+            print('quick: nimic nou la tranzacții, analiza salvată e de acum', round(age_min), 'min'); return
     with open('xauusd.json', 'w') as f: json.dump(out, f, ensure_ascii=False)
     print('ok', src, out['price'], bias, score)
 

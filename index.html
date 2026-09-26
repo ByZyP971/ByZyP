@@ -7,11 +7,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="By ZyP">
-<meta name="theme-color" content="#05080D">
+<meta name="theme-color" content="#0A0A0B">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
 <title>By ZyP</title>
 <style>
   :root{
@@ -890,6 +893,162 @@
   .fit-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px; }
   .fit-stats div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:10px; padding:8px 4px; }
   .fit-stats b{ display:block; font-family:var(--mono); font-size:14px; } .fit-stats span{ font-size:9.5px; color:var(--text-faint); font-family:var(--mono); text-transform:uppercase; letter-spacing:.06em; }
+
+
+  /* =====================================================================
+     DESIGN 3 · „Private” — black lacquer, champagne gold, serif display
+     ===================================================================== */
+  :root{
+    --bg:#0A0A0B; --bg-card:#131315; --bg-card-2:#0E0E10; --bg-raised:#19191C;
+    --line:#2A2721; --text:#F4EFE6; --text-dim:#AAA397; --text-faint:#6F695F;
+    --accent:#5FBF8F; --accent-ink:#1A1307; --gold:#D6B26E; --danger:#E0685C;
+    --gold-hi:#F1DDA8; --gold-lo:#A87D3A;
+    --gold-grad:linear-gradient(135deg, #F1DDA8 0%, #D6B26E 45%, #A87D3A 100%);
+    --hair:color-mix(in srgb, var(--gold) 16%, transparent);
+    --serif:"Cormorant Garamond", "Iowan Old Style", "Palatino", Georgia, serif;
+    --body:"Manrope", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --display:var(--serif);
+    --mono:"Manrope", -apple-system, system-ui, sans-serif;
+    --r-card:20px; --r-tile:14px;
+  }
+  :root[data-theme="light"]{
+    --bg:#F1F0EC; --bg-card:#FFFFFF; --bg-card-2:#F6F5F1; --bg-raised:#FFFFFF;
+    --line:#E3DED3; --text:#16140F; --text-dim:#5F594E; --text-faint:#9A9385;
+    --accent:#2F8A5C; --accent-ink:#1A1307; --gold:#9C7630; --danger:#B64A3C;
+    --gold-hi:#C9A45E; --gold-lo:#7C5A1F; --hair:color-mix(in srgb, var(--gold) 22%, transparent);
+  }
+  body{ font-family:var(--body); font-feature-settings:"tnum" 1; letter-spacing:.003em; }
+  body::before{ background:none !important; }
+  .app{ background:radial-gradient(ellipse 110% 360px at 50% -120px, color-mix(in srgb, var(--gold) 10%, transparent), transparent 72%); }
+
+  /* ---- header ---- */
+  header{ background:color-mix(in srgb, var(--bg) 84%, transparent); box-shadow:none; border-bottom:1px solid var(--hair); padding-bottom:12px; }
+  h1{ font-family:var(--serif); font-size:26px; font-weight:600; letter-spacing:.01em; line-height:1; }
+  .brand-sub{ font-size:11.5px; color:var(--text-faint); margin-top:4px; }
+  .brand-mark{ border-radius:11px; box-shadow:0 0 0 1px var(--hair); }
+  .theme-btn{ background:transparent; border:1px solid var(--hair); border-radius:50%; box-shadow:none; color:var(--gold); }
+
+  /* ---- surfaces ---- */
+  .card{ background:linear-gradient(180deg, color-mix(in srgb, var(--bg-raised) 70%, var(--bg-card)), var(--bg-card)) !important;
+    border:1px solid var(--line); border-radius:var(--r-card); box-shadow:0 1px 0 rgba(255,255,255,.035) inset, 0 24px 48px -32px rgba(0,0,0,.9);
+    padding:20px; margin-bottom:16px; }
+  :root[data-theme="light"] .card{ box-shadow:0 1px 2px rgba(22,20,15,.05), 0 18px 40px -30px rgba(22,20,15,.25); }
+  .card::before{ display:block; left:24px; right:24px; background:linear-gradient(90deg, transparent, var(--hair), transparent); opacity:1; }
+  .card-title{ font-family:var(--serif); font-size:22px; font-weight:600; letter-spacing:.005em; text-transform:none; color:var(--text);
+    margin:0 0 14px; gap:0; line-height:1.1; }
+  .card-title::before{ display:none; }
+  .sec-h{ font-family:var(--serif); font-size:27px; font-weight:600; letter-spacing:.005em; text-transform:none; color:var(--text); margin:30px 4px 12px; line-height:1.05; }
+  .hint{ color:var(--text-faint); font-size:12px; }
+
+  /* small labels: sentence case, no tracked caps */
+  .donut-c span, .eq-start label, .gr-cat, .mm-slot, .mm2-h, .news-day, .prof-chip span, .prof-sub, .run-sess b, .sp-sub, .spt-l, .spt-meta span, .today-pl-l,
+  .nx-l, .pt-l, .gd-sec, .cf-l, .wh-l, .gd-sym, .ht-l, .goal-in label, .fit-stats span, .hist-sum span, .st-lv span,
+  .lad-r span, .gd-ind span, .rp-hab span, .ch-live, .gd-sub, .sx-rr, .pt-meta, .today-date{
+    text-transform:none !important; letter-spacing:0 !important; font-family:var(--body) !important; }
+  .gd-sec{ font-family:var(--serif) !important; font-size:19px; font-weight:600; color:var(--text); margin:24px 0 10px; }
+  .news-day, .gr-cat, .mm-slot, .mm2-h, .spt-l, .today-pl-l{ font-size:13px !important; font-weight:700; color:var(--gold) !important; }
+  .nx-l, .pt-l, .cf-l, .wh-l, .gd-sym{ font-size:12px; font-weight:600; color:var(--text-dim); }
+  .prof-chip span, .spt-meta span, .donut-c span, .eq-start label, .run-sess b, .fit-stats span, .hist-sum span, .st-lv span, .gd-ind span, .rp-hab span{ font-size:11px !important; color:var(--text-faint); }
+  .prof-sub, .sp-sub{ font-size:13px !important; color:var(--text-dim) !important; }
+
+  /* figures: clean sans, tabular, tight */
+  .streak-num,.dash-num,.trade-current-num,.worth-total-num,.invest-total-num,.weight-now-num,.cal-stat-num,.month-row-pl,.trade-item-pl,.ex-sr,
+  .gd-price,.g-val,.eq-val,.gm-p,.cf-v,.goal-pct,.rc-lot,.fit-n b,.hist-sum b,.fit-stats b,.gd-ind b,.ht-stats b{
+    font-family:var(--body) !important; font-variant-numeric:tabular-nums; letter-spacing:-.025em; font-weight:700; }
+  .wh-total, .gd-price{ font-family:var(--serif) !important; font-weight:600 !important; letter-spacing:-.01em !important; font-size:46px !important; }
+
+  /* ---- hero: the day, set like an engraved figure ---- */
+  .hero-today{ background:radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 60%),
+      linear-gradient(180deg, var(--bg-raised), var(--bg-card)) !important;
+    border:1px solid color-mix(in srgb, var(--gold) 30%, var(--line)); padding:22px 20px 18px; }
+  .ht-glow{ display:none; }
+  .ht-l{ font-size:13px !important; font-weight:600; color:var(--text-dim) !important; margin-bottom:8px; line-height:1.2; }
+  .ht-l b{ display:block; font-family:var(--serif); font-size:104px; font-weight:600; line-height:.8; letter-spacing:-.02em;
+    background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent; margin:6px 0 8px; font-variant-numeric:lining-nums; }
+  .hero-today .today-title{ font-family:var(--serif) !important; font-size:22px !important; font-weight:600; }
+  .hero-today .today-date{ font-size:12.5px; color:var(--text-faint); }
+  .ring-wrap.big .ring-txt b{ font-family:var(--serif); font-size:30px; font-weight:600; letter-spacing:-.01em; }
+  .ring-wrap.big .ring-txt span{ font-family:var(--body); font-size:11px; }
+  .ht-quote{ border-left:0; border-radius:var(--r-tile); background:transparent; border-top:1px solid var(--hair); border-bottom:1px solid var(--hair);
+    font-style:italic; font-family:var(--serif); font-size:19px; font-weight:500; line-height:1.35; padding:14px 4px; color:var(--text); text-align:center; }
+  .ht-stats > div{ background:color-mix(in srgb, var(--bg) 55%, transparent); border:1px solid var(--line); border-radius:var(--r-tile); padding:12px 6px; }
+  .ht-stats b{ font-size:26px; }
+  .ht-stats em{ font-size:10.5px; color:var(--text-faint); }
+
+  /* ---- habits: gold seal when done ---- */
+  #todayHabits .habit{ background:var(--bg-card) !important; border-radius:var(--r-tile); }
+  #todayHabits .habit.done{ border-color:color-mix(in srgb, var(--gold) 45%, transparent) !important; background:color-mix(in srgb, var(--gold) 6%, var(--bg-card)) !important; }
+  .check{ border-radius:50%; width:28px; height:28px; border:1.5px solid color-mix(in srgb, var(--gold) 45%, var(--line)); }
+  .habit.done .check{ background:var(--gold-grad); border-color:transparent; box-shadow:0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent); transform:none; }
+  .habit.done .check svg{ stroke:#1A1307 !important; color:#1A1307; }
+  .habit.done .hb-ic{ background:color-mix(in srgb, var(--gold) 14%, var(--bg-card-2)); border-color:color-mix(in srgb, var(--gold) 35%, transparent); }
+  .hb-t, .habit-label{ font-size:15px; font-weight:700; }
+
+  /* ---- tiles ---- */
+  .dash-card, .streak-card, .pt, .sc, .nar, .rc, .rp-sec, .cf, .st, .lad, .fit-stats div, .gd-ind div, .hist-sum div, .st-lv div, .mtf div, .rp-hab div{
+    border-radius:var(--r-tile) !important; box-shadow:none !important; }
+  .dash-card, .streak-card, .pt{ background:var(--bg-card) !important; border-color:var(--line) !important; }
+  .pt-t{ font-family:var(--serif); font-size:19px !important; font-weight:600; line-height:1.15; }
+  .pt-a{ color:var(--gold) !important; }
+  .dash-card.gsel{ border-color:color-mix(in srgb, var(--gold) 60%, transparent) !important; }
+
+  /* ---- controls ---- */
+  .seg{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:999px; padding:4px; }
+  .seg-btn{ border-radius:999px; font-weight:700; color:var(--text-dim); }
+  .seg-btn.active{ background:var(--bg-raised); color:var(--gold); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); }
+  .primary-btn{ background:var(--gold-grad) !important; color:#1A1307 !important; border-radius:14px; box-shadow:0 10px 24px -14px color-mix(in srgb, var(--gold) 70%, transparent) !important;
+    font-family:var(--body); font-weight:800; letter-spacing:.01em; }
+  .ghost-btn, .past-toggle{ background:transparent; border:1px solid var(--hair); border-style:solid; border-radius:14px; color:var(--gold); font-weight:700; }
+  .field-row input, .field-row select{ border-radius:12px; background:var(--bg-card-2); border-color:var(--line); }
+  .field-row input:focus, .field-row select:focus{ border-color:var(--gold); box-shadow:0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent); }
+  .gs-nav{ background:linear-gradient(var(--bg) 78%, transparent); }
+  .gs-nav button{ border-color:var(--line); font-weight:700; }
+  .gs-nav button.on{ background:var(--gold-grad); border-color:transparent; color:#1A1307; box-shadow:none; }
+  .fit-pills button.on, .ch-tf button.on, .g-pills .day-pill.active, .day-pill.active{ background:transparent; border-color:var(--gold); color:var(--gold); }
+  .sx-chip.on{ border-color:var(--gold); background:color-mix(in srgb, var(--gold) 10%, var(--bg-card-2)); }
+
+  /* ---- floating tab bar ---- */
+  nav.tabbar{ left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 8px); border-radius:24px; padding-bottom:0;
+    background:color-mix(in srgb, #0A0A0B 88%, transparent); border:1px solid var(--hair); box-shadow:0 20px 44px -18px rgba(0,0,0,.85); }
+  :root[data-theme="light"] nav.tabbar{ background:color-mix(in srgb, #FFFFFF 90%, transparent); box-shadow:0 14px 34px -18px rgba(22,20,15,.35); }
+  .tabbar-inner{ padding:6px 4px; gap:0; }
+  .tab{ border-radius:18px; padding:7px 2px 6px; font-size:10.5px; font-weight:700; color:var(--text-faint); background:none; }
+  .tab .ic{ opacity:.55; filter:grayscale(1); transition:filter .2s ease, opacity .2s ease; }
+  .tab.active{ color:var(--gold); background:none; }
+  .tab.active .ic{ opacity:1; filter:none; transform:none; }
+  .tab.active::before{ display:block; top:auto; bottom:1px; width:4px; height:4px; border-radius:50%; background:var(--gold); }
+  main{ padding-bottom:130px; }
+
+  /* ---- money & gold stay bullion ---- */
+  .gold-card, .gold-pt, .wh-card{ background:radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--gold) 13%, transparent), transparent 62%),
+      linear-gradient(180deg, var(--bg-raised), var(--bg-card)) !important; border-color:color-mix(in srgb, var(--gold) 26%, var(--line)) !important; }
+  .prof-name{ font-family:var(--serif) !important; font-size:30px !important; font-weight:600 !important; letter-spacing:0 !important; }
+  .rp-msg b, .rp-week, .sx-t{ font-family:var(--serif); font-size:19px; font-weight:600; }
+  .splash{ background:var(--bg) !important; }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+  :focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .lv-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:#FF4D4D; margin-right:5px; vertical-align:middle; animation:livepulse 1.6s ease-in-out infinite; }
+
+  .pt-r[data-tid]{ cursor:pointer; }
+  .pt-r[data-tid]:active{ opacity:.7; }
+  .td-sheet{ position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+  .td-sheet.open{ opacity:1; pointer-events:auto; }
+  .td-card{ width:100%; max-width:520px; max-height:88vh; overflow:auto; background:var(--bg-card); border:1px solid var(--hair, var(--line)); border-bottom:0;
+    border-radius:24px 24px 0 0; padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 22px); position:relative; transform:translateY(24px); transition:transform .25s cubic-bezier(.2,.8,.3,1); }
+  .td-sheet.open .td-card{ transform:none; }
+  .td-x{ position:absolute; right:14px; top:14px; width:32px; height:32px; border-radius:50%; background:var(--bg-card-2); border:1px solid var(--line); color:var(--text-dim); font-size:14px; cursor:pointer; }
+  .td-h{ display:flex; align-items:center; gap:12px; margin-bottom:12px; padding-right:40px; }
+  .td-side{ font-weight:800; font-size:12px; padding:6px 9px; border-radius:9px; letter-spacing:.04em; }
+  .td-side.BUY{ background:var(--accent); color:#06140C; } .td-side.SELL{ background:var(--danger); color:#200806; }
+  .td-n{ font-family:var(--serif, var(--display)); font-size:21px; font-weight:600; line-height:1.15; }
+  .td-s{ font-size:12px; color:var(--text-dim); margin-top:3px; }
+  .td-live{ font-weight:700; font-size:14px; margin-bottom:10px; }
+
+  .ae-sum{ font-size:12px; color:var(--text-dim); margin:2px 0 6px; } .ae-sum b{ color:var(--text); }
+  #tradingGoldActive .pt-r:first-of-type, #planActive .pt-r:first-of-type{ border-top:none; }
 </style>
 </head>
 <body>
@@ -1286,6 +1445,11 @@
         <a class="ghost-btn news-link" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">Deschide Forex Factory ↗</a>
       </div>
 
+
+      <div class="card gold-card" data-seg-card="trading" id="tradingGoldCard">
+        <div class="card-title">🥇 Intrările pe aur acum</div>
+        <div id="tradingGoldActive"><div class="hint" style="margin-top:0;">Se încarcă…</div></div>
+      </div>
 
       <div class="card" data-seg-card="trading">
         <div class="card-title">Evoluția contului</div>
@@ -3107,8 +3271,9 @@ document.addEventListener('click', function(e){
     else if(t.closed){ cls = 'hs-none'; res = 'expirată'; }
     else if(t.floatR != null){ res = 'acum ' + (t.floatR >= 0 ? '+' : '') + t.floatR + 'R'; }
     else res = 'așteaptă ' + f2(t.entry);
+    if(!t.closed) res = '<span class="pt-live" data-side="' + t.side + '" data-entry="' + t.entry + '" data-sl="' + t.sl + '" data-tp1="' + t.tp1 + '" data-st="' + t.status + '">' + res + '</span>';
     var ic = t.closed ? (t.resultR == null ? '⏸' : t.resultR > 0 ? '✅' : '❌') : (t.status === 'în așteptare' ? '🕒' : '⏳');
-    return '<div class="pt-r"><div class="pt-l">' + (showName ? '<div class="pt-n">' + ((SGUIDE[t.sid] || {}).ic || '•') + ' ' + t.strat + '</div>' : '') +
+    return '<div class="pt-r" data-tid="' + t.id + '"><div class="pt-l">' + (showName ? '<div class="pt-n">' + ((SGUIDE[t.sid] || {}).ic || '•') + ' ' + t.strat + '</div>' : '') +
       '<div class="pt-d">' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' · <b class="' + (t.side === 'BUY' ? 'hs-win' : 'hs-loss') + '">' + t.side + '</b> ' + f2(t.entry) + ' · SL ' + f2(t.sl) + ' · TP ' + f2(t.tp1) + '</div>' +
       '<div class="pt-s">' + t.status + '</div></div><div class="pt-res ' + cls + '">' + ic + ' ' + res + '</div></div>';
   }
@@ -3177,19 +3342,85 @@ document.addEventListener('click', function(e){
         (warn ? '<br>⚠️ Prețul s-a mișcat ' + (moved > 0 ? '+' : '') + f2(moved) + ' $ de atunci: unele niveluri pot fi deja depășite. Verifică pe Live înainte de orice intrare.' : '');
     }
     var mp = document.getElementById('gmPrice'); if(mp) mp.textContent = f2(p);
+    // live P/L of active test trades (between robot runs)
+    if(liveSpot != null) document.querySelectorAll('.pt-live').forEach(function(el){
+      var buy = el.getAttribute('data-side') === 'BUY', en = +el.getAttribute('data-entry'), sl = +el.getAttribute('data-sl'), tp1 = +el.getAttribute('data-tp1'), st = el.getAttribute('data-st');
+      var risk = Math.abs(en - sl) || 1, mv = buy ? liveSpot - en : en - liveSpot;
+      if(st === 'în așteptare'){ var dist = Math.abs(liveSpot - en); el.innerHTML = '<span class="lv-dot"></span>la ' + f2(dist) + ' $ de intrare'; el.parentNode.className = 'pt-res hs-open'; return; }
+      var r = /^TP1/.test(st) ? 0.5 * Math.abs(tp1 - en) / risk + 0.5 * Math.max(0, mv) / risk : mv / risk;
+      el.innerHTML = '<span class="lv-dot"></span>live ' + (r >= 0 ? '+' : '') + r.toFixed(2) + 'R · ' + (mv >= 0 ? '+' : '−') + '$' + Math.abs(mv).toFixed(2);
+      el.parentNode.className = 'pt-res ' + (r >= 0 ? 'hs-win' : 'hs-loss');
+    });
     if(typeof renderPlanTiles === 'function' && document.getElementById('view-today') && document.getElementById('view-today').classList.contains('active')) renderPlanTiles();
   }
   fetchSpot(); setInterval(fetchSpot, 60000); setInterval(paintLive, 15000);
 
+  function activeTrades(){ return (gold && gold.ptrades || []).filter(function(t){ return !t.closed; }).slice().reverse(); }
+  function activeEntriesHtml(max){
+    var act = activeTrades();
+    if(!act.length) return '<div class="hint" style="margin-top:0;">Nicio intrare activă acum. Când o strategie intră, apare aici și primești notificare.</div>';
+    var open = act.filter(function(t){ return t.status !== 'în așteptare'; }), pend = act.length - open.length;
+    return '<div class="ae-sum"><b>' + open.length + '</b> deschise · <b>' + pend + '</b> ordine în așteptare · atinge una ca s-o vezi pe grafic</div>' +
+      act.slice(0, max || 8).map(function(t){ return ptRow(t, true); }).join('') +
+      (act.length > (max || 8) ? '<div class="hint">+ încă ' + (act.length - (max || 8)) + ' în 🥇 Aur → Istoric</div>' : '');
+  }
+  function renderActiveEntries(){
+    var a = document.getElementById('planActive'); if(a) a.innerHTML = '<div class="gd-sec">⏳ Intrările active acum</div>' + activeEntriesHtml(8);
+    var b = document.getElementById('tradingGoldActive'); if(b) b.innerHTML = activeEntriesHtml(6);
+    if(typeof paintLive === 'function') paintLive();
+  }
   function drawPlanChart(){
     if(!gold || !document.getElementById('planChart')) return;
     var g = gold, v = (g.confluence || {}).verdict;
     var sc = (v === 'BUY' || v === 'SELL') ? g.scenarios.filter(function(x){ return x.side === v; })[0] : (g.scenarios.filter(function(x){ return x.main; })[0] || g.scenarios[0]);
-    drawGoldChart('planChart', sc, { tf: goldTf.planChart || '15m', plan:true });
+    var mk = activeTrades().filter(function(t){ return t.status !== 'în așteptare'; }).slice(0, 6).map(function(t){
+      return { t:t.side, p:t.entry, col: t.side === 'BUY' ? '#5FBF8F' : '#E0685C', ts: Math.floor(new Date(t.opened || (t.date + 'T00:00:00')).getTime() / 1000), d:t.date }; });
+    drawGoldChart('planChart', sc, { tf: goldTf.planChart || '15m', plan:true, marks: mk });
+    renderActiveEntries();
     var n = document.getElementById('planChartNote');
     if(n) n.textContent = (v === 'BUY' || v === 'SELL' ? 'Planul de azi: ' + (v === 'BUY' ? '🟢 BUY' : '🔴 SELL') : '⏳ Plan în așteptare, arăt scenariul ' + sc.side) +
       ' · zonă ' + f2(sc.zone[0]) + '–' + f2(sc.zone[1]) + ' · SL ' + f2(sc.sl) + ' · TP1 ' + f2(sc.tp1) + '. Lumânările se actualizează live, la fiecare minut; nivelurile se recalculează la fiecare 30 de minute. Săgețile ↑↓ arată nivelurile aflate în afara graficului.';
   }
+
+  /* ===== trade sheet: the trade drawn on the chart ===== */
+  var tdCurrent = null;
+  function openTrade(id){
+    var t = (gold && gold.ptrades || []).filter(function(x){ return x.id === id; })[0]; if(!t) return;
+    tdCurrent = id;
+    var sh = document.getElementById('tdSheet');
+    if(!sh){ sh = document.createElement('div'); sh.id = 'tdSheet'; sh.className = 'td-sheet'; document.body.appendChild(sh);
+      sh.addEventListener('click', function(e){ if(e.target === sh || e.target.closest('.td-x')){ sh.classList.remove('open'); tdCurrent = null; } }); }
+    var G = SGUIDE[t.sid] || { ic:'•' };
+    var buy = t.side === 'BUY', risk = Math.abs(t.entry - t.sl) || 1;
+    var p = liveSpot != null ? liveSpot : gold.price, mv = buy ? p - t.entry : t.entry - p;
+    var liveTxt = t.closed ? (t.resultR != null ? 'Rezultat final: ' + (t.resultR >= 0 ? '+' : '') + t.resultR + 'R · ' + (t.pnlOz >= 0 ? '+' : '−') + '$' + Math.abs(t.pnlOz).toFixed(2) + ' la 0.01 lot' : 'Ordinul a expirat fără să se execute.') :
+      t.status === 'în așteptare' ? 'Așteaptă prețul la ' + f2(t.entry) + ' · acum la ' + f2(Math.abs(p - t.entry)) + ' $ distanță' :
+      'Acum: ' + (mv >= 0 ? '+' : '−') + '$' + Math.abs(mv).toFixed(2) + ' pe uncie · ' + (mv / risk >= 0 ? '+' : '') + (mv / risk).toFixed(2) + 'R';
+    var op = t.opened ? new Date(t.opened) : new Date(t.date + 'T00:00:00');
+    sh.innerHTML = '<div class="td-card"><button class="td-x" aria-label="Închide">✕</button>' +
+      '<div class="td-h"><span class="td-side ' + t.side + '">' + t.side + '</span><div><div class="td-n">' + G.ic + ' ' + t.strat + '</div>' +
+      '<div class="td-s">Intrat ' + op.getDate() + ' ' + monthShort[op.getMonth()] + (t.opened ? ' la ' + hhmm(op) : '') + ' · ' + t.status + '</div></div></div>' +
+      '<div class="td-live ' + (t.closed ? (t.resultR > 0 ? 'hs-win' : 'hs-loss') : (mv >= 0 ? 'hs-win' : 'hs-loss')) + '">' + (t.closed ? '' : '<span class="lv-dot"></span>') + liveTxt + '</div>' +
+      '<div class="ch-wrap" id="tdChart"></div>' +
+      '<div class="st-lv" style="margin-top:10px;"><div><b>' + f2(t.entry) + '</b><span>intrare</span></div><div class="slv"><b>' + f2(t.sl) + '</b><span>stop loss</span></div><div class="tpv"><b>' + f2(t.tp1) + '</b><span>TP1</span></div><div class="tpv"><b>' + f2(t.tp2) + '</b><span>TP2</span></div></div>' +
+      (t.exit != null && t.closed ? '<div class="hint">Ieșire la ' + f2(t.exit) + (t.closedDate ? ' pe ' + t.closedDate.slice(8) + '.' + t.closedDate.slice(5, 7) : '') + '.</div>' : '') +
+      '<div class="hint">Pe grafic: punctul auriu = unde a intrat' + (t.closed ? ', punctul alb = unde a ieșit' : '') + '. Liniile: SL (roșu), TP1 și TP2 (verde). Linia LIVE e prețul de acum.</div></div>';
+    sh.classList.add('open');
+    drawTradeChart(t);
+  }
+  function drawTradeChart(t){
+    var el = document.getElementById('tdChart'); if(!el) return;
+    var fresh = (Date.now() - new Date(t.opened || (t.date + 'T00:00:00')).getTime()) < 2 * 86400000;
+    if(!goldTf.tdChart || goldTf._tdFor !== t.id){ goldTf.tdChart = fresh ? '15m' : 'D1'; goldTf._tdFor = t.id; }
+    var marks = [{ t:'INTRARE', p:t.entry, col:'var(--gold)', ts: Math.floor(new Date(t.opened || (t.date + 'T00:00:00')).getTime() / 1000), d:t.date }];
+    if(t.closed && t.exit != null) marks.push({ t:'IEȘIRE', p:t.exit, col:'#F4EFE6', ts: t.closedDate ? Math.floor(new Date(t.closedDate + 'T20:00:00Z').getTime() / 1000) : Math.floor(Date.now() / 1000), d:t.closedDate || t.date });
+    if(goldTf.tdChart !== 'D1') fetchIntraday();
+    drawGoldChart('tdChart', { side:t.side, entry:t.entry, sl:t.sl, tp1:t.tp1, tp2:t.tp2, zone:[t.entry, t.entry] }, { tf: goldTf.tdChart, marks: marks });
+  }
+  document.addEventListener('click', function(e){
+    var r = e.target.closest ? e.target.closest('.pt-r[data-tid]') : null; if(!r) return;
+    openTrade(r.getAttribute('data-tid'));
+  });
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
@@ -3301,6 +3532,18 @@ document.addEventListener('click', function(e){
       svg += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + Y(k[2]).toFixed(1) + '" y2="' + Y(k[3]).toFixed(1) + '" stroke="' + col + '" stroke-width="0.8"/>' +
         '<rect x="' + (x - cw * 0.34).toFixed(1) + '" y="' + Math.min(yo, yc).toFixed(1) + '" width="' + (cw * 0.68).toFixed(1) + '" height="' + Math.max(0.8, Math.abs(yc - yo)).toFixed(1) + '" fill="' + col + '"/>';
     });
+    // trade markers: where it entered / where it closed
+    (opt.marks || []).forEach(function(mk){
+      var idx = -1;
+      for(var mi = 0; mi < C.length; mi++){ var key = intra ? C[mi][5] : C[mi][0]; if(key <= (intra ? mk.ts : mk.d)) idx = mi; }
+      if(idx < 0) return;
+      var mx = X(idx), my = Y(mk.p);
+      if(my < padT || my > H - padB) return;
+      svg += '<line x1="' + mx.toFixed(1) + '" x2="' + mx.toFixed(1) + '" y1="' + padT + '" y2="' + (H - padB) + '" stroke="' + mk.col + '" stroke-width="0.6" stroke-dasharray="2 2" opacity="0.7"/>' +
+        '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="4.5" fill="' + mk.col + '" stroke="var(--bg)" stroke-width="1.5"/>' +
+        '<rect x="' + (mx - 20).toFixed(1) + '" y="' + (my - 17).toFixed(1) + '" width="40" height="11" rx="3" fill="' + mk.col + '"/>' +
+        '<text x="' + mx.toFixed(1) + '" y="' + (my - 9).toFixed(1) + '" text-anchor="middle" font-size="7" font-weight="800" fill="#111" font-family="sans-serif">' + mk.t + '</text>';
+    });
     // last price marker
     var lp = Y(nowP).toFixed(1);
     svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + lp + '" y2="' + lp + '" stroke="var(--text)" stroke-width="0.5" stroke-dasharray="1 2"/>';
@@ -3391,7 +3634,7 @@ document.addEventListener('click', function(e){
       drawGoldChart(id === 'chWrap' ? undefined : id, c.scOv, o2);
     });
   }
-  setInterval(function(){ fetchIntraday(); redrawLiveCharts(); }, 60000);
+  setInterval(function(){ fetchIntraday(); redrawLiveCharts(); if(tdCurrent && document.getElementById('tdSheet') && document.getElementById('tdSheet').classList.contains('open')) openTrade(tdCurrent); }, 60000);
   try{ goldRisk = parseFloat(localStorage.getItem('byzyp_gold_risk')) || 1; }catch(e){}
   function f2(n){ return Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
   function curBalance(){
@@ -3433,7 +3676,7 @@ document.addEventListener('click', function(e){
 
     html += '\u0001conf\u0002';
     // confluence + multi-timeframe + session
-    html += '<div class="gd-sec" style="margin-top:0;">📡 Planul pe graficul live</div><div class="ch-wrap" id="planChart" style="margin-top:0;"></div><div class="hint" id="planChartNote" style="margin-top:6px;"></div>';
+    html += '<div class="gd-sec" style="margin-top:0;">📡 Planul pe graficul live</div><div class="ch-wrap" id="planChart" style="margin-top:0;"></div><div class="hint" id="planChartNote" style="margin-top:6px;"></div><div id="planActive"></div>';
     if(g.confluence){
       var c = g.confluence, tw = Math.max(1, c.total), wait = tw - c.buy - c.sell;
       var cvText = c.verdict === 'BUY' ? 'Mai multe strategii spun CUMPĂRARE' : c.verdict === 'SELL' ? 'Mai multe strategii spun VÂNZARE' : 'Strategiile nu sunt de acord: răbdare';
