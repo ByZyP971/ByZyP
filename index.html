@@ -1049,6 +1049,62 @@
 
   .ae-sum{ font-size:12px; color:var(--text-dim); margin:2px 0 6px; } .ae-sum b{ color:var(--text); }
   #tradingGoldActive .pt-r:first-of-type, #planActive .pt-r:first-of-type{ border-top:none; }
+
+  /* ===== Jarvis ===== */
+  .jv-fab{ position:fixed; right:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 92px); z-index:40; width:54px; height:54px; border-radius:50%; border:0; cursor:pointer;
+    background:var(--gold-grad, linear-gradient(135deg,#F1DDA8,#D6B26E,#A87D3A)); color:#1A1307; box-shadow:0 14px 30px -10px rgba(214,178,110,.6), 0 0 0 1px rgba(255,255,255,.15) inset;
+    display:flex; align-items:center; justify-content:center; }
+  .jv-fab:active{ transform:scale(.94); }
+  .jv-ov{ position:fixed; inset:0; z-index:95; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .jv-ov.open{ opacity:1; pointer-events:auto; }
+  .jv-card{ width:100%; max-width:520px; max-height:90vh; overflow:auto; background:linear-gradient(180deg,#141416,#0B0B0C); border:1px solid rgba(214,178,110,.22); border-bottom:0; border-radius:26px 26px 0 0;
+    padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 20px); position:relative; text-align:center; }
+  :root[data-theme="light"] .jv-card{ background:#FFFFFF; }
+  .jv-orb{ width:118px; height:118px; margin:6px auto 12px; border-radius:50%; position:relative; cursor:pointer;
+    background:radial-gradient(circle at 35% 30%, #FFF1C9, #D6B26E 45%, #6E4E17 100%); box-shadow:0 0 50px -8px rgba(214,178,110,.65); }
+  .jv-orb span{ position:absolute; inset:-10px; border-radius:50%; border:1px solid rgba(214,178,110,.35); opacity:0; }
+  .jv-orb.on span{ animation:jvpulse 1.6s ease-out infinite; } .jv-orb.on span:nth-child(2){ animation-delay:.5s; } .jv-orb.on span:nth-child(3){ animation-delay:1s; }
+  .jv-orb.on{ animation:jvbreath 1.2s ease-in-out infinite; }
+  @keyframes jvpulse{ 0%{ transform:scale(.9); opacity:.9; } 100%{ transform:scale(1.5); opacity:0; } }
+  @keyframes jvbreath{ 50%{ transform:scale(1.05); } }
+  .jv-status{ font-family:var(--serif, Georgia); font-size:19px; font-weight:600; color:var(--text); min-height:26px; }
+  .jv-sugg{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:12px 0; }
+  .jv-sugg button{ background:transparent; border:1px solid rgba(214,178,110,.3); color:var(--gold); border-radius:16px; padding:7px 11px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+  .jv-type{ display:flex; gap:6px; margin-bottom:12px; }
+  .jv-type input{ flex:1; background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; color:var(--text); font-size:16px; padding:11px 13px; font-family:inherit; }
+  .jv-type button{ width:46px; border-radius:14px; border:0; background:var(--gold-grad, #D6B26E); color:#1A1307; font-size:18px; cursor:pointer; }
+  .jv-log{ text-align:left; }
+  .jv-q{ font-size:12.5px; color:var(--text-faint); margin-top:12px; }
+  .jv-a{ font-size:14.5px; line-height:1.5; color:var(--text); background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-top:6px; }
+  /* ===== Terminal ===== */
+  .term-btn{ float:right; margin:-4px -4px 6px 8px; background:transparent; border:1px solid rgba(214,178,110,.35); color:var(--gold); border-radius:12px; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; position:relative; z-index:2; }
+  .term{ position:fixed; inset:0; z-index:96; background:#050505; color:#F4EFE6; overflow:auto; opacity:0; pointer-events:none; transition:opacity .25s;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) calc(env(safe-area-inset-right,0px) + 14px) calc(env(safe-area-inset-bottom,0px) + 14px) calc(env(safe-area-inset-left,0px) + 14px); }
+  .term.open{ opacity:1; pointer-events:auto; }
+  .term-x{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:calc(env(safe-area-inset-right,0px) + 12px); z-index:3; }
+  .term-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+  @media (orientation: landscape){ .term-grid{ grid-template-columns:1.6fr 1fr; } }
+  .term-sym{ font-size:12px; font-weight:700; color:#D6B26E; letter-spacing:.06em; }
+  .term-price{ font-family:var(--serif, Georgia); font-size:64px; font-weight:600; line-height:1; margin:6px 0 4px; font-variant-numeric:tabular-nums; transition:color .6s; }
+  .term-price.up{ animation:tmUp .9s; } .term-price.dn{ animation:tmDn .9s; }
+  @keyframes tmUp{ 0%{ color:#5FBF8F; text-shadow:0 0 24px rgba(95,191,143,.6); } 100%{ color:#F4EFE6; } }
+  @keyframes tmDn{ 0%{ color:#E0685C; text-shadow:0 0 24px rgba(224,104,92,.6); } 100%{ color:#F4EFE6; } }
+  .term-chg{ font-weight:700; font-size:15px; margin-bottom:10px; }
+  .term-box{ border:1px solid rgba(214,178,110,.2); border-radius:16px; padding:12px; background:#0C0C0E; margin-bottom:10px; }
+  .term-l{ font-size:11.5px; font-weight:700; color:#AAA397; margin-bottom:6px; }
+  .term-box svg{ width:100%; max-width:240px; display:block; margin:0 auto; }
+  .term-v{ text-align:center; font-weight:700; font-size:13px; margin-top:4px; }
+  .term-news{ font-size:13px; line-height:1.4; } .term-cd{ font-family:var(--serif, Georgia); font-size:34px; font-weight:600; color:#D6B26E; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .term .pt-r{ border-top-color:rgba(214,178,110,.14); }
+  /* ===== Vault ===== */
+  .vault{ position:fixed; inset:0; z-index:96; background:radial-gradient(ellipse at 50% 30%, #1A1712, #050505 70%); opacity:0; pointer-events:none; transition:opacity .25s; }
+  .vault.open{ opacity:1; pointer-events:auto; }
+  .vault-canvas{ position:absolute; inset:0; }
+  .vault-hud{ position:absolute; left:0; right:0; top:calc(env(safe-area-inset-top,0px) + 22px); text-align:center; z-index:2; pointer-events:none; }
+  .vault-l{ font-size:12px; font-weight:700; color:#AAA397; letter-spacing:.08em; }
+  .vault-v{ font-family:var(--serif, Georgia); font-size:54px; font-weight:600; background:linear-gradient(135deg,#F1DDA8,#D6B26E 45%,#A87D3A); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1.05; }
+  .vault-s{ font-size:13px; color:#F4EFE6; opacity:.8; }
+  .vault-hint{ position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 22px); text-align:center; font-size:12px; color:#AAA397; z-index:2; padding:0 20px; }
 </style>
 </head>
 <body>
@@ -1389,6 +1445,7 @@
       </div>
       <div class="card wh-card" data-seg-card="worth">
         <div class="wh-glow"></div>
+        <button class="term-btn" onclick="window.__openVault && window.__openVault()">🏦 Seiful 3D</button>
         <div class="wh-l">Avere netă totală</div>
         <div class="wh-total" id="worthTotal">€0</div>
         <div class="wh-chips" id="worthDelta"></div>
@@ -3651,7 +3708,7 @@ document.addEventListener('click', function(e){
     var g = gold, up = g.change >= 0;
     var meter = ''; for(var i=-5;i<=5;i++){ if(i===0) continue; var on = (g.score>0 && i>0 && i<=g.score) || (g.score<0 && i<0 && i>=g.score); meter += '<i class="' + (on ? (i>0?'on-b':'on-s') : '') + '"></i>'; }
     var upd = new Date(g.updated);
-    var html = '<div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
+    var html = '<button class="term-btn" onclick="window.__openTerminal && window.__openTerminal()">🖥️ Terminal</button><div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
       '<div class="gd-chg ' + (up?'pos':'neg') + '" id="gdChg">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
       '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
 
@@ -3966,6 +4023,318 @@ document.addEventListener('click', function(e){
   }
   window.addEventListener('hashchange', openReportFromLink);
   setTimeout(openReportFromLink, 1500);
+
+  /* =====================================================================
+     JARVIS · voice assistant over everything in the app
+     ===================================================================== */
+  function jNorm(t){ return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function jHas(t, words){ return words.some(function(w){ return t.indexOf(w) >= 0; }); }
+  function jNum(n, d){ return Number(n).toLocaleString('ro-RO', { minimumFractionDigits:d || 0, maximumFractionDigits:d || 0 }); }
+  function jSmokeFree(){ var sf = 0, c2 = new Date(today); if(!(data[todayKey] && data[todayKey].habits && data[todayKey].habits.nosmoke)) c2.setDate(c2.getDate() - 1);
+    while(true){ var k2 = dateKey(c2); if(data[k2] && data[k2].habits && data[k2].habits.nosmoke){ sf++; c2.setDate(c2.getDate() - 1); } else break; } return sf; }
+  function jDayNum(){ var ks = Object.keys(data).sort(); return ks.length ? Math.max(1, Math.round((today - new Date(ks[0] + 'T00:00:00')) / 86400000) + 1) : 1; }
+  function jLeft(){ var e = data[todayKey] || { habits:{} }; return HABITS.filter(function(h){ return !(e.habits && e.habits[h.key]); }); }
+  function jTick(key){
+    var i = HABITS.map(function(h){ return h.key; }).indexOf(key); if(i < 0) return false;
+    var e = data[todayKey]; if(e && e.habits && e.habits[key]) return 'already';
+    var rows = document.querySelectorAll('#todayHabits .habit'); if(rows[i]){ rows[i].click(); return true; } return false;
+  }
+  function jWorth(){ var sa = (typeof sortedAccounts === 'function') ? sortedAccounts() : []; if(!sa.length) return null;
+    var last = accTotal(sa[sa.length - 1]), prev = sa.length > 1 ? accTotal(sa[sa.length - 2]) : null, first = accTotal(sa[0]); return { now:last, prev:prev, first:first }; }
+  function jGold(){ if(!gold) return null; var p = liveSpot != null ? liveSpot : gold.price, pc = gold.price - gold.change; return { p:p, ch:p - pc, pct:(p - pc) / pc * 100, v:(gold.confluence || {}).verdict || gold.bias, c:gold.confluence || {} }; }
+
+  function jAnswer(raw){
+    var t = jNorm(raw), h = new Date().getHours();
+    var hi = h < 12 ? 'Bună dimineața' : h < 18 ? 'Bună ziua' : 'Bună seara';
+    var said = [];
+    // --- actions: tick habits (can be several in one sentence) ---
+    var ticks = [
+      ['water', ['am baut apa','baut apa','apa am baut','bifeaza apa','doar apa']],
+      ['training', ['am fost la sala','am facut sala','antrenament','am alergat','am facut sport','bifeaza sala','bifeaza sport']],
+      ['nosmoke', ['n am fumat','nu am fumat','fara tigari','fara tigara','bifeaza tigari']],
+      ['nosugar', ['fara zahar','n am mancat dulce','nu am mancat dulce','bifeaza zahar']],
+      ['food', ['am mancat curat','am mancat sanatos','mancare curata','bifeaza mancare']]
+    ];
+    var done = [], already = [];
+    if(!jHas(t, ['cate','cat','cum','ce '])) ticks.forEach(function(tk){ if(jHas(t, tk[1])){ var r = jTick(tk[0]); var lbl = HABITS.filter(function(x){ return x.key === tk[0]; })[0].label.toLowerCase(); if(r === 'already') already.push(lbl); else if(r) done.push(lbl); } });
+    if(done.length || already.length){
+      var left = jLeft().filter(function(x){ return done.indexOf(x.label.toLowerCase()) < 0; });
+      var msg = 'ZyP, ' + (done.length ? 'am bifat ' + done.join(' și ') + '. ' : '') + (already.length ? (already.join(' și ') + ' era deja bifat. ') : '');
+      msg += left.length ? 'Mai ai ' + left.length + ': ' + left.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai bifat tot azi. Zi perfectă, bravo! 🔥';
+      return msg;
+    }
+    // --- open views ---
+    if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return 'ZyP, deschid terminalul de trader.'; }
+    if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return 'ZyP, deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
+    // --- gold: open entries ---
+    if(jHas(t, ['intrari','intrare','tranzactii deschise','sunt deschise','pozitii','ce e deschis','tranzactii de test'])){
+      var act = (gold && gold.ptrades || []).filter(function(x){ return !x.closed; });
+      if(!act.length) return 'ZyP, acum nu e nicio intrare deschisă pe aur. Te anunț când intră o strategie.';
+      var op = act.filter(function(x){ return x.status !== 'în așteptare'; }), p = jGold().p;
+      var list = op.slice(-4).map(function(x){ var mv = x.side === 'BUY' ? p - x.entry : x.entry - p; return x.strat.split(' (')[0] + ' pe ' + (x.side === 'BUY' ? 'cumpărare' : 'vânzare') + ' de la ' + jNum(x.entry) + ', acum ' + (mv >= 0 ? 'pe plus ' : 'pe minus ') + jNum(Math.abs(mv), 1) + ' dolari'; });
+      return 'ZyP, ai ' + op.length + ' intrări deschise' + (act.length > op.length ? ' și ' + (act.length - op.length) + ' ordine în așteptare' : '') + '. ' + (list.length ? 'Ultimele: ' + list.join('; ') + '.' : '');
+    }
+    if(jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga'])){
+      var ps = gold && gold.pstats ? Object.keys(gold.pstats).map(function(k){ return gold.pstats[k]; }).filter(function(v){ return v.n; }).sort(function(a,b){ return b.r - a.r; }) : [];
+      if(!ps.length) return 'ZyP, încă nu sunt tranzacții închise ca să fac un clasament. Mai așteaptă câteva zile.';
+      return 'ZyP, pe primul loc e ' + ps[0].name + ', cu ' + ps[0].rate + '% câștigate și ' + (ps[0].r >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(ps[0].r), 1) + ' R.' + (ps[1] ? ' Pe locul doi, ' + ps[1].name + '.' : '');
+    }
+    if(jHas(t, ['aur','aurul','gold','xau','strategii','strategiile','verdict'])){
+      var g = jGold(); if(!g) return 'ZyP, analiza aurului se încarcă încă. Încearcă peste câteva secunde.';
+      var vt = g.v === 'BUY' ? 'mai multe strategii spun cumpărare' : g.v === 'SELL' ? 'mai multe strategii spun vânzare' : 'strategiile nu sunt de acord, așa că e mai bine să aștepți';
+      var nact = (gold.ptrades || []).filter(function(x){ return !x.closed && x.status !== 'în așteptare'; }).length;
+      return 'ZyP, aurul e la ' + jNum(g.p, 2) + ' dolari, ' + (g.ch >= 0 ? 'în creștere cu ' : 'în scădere cu ') + jNum(Math.abs(g.pct), 2) + ' la sută azi. Din cele ' + (gold.strategies || []).length + ' de strategii, ' + (g.c.buyN || 0) + ' spun cumpărare și ' + (g.c.sellN || 0) + ' vânzare: ' + vt + '. Ai ' + nact + ' intrări de test deschise.';
+    }
+    // --- news ---
+    if(jHas(t, ['stire','stiri','stirea','calendar','news'])){
+      if(!newsTarget) return 'ZyP, nu urmează nicio știre importantă acum. Calendarul săptămânii noi apare duminică seara.';
+      var mins = Math.round((newsTarget.t.getTime() - Date.now()) / 60000);
+      return 'ZyP, următoarea știre ' + (newsTarget.i === 'High' ? 'roșie' : 'importantă') + ' e ' + newsTarget.c + ', ' + newsTarget.title + ', la ora ' + hhmm(newsTarget.t) + (mins > 0 ? ', peste ' + (mins >= 60 ? Math.floor(mins / 60) + ' ore și ' + (mins % 60) + ' minute' : mins + ' minute') : '') + '.' + (newsTarget.i === 'High' ? ' Atenție la aur în jurul ei.' : '');
+    }
+    // --- money ---
+    if(jHas(t, ['avere','bani','cati bani','sold','conturi','cat am'])){
+      var w = jWorth(); if(!w) return 'ZyP, încă n-ai salvat soldurile. Intră la Bani, Avere, și le trecem.';
+      return 'ZyP, averea ta totală e ' + jNum(w.now) + ' euro.' + (w.prev != null ? ' Față de ultima salvare ' + (w.now >= w.prev ? 'ai crescut cu ' : 'ai scăzut cu ') + jNum(Math.abs(w.now - w.prev)) + ' euro.' : '') + (worthGoal ? ' Ești la ' + Math.round(w.now / worthGoal * 100) + ' la sută din obiectivul de ' + jNum(worthGoal) + ' euro.' : '');
+    }
+    if(jHas(t, ['trading','profit','pierdere','jurnal'])){
+      var ym = todayKey.slice(0, 7), tm = trades.filter(function(x){ return x.date && x.date.slice(0, 7) === ym; });
+      var pl = tm.reduce(function(a, x){ return a + (x.result || 0); }, 0), wn = tm.filter(function(x){ return x.result > 0; }).length;
+      return tm.length ? 'ZyP, luna asta ai ' + tm.length + (tm.length === 1 ? ' tranzacție, ' : ' tranzacții, ') + wn + ' pe plus, rezultat ' + (pl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(pl), 2) + ' dolari.' : 'ZyP, luna asta n-ai notat încă nicio tranzacție.';
+    }
+    if(jHas(t, ['investit','investitii','etf','bitcoin'])){
+      var tot = investments.reduce(function(a, x){ return a + (+x.amount || 0); }, 0);
+      return 'ZyP, ai investit în total ' + jNum(tot) + ' euro, în ' + investments.length + ' luni. Continuă cu 500 pe lună și banii lucrează pentru tine.';
+    }
+    // --- habits / streaks ---
+    if(jHas(t, ['motiveaza','pofta','greu','nu mai pot','ajuta','ajutor'])){
+      return 'ZyP, ascultă-mă: pofta trece în trei până la cinci minute. Respiră adânc de patru ori, bea un pahar de apă și mergi zece pași. Ai ajuns la ziua ' + jDayNum() + '. Nu da totul înapoi pentru cinci minute.';
+    }
+    if(jHas(t, ['tigari','fumat','fumez','tigara'])){
+      var sf = jSmokeFree(); return 'ZyP, ai ' + sf + (sf === 1 ? ' zi' : ' zile') + ' la rând fără țigări. ' + (sf >= 7 ? 'Plămânii tăi deja respiră mai bine. Nu da totul înapoi pentru una singură.' : 'Fiecare zi contează. Dacă vine pofta, trece în câteva minute: bea un pahar de apă.');
+    }
+    if(jHas(t, ['ce mai am','ce am de bifat','obiceiuri','bifat','ce am facut','cum stau azi'])){
+      var lf = jLeft(), dn = HABITS.length - lf.length;
+      return 'ZyP, azi ai bifat ' + dn + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
+    }
+    if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ return 'ZyP, azi e ziua ' + jDayNum() + ' din viața ta nouă. Ai ' + jSmokeFree() + ' zile la rând fără țigări.'; }
+    if(jHas(t, ['greutate','kg','kilograme','cantaresc'])){
+      var ws = Object.keys(data).sort().filter(function(k){ return data[k] && data[k].weight != null; });
+      if(!ws.length) return 'ZyP, n-ai notat încă greutatea. O poți scrie pe fila Azi, la jurnalul zilei.';
+      var wl = +data[ws[ws.length - 1]].weight, wf = +data[ws[0]].weight;
+      return 'ZyP, ultima greutate notată e ' + jNum(wl, 1) + ' kilograme.' + (ws.length > 1 ? ' De la început ' + (wl <= wf ? 'ai slăbit ' : 'ai pus ') + jNum(Math.abs(wl - wf), 1) + ' kilograme.' : '');
+    }
+    // --- day plan ---
+    if(jHas(t, ['sala','sport','antrenament azi','ce am azi','planul','azi ce'])){
+      var code = woOfDay(wIdx), md = document.querySelectorAll('.mm-day')[wIdx], lunch = '';
+      if(md){ var fs = md.querySelectorAll('.mm-food'); lunch = fs[1] ? fs[1].textContent : ''; }
+      return 'ZyP, ' + (/odihn/i.test(woLabel(code)) ? 'azi e zi de odihnă, fără sală.' : 'azi la sport ai ' + woLabel(code) + '.') + (lunch ? ' La prânz: ' + lunch + '.' : '') + (newsTarget ? ' Următoarea știre importantă e la ' + hhmm(newsTarget.t) + '.' : '') + ' Mai ai ' + jLeft().length + ' obiceiuri de bifat.';
+    }
+    if(jHas(t, ['mananc','mancare','pranz','cina','meniu'])){
+      var md2 = document.querySelectorAll('.mm-day')[wIdx]; var f2 = md2 ? Array.from(md2.querySelectorAll('.mm-food')).map(function(x){ return x.textContent; }) : [];
+      return f2.length ? 'ZyP, azi în meniu: dimineața ' + f2[0] + ', la prânz ' + (f2[1] || '') + ', seara ' + (f2[3] || f2[2] || '') + '.' : 'ZyP, deschide fila Mâncare ca să vezi meniul zilei.';
+    }
+    if(jHas(t, ['raport','saptamana','cum a fost'])){
+      var W = (typeof weekStats === 'function') ? weekStats(0) : null;
+      return W ? 'ZyP, săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' dolari.' : '') : 'ZyP, raportul se află la Profil.';
+    }
+    if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + ', ZyP! Sunt aici. Întreabă-mă de aur, intrări, știri, bani, sală sau obiceiuri.'; }
+    if(jHas(t, ['ce poti','ajutor comenzi','ce stii','comenzi'])){ return 'ZyP, mă poți întreba: cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, câte zile fără țigări, ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune: am băut apă, am fost la sală, deschide terminalul, deschide seiful.'; }
+    return 'ZyP, n-am înțeles exact. Poți să mă întrebi de aur, intrări, știri, bani, trading, țigări, obiceiuri, sală sau mâncare.';
+  }
+
+  var jRec = null, jListening = false;
+  function jSpeak(text){
+    try{
+      if(!window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text.replace(/[🔥💪🏆]/g, ''));
+      u.lang = 'ro-RO'; u.rate = 1.02; u.pitch = 1;
+      var vs = speechSynthesis.getVoices().filter(function(v){ return /^ro/i.test(v.lang); }); if(vs[0]) u.voice = vs[0];
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function jShow(q, a){
+    var box = document.getElementById('jvLog'); if(!box) return;
+    box.innerHTML = (q ? '<div class="jv-q">„' + String(q).replace(/</g, '&lt;') + '”</div>' : '') + '<div class="jv-a">' + a + '</div>' + box.innerHTML;
+  }
+  function jHandle(q){ var a = jAnswer(q); jShow(q, a); jSpeak(a); }
+  function openJarvis(){
+    var ov = document.getElementById('jvOverlay');
+    if(!ov){
+      ov = document.createElement('div'); ov.id = 'jvOverlay'; ov.className = 'jv-ov';
+      ov.innerHTML = '<div class="jv-card"><button class="td-x jv-close" aria-label="Închide">✕</button>' +
+        '<div class="jv-orb" id="jvOrb"><span></span><span></span><span></span></div>' +
+        '<div class="jv-status" id="jvStatus">Atinge sfera și vorbește</div>' +
+        '<div class="jv-sugg">' + ['Cum stă aurul?','Ce intrări sunt deschise?','Câți bani am?','Ce am azi?','Am băut apă','Câte zile fără țigări?'].map(function(s){ return '<button>' + s + '</button>'; }).join('') + '</div>' +
+        '<div class="jv-type"><input id="jvInput" placeholder="…sau scrie aici" autocomplete="off"><button id="jvSend">➤</button></div>' +
+        '<div class="jv-log" id="jvLog"></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if(e.target === ov || e.target.closest('.jv-close')){ ov.classList.remove('open'); try{ speechSynthesis.cancel(); if(jRec) jRec.abort(); }catch(er){} } });
+      document.getElementById('jvOrb').addEventListener('click', jListen);
+      ov.querySelectorAll('.jv-sugg button').forEach(function(b){ b.addEventListener('click', function(){ jHandle(b.textContent); }); });
+      var inp = document.getElementById('jvInput');
+      document.getElementById('jvSend').addEventListener('click', function(){ if(inp.value.trim()){ jHandle(inp.value); inp.value = ''; } });
+      inp.addEventListener('keydown', function(e){ if(e.key === 'Enter' && inp.value.trim()){ jHandle(inp.value); inp.value = ''; } });
+    }
+    ov.classList.add('open');
+    try{ speechSynthesis.getVoices(); }catch(e){}
+    if(!document.getElementById('jvLog').innerHTML){ var h = new Date().getHours(); jShow(null, (h < 12 ? 'Bună dimineața' : h < 18 ? 'Bună ziua' : 'Bună seara') + ', ZyP. Ziua ' + jDayNum() + '. Cu ce te ajut?'); }
+    setTimeout(jListen, 250);
+  }
+  function jListen(){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition, st = document.getElementById('jvStatus'), orb = document.getElementById('jvOrb');
+    if(!SR){ st.textContent = 'Microfonul nu e disponibil aici. Scrie întrebarea mai jos.'; return; }
+    if(jListening){ try{ jRec.stop(); }catch(e){} return; }
+    try{ speechSynthesis.cancel(); }catch(e){}
+    jRec = new SR(); jRec.lang = 'ro-RO'; jRec.interimResults = true; jRec.maxAlternatives = 1;
+    var finalT = '';
+    jRec.onstart = function(){ jListening = true; orb.classList.add('on'); st.textContent = 'Te ascult…'; };
+    jRec.onresult = function(ev){ var txt = ''; for(var i = 0; i < ev.results.length; i++){ txt += ev.results[i][0].transcript; if(ev.results[i].isFinal) finalT = txt; } st.textContent = '„' + txt + '”'; };
+    jRec.onerror = function(ev){ st.textContent = ev.error === 'not-allowed' ? 'Permite microfonul pentru By ZyP (Setări → Safari → Microfon), sau scrie mai jos.' : 'Nu te-am auzit bine. Atinge sfera și încearcă din nou.'; };
+    jRec.onend = function(){ jListening = false; orb.classList.remove('on'); if(finalT){ st.textContent = 'Atinge sfera și vorbește'; jHandle(finalT); } };
+    try{ jRec.start(); }catch(e){ st.textContent = 'Atinge sfera și vorbește'; }
+  }
+
+  /* =====================================================================
+     TERMINAL · full-screen black & gold trading desk
+     ===================================================================== */
+  var termTimer = null;
+  function openTerminal(){
+    var tv = document.getElementById('termView');
+    if(!tv){
+      tv = document.createElement('div'); tv.id = 'termView'; tv.className = 'term';
+      tv.innerHTML = '<button class="td-x term-x" aria-label="Închide">✕</button>' +
+        '<div class="term-grid"><div class="term-main"><div class="term-sym">XAUUSD · AUR <span class="live-tag">● LIVE</span></div>' +
+        '<div class="term-price" id="tmPrice">–</div><div class="term-chg" id="tmChg"></div><div class="ch-wrap" id="termChart"></div></div>' +
+        '<div class="term-side"><div class="term-box"><div class="term-l">Radarul celor 38 de strategii</div><svg id="tmRadar" viewBox="0 0 200 200"></svg><div class="term-v" id="tmVerdict"></div></div>' +
+        '<div class="term-box"><div class="term-l">Următoarea știre</div><div class="term-news" id="tmNews">–</div></div>' +
+        '<div class="term-box"><div class="term-l">Intrări active · live</div><div id="tmActive"></div></div></div></div>';
+      document.body.appendChild(tv);
+      tv.querySelector('.term-x').addEventListener('click', closeTerminal);
+    }
+    tv.classList.add('open'); document.body.style.overflow = 'hidden';
+    fetchIntraday(); termPaint(); termStatic();
+    clearInterval(termTimer); termTimer = setInterval(termPaint, 1000);
+  }
+  function closeTerminal(){ var tv = document.getElementById('termView'); if(tv) tv.classList.remove('open'); document.body.style.overflow = ''; clearInterval(termTimer); }
+  function termStatic(){
+    if(!gold) return;
+    var v = (gold.confluence || {}).verdict, sc = (v === 'BUY' || v === 'SELL') ? gold.scenarios.filter(function(x){ return x.side === v; })[0] : gold.scenarios[0];
+    var mk = (gold.ptrades || []).filter(function(t){ return !t.closed && t.status !== 'în așteptare'; }).slice(-8).map(function(t){ return { t:t.side, p:t.entry, col:t.side === 'BUY' ? '#5FBF8F' : '#E0685C', ts:Math.floor(new Date(t.opened || (t.date + 'T00:00:00')).getTime() / 1000), d:t.date }; });
+    drawGoldChart('termChart', sc, { tf: goldTf.termChart || '15m', plan:true, marks: mk });
+    var S = gold.strategies || [], n = S.length, svg = '';
+    [30, 55, 80].forEach(function(r){ svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="rgba(214,178,110,.18)" stroke-width="0.6"/>'; });
+    S.forEach(function(x, i){ var a = -Math.PI / 2 + i / n * Math.PI * 2, r = x.verdict === 'BUY' || x.verdict === 'SELL' ? 36 + x.strength * 15 : 30;
+      var col = x.verdict === 'BUY' ? '#5FBF8F' : x.verdict === 'SELL' ? '#E0685C' : x.verdict === 'AȘTEAPTĂ' ? '#D6B26E' : '#6F695F';
+      var px = 100 + Math.cos(a) * r, py = 100 + Math.sin(a) * r;
+      svg += '<line x1="100" y1="100" x2="' + px.toFixed(1) + '" y2="' + py.toFixed(1) + '" stroke="' + col + '" stroke-opacity=".35" stroke-width="0.8"/><circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="3.2" fill="' + col + '"/>'; });
+    var c = gold.confluence || {};
+    svg += '<circle cx="100" cy="100" r="20" fill="#0A0A0B" stroke="rgba(214,178,110,.5)"/><text x="100" y="104" text-anchor="middle" font-size="11" font-weight="800" fill="' + (c.verdict === 'BUY' ? '#5FBF8F' : c.verdict === 'SELL' ? '#E0685C' : '#D6B26E') + '" font-family="sans-serif">' + (c.verdict === 'AȘTEAPTĂ' ? 'WAIT' : c.verdict || '') + '</text>';
+    document.getElementById('tmRadar').innerHTML = svg;
+    document.getElementById('tmVerdict').innerHTML = '<span style="color:#5FBF8F">BUY ' + (c.buyN || 0) + '</span> · <span style="color:#AAA397">neutre ' + (c.waitN || 0) + '</span> · <span style="color:#E0685C">SELL ' + (c.sellN || 0) + '</span>';
+    document.getElementById('tmActive').innerHTML = activeEntriesHtml(6);
+  }
+  var termLastP = null, termTick = 0;
+  function termPaint(){
+    if(!gold) return;
+    var g = jGold(), pe = document.getElementById('tmPrice'); if(!pe) return;
+    if(termLastP != null && g.p !== termLastP){ pe.classList.remove('up', 'dn'); void pe.offsetWidth; pe.classList.add(g.p > termLastP ? 'up' : 'dn'); }
+    termLastP = g.p;
+    pe.textContent = jNum(g.p, 2);
+    var ce = document.getElementById('tmChg'); ce.className = 'term-chg ' + (g.ch >= 0 ? 'hs-win' : 'hs-loss'); ce.textContent = (g.ch >= 0 ? '▲ +' : '▼ ') + jNum(g.ch, 2) + ' (' + (g.ch >= 0 ? '+' : '') + g.pct.toFixed(2) + '%) azi';
+    var ne = document.getElementById('tmNews');
+    if(newsTarget){ var ms = newsTarget.t.getTime() - Date.now(), s2 = Math.max(0, Math.floor(ms / 1000));
+      var hh = Math.floor(s2 / 3600), mm = Math.floor(s2 % 3600 / 60), ss = s2 % 60, pad = function(x){ return String(x).padStart(2, '0'); };
+      ne.innerHTML = '<b class="' + (newsTarget.i === 'High' ? 'hs-loss' : '') + '">' + (newsTarget.i === 'High' ? '🔴 ' : '🟠 ') + newsTarget.c + '</b> ' + newsTarget.title + '<div class="term-cd">' + pad(hh) + ':' + pad(mm) + ':' + pad(ss) + '</div>';
+    } else ne.textContent = 'Nicio știre importantă programată.';
+    if(++termTick % 30 === 0) termStatic();
+    if(typeof paintLive === 'function' && termTick % 5 === 0) paintLive();
+  }
+  window.addEventListener('orientationchange', function(){ setTimeout(function(){
+    var gv = document.getElementById('view-gold'); if(Math.abs(window.orientation || 0) === 90 && gv && gv.classList.contains('active')) openTerminal();
+  }, 300); });
+
+  /* =====================================================================
+     VAULT · net worth as 3D gold bars (three.js r128, loaded on demand)
+     ===================================================================== */
+  var vaultState = null;
+  function loadThree(cb){
+    if(window.THREE) return cb();
+    var sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    sc.onload = cb; sc.onerror = function(){ var m = document.getElementById('vaultMsg'); if(m) m.textContent = 'Nu s-a putut încărca seiful 3D (verifică internetul).'; };
+    document.head.appendChild(sc);
+  }
+  function openVault(){
+    var vv = document.getElementById('vaultView');
+    if(!vv){
+      vv = document.createElement('div'); vv.id = 'vaultView'; vv.className = 'vault';
+      vv.innerHTML = '<button class="td-x term-x" aria-label="Închide">✕</button><div class="vault-hud"><div class="vault-l">Seiful tău</div><div class="vault-v" id="vaultVal">–</div><div class="vault-s" id="vaultSub"></div></div>' +
+        '<div id="vaultCanvas" class="vault-canvas"></div><div class="vault-hint" id="vaultMsg">Trage cu degetul ca să rotești seiful · 1 lingou = 100 €</div>';
+      document.body.appendChild(vv);
+      vv.querySelector('.term-x').addEventListener('click', closeVault);
+    }
+    vv.classList.add('open'); document.body.style.overflow = 'hidden';
+    var w = jWorth(), now = w ? w.now : 0, bars = Math.min(400, Math.floor(now / 100)), goalBars = worthGoal ? Math.min(400, Math.ceil(worthGoal / 100)) : 0;
+    document.getElementById('vaultVal').textContent = '€' + jNum(now);
+    document.getElementById('vaultSub').textContent = bars + (bars === 1 ? ' lingou' : ' lingouri') + (worthGoal ? ' · obiectiv €' + jNum(worthGoal) + ' (' + Math.min(100, Math.round(now / worthGoal * 100)) + '%)' : ' · pune un obiectiv la Bani → Avere');
+    loadThree(function(){ buildVault(bars, goalBars); });
+  }
+  function closeVault(){ var vv = document.getElementById('vaultView'); if(vv) vv.classList.remove('open'); document.body.style.overflow = ''; if(vaultState){ cancelAnimationFrame(vaultState.raf); vaultState.renderer.dispose(); vaultState = null; var c = document.getElementById('vaultCanvas'); if(c) c.innerHTML = ''; } }
+  function buildVault(bars, goalBars){
+    var host = document.getElementById('vaultCanvas'); if(!host || !window.THREE) return;
+    host.innerHTML = '';
+    var T = THREE, W = host.clientWidth || window.innerWidth, H = host.clientHeight || window.innerHeight * 0.7;
+    var renderer = new T.WebGLRenderer({ antialias:true, alpha:true }); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.setSize(W, H);
+    renderer.outputEncoding = T.sRGBEncoding; host.appendChild(renderer.domElement);
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(38, W / H, 0.1, 200);
+    scene.add(new T.AmbientLight(0xfff1d6, 0.35));
+    var key = new T.DirectionalLight(0xffe2a8, 1.25); key.position.set(6, 12, 8); scene.add(key);
+    var rim = new T.PointLight(0xd6b26e, 1.1, 40); rim.position.set(-8, 6, -6); scene.add(rim);
+    var fill = new T.DirectionalLight(0xfff4de, 0.7); fill.position.set(-4, 5, 10); scene.add(fill);
+    var top = new T.PointLight(0xffe7b0, 1.4, 30); top.position.set(0, 9, 2); scene.add(top);
+    // floor + vault walls
+    var floor = new T.Mesh(new T.CircleGeometry(14, 64), new T.MeshBasicMaterial({ color:0x010101 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+    var ring = new T.Mesh(new T.RingGeometry(9.6, 9.75, 96), new T.MeshBasicMaterial({ color:0xd6b26e, transparent:true, opacity:0.55 })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.01; scene.add(ring);
+    // bullion shape (trapezoid prism)
+    var shape = new T.Shape(); shape.moveTo(-0.62, 0); shape.lineTo(0.62, 0); shape.lineTo(0.5, 0.34); shape.lineTo(-0.5, 0.34); shape.lineTo(-0.62, 0);
+    var geo = new T.ExtrudeGeometry(shape, { depth:0.34, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2 }); geo.translate(0, 0, -0.17);
+    var mat = new T.MeshStandardMaterial({ color:0xe0b24f, metalness:0.9, roughness:0.24, emissive:0x3a2400, emissiveIntensity:0.45 });
+    var ghostMat = new T.MeshBasicMaterial({ color:0xd6b26e, wireframe:true, transparent:true, opacity:0.12 });
+    // layout: pyramid-ish stacks on a grid
+    var totalN = Math.max(bars, goalBars), cols = totalN <= 48 ? 4 : totalN <= 160 ? 5 : 6, rowsN = totalN <= 48 ? 3 : totalN <= 160 ? 5 : 6, perLayer = cols * rowsN;
+    function slot(i){ var layer = Math.floor(i / perLayer), k = i % perLayer, row = Math.floor(k / cols), col = k % cols;
+      return { x:(col - (cols - 1) / 2) * 1.32 + (layer % 2 ? 0.08 : 0), y:0.03 + layer * 0.41, z:(row - (rowsN - 1) / 2) * 0.44 }; }
+    var total = Math.max(bars, goalBars), inst = bars ? new T.InstancedMesh(geo, mat, bars) : null, dummy = new T.Object3D(), drops = [];
+    if(inst){ scene.add(inst); for(var i = 0; i < bars; i++){ var s = slot(i); drops.push({ s:s, y0:s.y + 7 + Math.random() * 3, t0:performance.now() + i * Math.max(12, 900 / bars) }); } }
+    if(goalBars > bars){ var gm = new T.InstancedMesh(geo, ghostMat, goalBars - bars); for(var j = bars; j < goalBars; j++){ var sg = slot(j); dummy.position.set(sg.x, sg.y, sg.z); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); gm.setMatrixAt(j - bars, dummy.matrix); } scene.add(gm); }
+    var st = { renderer:renderer, raf:0, rotY:0.6, rotX:0.42, drag:null, auto:true };
+    var hfov = 2 * Math.atan(Math.tan(T.MathUtils.degToRad(cam.fov) / 2) * cam.aspect);
+    var layers = Math.ceil(total / perLayer), halfW = cols * 0.66 + 0.8;
+    var dist = Math.max(7, halfW / Math.tan(hfov / 2)) + Math.min(10, layers * 0.35);
+    function frame(now){
+      if(inst){ for(var i = 0; i < drops.length; i++){ var d = drops[i], p = Math.max(0, Math.min(1, (now - d.t0) / 700)), e = 1 - Math.pow(1 - p, 3);
+        var y = d.y0 + (d.s.y - d.y0) * e + (p >= 1 ? 0 : 0); dummy.position.set(d.s.x, y, d.s.z); dummy.rotation.set(0, (1 - e) * 1.5, 0); dummy.updateMatrix(); inst.setMatrixAt(i, dummy.matrix); }
+        inst.instanceMatrix.needsUpdate = true; }
+      if(st.auto) st.rotY += 0.0025;
+      cam.position.set(Math.sin(st.rotY) * dist * Math.cos(st.rotX), 1.2 + Math.sin(st.rotX) * dist, Math.cos(st.rotY) * dist * Math.cos(st.rotX)); cam.lookAt(0, 0.3 + layers * 0.2, 0);
+      renderer.render(scene, cam); st.raf = requestAnimationFrame(frame);
+    }
+    var el = renderer.domElement;
+    el.addEventListener('pointerdown', function(e){ st.drag = { x:e.clientX, y:e.clientY }; st.auto = false; });
+    window.addEventListener('pointerup', function(){ st.drag = null; });
+    el.addEventListener('pointermove', function(e){ if(!st.drag) return; st.rotY -= (e.clientX - st.drag.x) * 0.008; st.rotX = Math.max(0.12, Math.min(1.25, st.rotX + (e.clientY - st.drag.y) * 0.006)); st.drag = { x:e.clientX, y:e.clientY }; });
+    el.style.touchAction = 'none';
+    vaultState = st; st.raf = requestAnimationFrame(frame);
+    if(!bars){ var m = document.getElementById('vaultMsg'); if(m) m.textContent = 'Seiful e gol deocamdată: salvează soldurile la Bani → Avere și lingourile apar aici.'; }
+  }
+
+  /* entry points */
+  window.__openTerminal = openTerminal; window.__openVault = openVault; window.__openJarvis = openJarvis; window.__jAnswer = jAnswer;
+  (function(){
+    var fab = document.createElement('button'); fab.id = 'jvFab'; fab.className = 'jv-fab'; fab.setAttribute('aria-label', 'Jarvis');
+    fab.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+    fab.addEventListener('click', openJarvis); document.body.appendChild(fab);
+  })();
 
   /* money segments */
   (function(){
