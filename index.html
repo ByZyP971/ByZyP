@@ -1161,6 +1161,14 @@
 
   .td-risk{ margin-top:10px; padding:10px 12px; border-radius:12px; font-size:12.5px; line-height:1.45; background:color-mix(in srgb, var(--accent) 8%, var(--bg-card-2)); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); }
   .td-risk.warn{ background:color-mix(in srgb, var(--danger) 8%, var(--bg-card-2)); border-color:color-mix(in srgb, var(--danger) 35%, var(--line)); }
+
+  .gs-cnt{ display:inline-block; min-width:16px; padding:0 5px; border-radius:9px; background:var(--gold); color:#1A1307; font-size:10px; font-weight:800; line-height:16px; text-align:center; margin-left:2px; }
+  .gs-cnt:empty{ display:none; }
+  .op-sum{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:8px; }
+  .op-sum > div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:9px 4px; }
+  .op-sum b{ display:block; font-size:16px; font-variant-numeric:tabular-nums; } .op-sum span{ font-size:10px; color:var(--text-faint); }
+  .op-sum b .lv-dot{ margin-right:4px; }
+  .op-empty{ text-align:center; padding:26px 10px; font-family:var(--serif, var(--display)); font-size:20px; } .op-empty span{ display:block; font-family:var(--body); font-size:12.5px; color:var(--text-dim); margin-top:8px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -1653,12 +1661,14 @@
       <div class="card gold-card" id="goldTop"><div class="hint" style="margin-top:0;">Se încarcă analiza XAUUSD…</div></div>
       <div class="gs-nav" id="goldSeg">
         <button data-gs="plan" class="on">🧭 Plan</button>
+        <button data-gs="open">⚡ Deschise <span class="gs-cnt" id="openCnt"></span></button>
         <button data-gs="live">📡 Live</button>
         <button data-gs="chart">📐 Analiză</button>
         <button data-gs="strat">🧪 Strategii</button>
         <button data-gs="risk">🛡️ Risc</button>
         <button data-gs="hist">📜 Istoric</button>
       </div>
+      <div class="card" data-gsp="open" style="display:none;"><div id="openPane"><div class="hint" style="margin-top:0;">Se încarcă…</div></div></div>
       <div class="card gs-live" data-gsp="live" style="display:none;padding:0;">
         <div class="tv-full" id="goldLive"></div>
       </div>
@@ -3490,7 +3500,26 @@ document.addEventListener('click', function(e){
       act.slice(0, max || 8).map(function(t){ return ptRow(t, true); }).join('') +
       (act.length > (max || 8) ? '<div class="hint">+ încă ' + (act.length - (max || 8)) + ' în 🥇 Aur → Istoric</div>' : '');
   }
+  function openOnly(){ return activeTrades().filter(function(t){ return t.status !== 'în așteptare'; }); }
+  function renderOpenPane(){
+    var el = document.getElementById('openPane'), cnt = document.getElementById('openCnt'); if(!el) return;
+    var op = openOnly().slice().sort(function(a, b){ return String(b.opened || b.date).localeCompare(String(a.opened || a.date)); });
+    if(cnt) cnt.textContent = op.length ? op.length : '';
+    if(!op.length){ el.innerHTML = '<div class="card-title">⚡ Tranzacții deschise</div><div class="op-empty">Nicio tranzacție deschisă acum.<br><span>Când o strategie intră, apare aici pe loc și primești notificare cu intrarea, SL și TP.</span></div>'; return; }
+    var p = liveSpot != null ? liveSpot : gold.price, totR = 0, totUsd = 0, buys = 0;
+    op.forEach(function(t){ var risk = Math.abs(t.entry - t.sl) || 1, mv = t.side === 'BUY' ? p - t.entry : t.entry - p;
+      var r = /^TP1/.test(t.status) ? 0.5 * Math.abs(t.tp1 - t.entry) / risk + 0.5 * Math.max(0, mv) / risk : mv / risk;
+      totR += r; totUsd += /^TP1/.test(t.status) ? 0.5 * Math.abs(t.tp1 - t.entry) + 0.5 * Math.max(0, mv) : mv; if(t.side === 'BUY') buys++; });
+    el.innerHTML = '<div class="card-title">⚡ Tranzacții deschise</div>' +
+      '<div class="op-sum"><div><b>' + op.length + '</b><span>deschise</span></div><div><b class="up">' + buys + '</b><span>BUY</span></div><div><b class="dn">' + (op.length - buys) + '</b><span>SELL</span></div>' +
+      '<div><b class="' + (totR >= 0 ? 'hs-win' : 'hs-loss') + '"><span class="lv-dot"></span>' + (totR >= 0 ? '+' : '') + totR.toFixed(2) + 'R</b><span>' + (totUsd >= 0 ? '+' : '−') + '$' + Math.abs(totUsd).toFixed(2) + ' la 0.01</span></div></div>' +
+      op.map(function(t){ return ptRow(t, true); }).join('') +
+      '<div class="hint">Doar tranzacțiile în care strategiile au intrat deja (fără ordinele în așteptare). Profitul se mișcă live cu prețul aurului. Atinge una ca s-o vezi pe grafic, cu intrarea, SL și TP.</div>';
+    if(typeof paintLive === 'function') paintLive();
+  }
+  setInterval(function(){ if(goldSeg === 'open' && document.getElementById('view-gold') && document.getElementById('view-gold').classList.contains('active')) renderOpenPane(); }, 15000);
   function renderActiveEntries(){
+    renderOpenPane();
     var a = document.getElementById('planActive'); if(a) a.innerHTML = '<div class="gd-sec">⏳ Intrările active acum</div>' + activeEntriesHtml(8);
     var b = document.getElementById('tradingGoldActive'); if(b) b.innerHTML = activeEntriesHtml(6);
     if(typeof paintLive === 'function') paintLive();
