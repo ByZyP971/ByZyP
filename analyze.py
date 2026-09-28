@@ -984,19 +984,46 @@ def main():
 
     # ---------- events for push notifications (new trade / fill / TP / SL / expiry) ----------
     ICON = {'BUY': '🟢', 'SELL': '🔴'}
+    BAL = float(os.environ.get('TRADE_BALANCE') or 100)      # your account (EUR) — default €100
+    RISKP = float(os.environ.get('RISK_PCT') or 2)            # % of the account you accept to lose per trade
+    fx = None
+    def eurusd():
+        nonlocal fx
+        if fx is None:
+            try: fx = float(load_yahoo_daily('EURUSD=X', '5d')[-1]); assert 0.8 < fx < 1.6
+            except Exception: fx = 1.08
+        return fx
+    def money_lines(t):
+        f = eurusd(); d = abs(t['entry'] - t['sl'])                     # $ lost per 0.01 lot (1 oz) at SL
+        if d <= 0: return ''
+        lev = float(os.environ.get('LEVERAGE') or 20)                    # XTB / EU retail on gold: 1:20 → 5% margin
+        marg = t['entry'] / lev / f                                      # € margin for 0.01 lot (1 oz)
+        if BAL < marg:
+            return (f"\n❌ Marja pentru 0.01 lot ≈ €{marg:.0f} (1:{lev:g}): cu €{BAL:g} nu poți deschide. Risc la SL €{d / f:.2f}, la TP1 +€{abs(t['tp1'] - t['entry']) / f:.2f}.")
+        want = BAL * f * RISKP / 100                                     # $ you accept to risk
+        lot = math.floor(want / d) / 100
+        g1 = abs(t['tp1'] - t['entry'])
+        if lot >= 0.01:
+            r_eur = lot * 100 * d / f
+            return (f"\nLot {lot:.2f} → risc €{r_eur:.2f} ({r_eur / BAL * 100:.1f}% din €{BAL:g}) · la TP1 +€{lot * 100 * g1 / f:.2f}")
+        r_eur = d / f
+        return (f"\n⚠️ Cu €{BAL:g}, chiar și 0.01 lot riscă €{r_eur:.2f} ({r_eur / BAL * 100:.0f}% din cont, peste {RISKP:g}%). La TP1 +€{g1 / f:.2f}.")
+    def lvl(t):
+        dsl = abs(t['entry'] - t['sl'])
+        return (f"SL {t['sl']} ({'−' if t['side'] == 'BUY' else '+'}{dsl:.2f} $)\nTP1 {t['tp1']} · TP2 {t['tp2']}")
     for t in ptrades:
         pst = old_status.get(t['id']); cur = t['status']
         if pst == cur: continue
         lv = f"Intrare {t['entry']} · SL {t['sl']} · TP1 {t['tp1']} · TP2 {t['tp2']}"
         if pst is None:
             if t['type'] == 'market' and cur == 'deschisă':
-                title = f"{ICON[t['side']]} {t['side']} deschis · {t['strat']}"; body = f"Strategia a intrat acum pe XAUUSD. {lv}"
+                title = f"{ICON[t['side']]} {t['side']} deschis · {t['strat']}"; body = f"Am intrat la {t['entry']}\n{lvl(t)}{money_lines(t)}"
             elif cur == 'în așteptare':
-                title = f"🕒 Ordin {t['side']} pus · {t['strat']}"; body = f"Așteaptă prețul la {t['entry']}. SL {t['sl']} · TP1 {t['tp1']}"
+                title = f"🕒 Ordin {t['side']} pus · {t['strat']}"; body = f"Intră dacă prețul ajunge la {t['entry']}\n{lvl(t)}{money_lines(t)}"
             else:
                 title = f"{ICON[t['side']]} {t['side']} · {t['strat']}"; body = f"{cur}. {lv}"
         elif cur == 'deschisă':
-            title = f"{ICON[t['side']]} {t['side']} intrat · {t['strat']}"; body = f"Ordinul s-a executat la {t['entry']}. SL {t['sl']} · TP1 {t['tp1']}"
+            title = f"{ICON[t['side']]} {t['side']} intrat · {t['strat']}"; body = f"Am intrat la {t['entry']}\n{lvl(t)}{money_lines(t)}"
         elif cur.startswith('TP1 atins'):
             title = f"✅ TP1 atins · SL mutat la BE · {t['strat']}"; body = f"{t['side']} de la {t['entry']}: jumătate închisă la {t['tp1']}. SL mutat la intrare ({t['entry']}): restul e fără risc, ținta TP2 {t['tp2']}."
         elif t['closed'] and 'breakeven' in cur:

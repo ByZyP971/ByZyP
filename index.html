@@ -1158,6 +1158,9 @@
   .mt5-stats div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:9px 4px; }
   .mt5-stats b{ display:block; font-size:15px; font-variant-numeric:tabular-nums; } .mt5-stats span{ font-size:10.5px; color:var(--text-faint); }
   .mt5-card{ border-color:color-mix(in srgb, var(--gold) 28%, var(--line)) !important; }
+
+  .td-risk{ margin-top:10px; padding:10px 12px; border-radius:12px; font-size:12.5px; line-height:1.45; background:color-mix(in srgb, var(--accent) 8%, var(--bg-card-2)); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); }
+  .td-risk.warn{ background:color-mix(in srgb, var(--danger) 8%, var(--bg-card-2)); border-color:color-mix(in srgb, var(--danger) 35%, var(--line)); }
 </style>
 </head>
 <body>
@@ -3526,6 +3529,14 @@ document.addEventListener('click', function(e){
       '<div class="td-live ' + (t.closed ? (t.resultR > 0 ? 'hs-win' : 'hs-loss') : (mv >= 0 ? 'hs-win' : 'hs-loss')) + '">' + (t.closed ? '' : '<span class="lv-dot"></span>') + liveTxt + '</div>' +
       '<div class="ch-wrap" id="tdChart"></div>' +
       '<div class="st-lv" style="margin-top:10px;"><div><b>' + f2(t.entry) + '</b><span>intrare</span></div><div class="slv"><b>' + f2(t.sl) + '</b><span>stop loss</span></div><div class="tpv"><b>' + f2(t.tp1) + '</b><span>TP1</span></div><div class="tpv"><b>' + f2(t.tp2) + '</b><span>TP2</span></div></div>' +
+      (function(){
+        var bal = eqStart + trades.reduce(function(x, y){ return x + (y.result || 0); }, 0), fx = 1.08, d = Math.abs(t.entry - t.sl); if(!(bal > 0) || !(d > 0) || t.sid === 'mt5') return '';
+        var lot = Math.floor(bal * fx * 0.02 / d) / 100, g1 = Math.abs(t.tp1 - t.entry);
+        var marg = t.entry / 20 / fx;
+        if(bal < marg) return '<div class="td-risk warn">❌ Marja pentru <b>0.01 lot</b> e ≈ <b>€' + marg.toFixed(0) + '</b> (levier 1:20 la aur, XTB). Cu <b>€' + bal.toFixed(2) + '</b> în cont nu poți deschide tranzacția. Dacă ai avea marjă: risc la SL ≈ €' + (d / fx).toFixed(2) + ', la TP1 ≈ +€' + (g1 / fx).toFixed(2) + '.</div>';
+        return lot >= 0.01 ? '<div class="td-risk">💶 Pentru contul tău de <b>€' + bal.toFixed(2) + '</b> (risc 2%): <b>lot ' + lot.toFixed(2) + '</b> → risc ≈ €' + (lot * 100 * d / fx).toFixed(2) + ' · la TP1 ≈ +€' + (lot * 100 * g1 / fx).toFixed(2) + '</div>'
+          : '<div class="td-risk warn">⚠️ Cu <b>€' + bal.toFixed(2) + '</b> în cont, chiar și <b>0.01 lot</b> riscă ≈ €' + (d / fx).toFixed(2) + ' (' + Math.round(d / fx / bal * 100) + '% din cont). SL-ul e la ' + d.toFixed(2) + ' $ de intrare: prea larg pentru contul tău. La TP1 ≈ +€' + (g1 / fx).toFixed(2) + '.</div>';
+      })() +
       (t.exit != null && t.closed ? '<div class="hint">Ieșire la ' + f2(t.exit) + (t.closedDate ? ' pe ' + t.closedDate.slice(8) + '.' + t.closedDate.slice(5, 7) : '') + '.</div>' : '') +
       '<div class="hint">Pe grafic: punctul auriu = unde a intrat' + (t.closed ? ', punctul alb = unde a ieșit' : '') + '. Liniile: SL (roșu), TP1 și TP2 (verde). Linia LIVE e prețul de acum.</div></div>';
     sh.classList.add('open');
