@@ -1116,6 +1116,48 @@
   .vault-v{ font-family:var(--serif, Georgia); font-size:54px; font-weight:600; background:linear-gradient(135deg,#F1DDA8,#D6B26E 45%,#A87D3A); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1.05; }
   .vault-s{ font-size:13px; color:#F4EFE6; opacity:.8; }
   .vault-hint{ position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 22px); text-align:center; font-size:12px; color:#AAA397; z-index:2; padding:0 20px; }
+
+  /* ===== splash · private edition ===== */
+  #splash{ background:#050505 !important; gap:0 !important; overflow:hidden; transition:opacity .7s ease, visibility .7s, transform .7s ease !important; }
+  #splash.hide{ opacity:0; visibility:hidden; transform:scale(1.04); }
+  .sp2-glow{ position:absolute; width:520px; height:520px; left:50%; top:42%; margin:-260px 0 0 -260px; border-radius:50%;
+    background:radial-gradient(circle, rgba(214,178,110,.16), rgba(214,178,110,0) 62%); animation:sp2glow 2.2s ease-out both; pointer-events:none; }
+  .sp2-emblem{ position:relative; width:150px; height:150px; margin-bottom:26px; }
+  .sp2-ring{ position:absolute; inset:-14px; width:178px; height:178px; transform:rotate(-90deg); }
+  .sp2-ring circle{ stroke-dasharray:100; stroke-dashoffset:100; animation:sp2draw 1.3s cubic-bezier(.6,0,.2,1) .15s forwards; }
+  .sp2-ring circle + circle{ animation-delay:.35s; }
+  .sp2-icon{ position:absolute; inset:0; border-radius:34px; overflow:hidden; background:url(icon.png) center/cover no-repeat;
+    box-shadow:0 30px 60px -24px rgba(214,178,110,.45), 0 0 0 1px rgba(214,178,110,.22);
+    opacity:0; transform:scale(.86); animation:sp2in .9s cubic-bezier(.2,.8,.2,1) .1s forwards; }
+  .sp2-icon i{ position:absolute; top:0; bottom:0; width:45%; left:-60%; transform:skewX(-18deg);
+    background:linear-gradient(90deg, transparent, rgba(255,240,200,.38), transparent); animation:sp2shine 1.1s ease-in-out .9s forwards; }
+  .sp2-title{ font-family:"Cormorant Garamond", "Iowan Old Style", Georgia, serif; font-size:40px; font-weight:600; color:#F4EFE6; letter-spacing:.02em; line-height:1; display:flex; }
+  .sp2-title span{ display:inline-block; opacity:0; transform:translateY(14px); animation:sp2up .6s cubic-bezier(.2,.8,.2,1) forwards; }
+  .sp2-title span:nth-child(1){ animation-delay:.55s; } .sp2-title span:nth-child(2){ animation-delay:.6s; } .sp2-title span:nth-child(3){ animation-delay:.63s; }
+  .sp2-title span:nth-child(4){ animation-delay:.68s; color:#D6B26E; } .sp2-title span:nth-child(5){ animation-delay:.73s; color:#D6B26E; } .sp2-title span:nth-child(6){ animation-delay:.78s; color:#D6B26E; }
+  .sp2-rule{ width:120px; height:1px; margin:16px 0 14px; background:rgba(214,178,110,.18); overflow:hidden; }
+  .sp2-rule i{ display:block; height:100%; width:0; background:linear-gradient(90deg, transparent, #D6B26E, transparent); animation:sp2fill 1.1s ease .9s forwards; }
+  .sp2-greet{ font-family:"Cormorant Garamond", Georgia, serif; font-style:italic; font-size:21px; color:#F4EFE6; opacity:0; animation:sp2fade .7s ease 1.05s forwards; }
+  .sp2-date{ font-family:"Manrope", -apple-system, system-ui, sans-serif; font-size:11.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#8F887C; margin-top:6px; opacity:0; animation:sp2fade .7s ease 1.2s forwards; }
+  @keyframes sp2draw{ to{ stroke-dashoffset:0; } }
+  @keyframes sp2in{ to{ opacity:1; transform:none; } }
+  @keyframes sp2shine{ to{ left:130%; } }
+  @keyframes sp2up{ to{ opacity:1; transform:none; } }
+  @keyframes sp2fill{ to{ width:100%; } }
+  @keyframes sp2fade{ to{ opacity:1; } }
+  @keyframes sp2glow{ from{ opacity:0; transform:scale(.7); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .sp2-icon, .sp2-title span, .sp2-greet, .sp2-date{ opacity:1; transform:none; animation:none; } .sp2-ring circle{ stroke-dashoffset:0; animation:none; } .sp2-rule i{ width:100%; animation:none; } }
+
+  .mt5-top{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+  .mt5-l{ font-size:12px; font-weight:600; color:var(--text-dim); }
+  .mt5-eq{ font-family:var(--serif, var(--display)); font-size:40px; font-weight:600; line-height:1.05; font-variant-numeric:tabular-nums; }
+  .mt5-fl{ font-weight:700; font-size:13px; margin-top:2px; }
+  .mt5-mini{ display:flex; flex-direction:column; gap:6px; min-width:130px; }
+  .mt5-mini div{ display:flex; justify-content:space-between; gap:10px; font-size:12px; } .mt5-mini span{ color:var(--text-faint); } .mt5-mini b{ font-variant-numeric:tabular-nums; }
+  .mt5-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:14px 0 8px; }
+  .mt5-stats div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:9px 4px; }
+  .mt5-stats b{ display:block; font-size:15px; font-variant-numeric:tabular-nums; } .mt5-stats span{ font-size:10.5px; color:var(--text-faint); }
+  .mt5-card{ border-color:color-mix(in srgb, var(--gold) 28%, var(--line)) !important; }
 </style>
 </head>
 <body>
@@ -1134,14 +1176,19 @@
 <div class="lightbox" id="lightbox"><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div></div>
 <div class="rest-timer" id="restTimer"><b id="rtTime">1:30</b><span id="rtLabel">pauză</span><button id="rtAdd">+15s</button><button id="rtStop">✕</button></div>
 <div id="splash" aria-hidden="true">
-  <div class="sp-orbit">
-    <div class="sp-ring"></div><div class="sp-ring r2"></div>
-    <div class="sp-sat"></div><div class="sp-sat s2"></div>
-    <div class="sp-core">↗</div>
+  <div class="sp2-glow"></div>
+  <div class="sp2-emblem">
+    <svg class="sp2-ring" viewBox="0 0 200 200">
+      <defs><linearGradient id="sp2g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1DDA8"/><stop offset=".5" stop-color="#D6B26E"/><stop offset="1" stop-color="#8C6424"/></linearGradient></defs>
+      <circle cx="100" cy="100" r="94" fill="none" stroke="url(#sp2g)" stroke-width="1.2" pathLength="100"/>
+      <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(214,178,110,.25)" stroke-width="0.6" pathLength="100"/>
+    </svg>
+    <div class="sp2-icon"><i></i></div>
   </div>
-  <div class="sp-title">BY ZYP</div>
-  <div class="sp-bar"><i></i></div>
-  <div class="sp-sub" id="spSub">inițializare sistem</div>
+  <div class="sp2-title"><span>B</span><span>y</span><span>&nbsp;</span><span>Z</span><span>y</span><span>P</span></div>
+  <div class="sp2-rule"><i></i></div>
+  <div class="sp2-greet" id="spSub">&nbsp;</div>
+  <div class="sp2-date" id="spDate">&nbsp;</div>
 </div>
 <div class="app">
   <header>
@@ -1514,6 +1561,11 @@
       </div>
 
 
+      <div class="card mt5-card" data-seg-card="trading" id="mt5Card" style="display:none">
+        <div class="card-title">📊 Contul tău MT5</div>
+        <div id="mt5Body"><div class="hint" style="margin-top:0;">Se încarcă…</div></div>
+      </div>
+
       <div class="card gold-card" data-seg-card="trading" id="tradingGoldCard">
         <div class="card-title">🥇 Intrările pe aur acum</div>
         <div id="tradingGoldActive"><div class="hint" style="margin-top:0;">Se încarcă…</div></div>
@@ -1523,11 +1575,11 @@
         <div class="card-title">Evoluția contului</div>
         <div class="eq-head">
           <div>
-            <div class="eq-bal" id="eqBal">$0.00</div>
+            <div class="eq-bal" id="eqBal">€0.00</div>
             <div class="eq-delta" id="eqDelta"></div>
           </div>
           <div class="eq-start">
-            <label>Sold pornire ($)</label>
+            <label>Sold pornire (€)</label>
             <input type="number" id="eqStartInput" inputmode="decimal" placeholder="5">
           </div>
         </div>
@@ -1556,7 +1608,7 @@
 
       <div class="card" data-seg-card="trading">
         <div class="card-title">Tranzacție nouă</div>
-        <div class="field-row"><label>Sumă investită ($)</label><input type="number" id="tradeAmt" inputmode="decimal" placeholder="0"></div>
+        <div class="field-row"><label>Sumă investită (€)</label><input type="number" id="tradeAmt" inputmode="decimal" placeholder="0"></div>
         <div class="field-row"><label>Lot</label><input type="number" id="tradeLot" inputmode="decimal" placeholder="ex. 0.10" step="0.01"></div>
         <div class="field-row"><label>Preț intrare</label><input type="number" id="tradeEntry" inputmode="decimal" placeholder="ex. 1.0850" step="0.0001"></div>
         <div class="field-row"><label>Rezultat ($, + sau -)</label><input type="number" id="tradeResult" inputmode="decimal" placeholder="0"></div>
@@ -1569,7 +1621,7 @@
         <div class="card-title">Total câștig / pierdere</div>
         <div class="trade-current">
           <span class="trade-current-label">Rezultat total, toate tranzacțiile</span>
-          <span class="trade-current-num" id="tradeTotalAll">$0.00</span>
+          <span class="trade-current-num" id="tradeTotalAll">€0.00</span>
         </div>
         <div id="tradeMonthly"><div class="hint" style="margin-top:0;">Adaugă prima tranzacție ca să vezi rezultatul pe lună.</div></div>
         <div style="margin-top:14px;"><button class="past-toggle hx-btn" data-hx="trades" data-label="ultimele tranzacții">Arată ultimele tranzacții ▾</button><div class="hx-body" data-hxb="trades" style="display:none;margin-top:10px;"><div id="tradeList"></div></div></div>
@@ -1635,6 +1687,7 @@
             <button class="ghost-btn" id="importBtn">📥 Importă backup</button>
             <button class="ghost-btn" id="exportBtn">📤 Descarcă backup</button>
             <button class="ghost-btn" id="logoutBtn" style="color:var(--danger);">Deconectare</button>
+            <button class="ghost-btn" id="resetAllBtn" style="color:var(--danger);border-color:color-mix(in srgb, var(--danger) 40%, transparent);">🗑️ Resetează tot (de la zero)</button>
             <div class="hint" id="toolsMsg" style="margin-top:0;"></div>
           </div>
         </div>
@@ -1742,6 +1795,8 @@ document.addEventListener('click', function(e){
   function rid(){ return Math.random().toString(36).slice(2,12) + Date.now().toString(36); }
   function makeDb(uid){
     var cache = {}, docL = {}, colL = {}, loaded = false, waiting = [];
+    window.__wipeAll = function(){ return sb.from('docs').delete().eq('user_id', uid).then(function(r){ if(r.error) throw r.error; }); };
+    window.__putDoc = function(col, id, data){ return sb.from('docs').upsert({ user_id:uid, col:col, id:id, data:data, updated_at:new Date().toISOString() }, { onConflict:'user_id,col,id' }).then(function(r){ if(r.error) throw r.error; }); };
     function snapDoc(col, id){ var d = cache[col] && cache[col][id]; return { id:id, exists: !!d, data:function(){ return clone(d); } }; }
     function snapCol(col, order){
       var m = cache[col] || {};
@@ -2698,7 +2753,7 @@ document.addEventListener('click', function(e){
       tile('💪', train, 'zile de antrenament') +
       tile('⭐', perfect, 'zile perfecte (5/5)', 'gold') +
       tile('🔥', best, 'cel mai lung șir', 'gold') +
-      tile('📊', (tradeSum>=0?'+':'-') + '$' + Math.abs(tradeSum).toFixed(2), 'trading total', tradeSum>=0?'pos':'neg') +
+      tile('📊', (tradeSum>=0?'+':'-') + '€' + Math.abs(tradeSum).toFixed(2), 'trading total', tradeSum>=0?'pos':'neg') +
       tile('🪙', '€' + investSum.toFixed(0), 'investit total') +
       tile('📸', keys.filter(function(k){ return data[k] && data[k].photo; }).length, 'poze de progres');
 
@@ -2884,7 +2939,7 @@ document.addEventListener('click', function(e){
   var tradeEntry = document.getElementById('tradeEntry');
   var tradeResult = document.getElementById('tradeResult');
 
-  function fmtSigned(n){ return (n>=0?'+':'-') + '$' + Math.abs(n).toFixed(2); }
+  function fmtSigned(n){ return (n>=0?'+':'-') + '€' + Math.abs(n).toFixed(2); }
 
   function renderTrades(){
     var totalAll = trades.reduce(function(s,t){ return s + t.result; }, 0);
@@ -2999,7 +3054,7 @@ document.addEventListener('click', function(e){
     sorted.forEach(function(t){ run += t.result; pts.push(run); });
     var bal = run;
     var diff = bal - eqStart;
-    document.getElementById('eqBal').textContent = (bal<0?'-':'') + '$' + Math.abs(bal).toFixed(2);
+    document.getElementById('eqBal').textContent = (bal<0?'-':'') + '€' + Math.abs(bal).toFixed(2);
     var dEl = document.getElementById('eqDelta');
     var pct = eqStart > 0 ? (diff/eqStart*100) : null;
     dEl.textContent = fmtSigned(diff) + (pct!==null ? ' (' + (pct>=0?'+':'') + pct.toFixed(1) + '%)' : '') + ' de la pornire';
@@ -3453,12 +3508,12 @@ document.addEventListener('click', function(e){
   /* ===== trade sheet: the trade drawn on the chart ===== */
   var tdCurrent = null;
   function openTrade(id){
-    var t = (gold && gold.ptrades || []).filter(function(x){ return x.id === id; })[0]; if(!t) return;
+    var t = (gold && gold.ptrades || []).filter(function(x){ return x.id === id; })[0] || (window.__mt5Trades || {})[id]; if(!t) return;
     tdCurrent = id;
     var sh = document.getElementById('tdSheet');
     if(!sh){ sh = document.createElement('div'); sh.id = 'tdSheet'; sh.className = 'td-sheet'; document.body.appendChild(sh);
       sh.addEventListener('click', function(e){ if(e.target === sh || e.target.closest('.td-x')){ sh.classList.remove('open'); tdCurrent = null; } }); }
-    var G = SGUIDE[t.sid] || { ic:'•' };
+    var G = SGUIDE[t.sid] || { ic: t.sid === 'mt5' ? '📊' : '•' };
     var buy = t.side === 'BUY', risk = Math.abs(t.entry - t.sl) || 1;
     var p = liveSpot != null ? liveSpot : gold.price, mv = buy ? p - t.entry : t.entry - p;
     var liveTxt = t.closed ? (t.resultR != null ? 'Rezultat final: ' + (t.resultR >= 0 ? '+' : '') + t.resultR + 'R · ' + (t.pnlOz >= 0 ? '+' : '−') + '$' + Math.abs(t.pnlOz).toFixed(2) + ' la 0.01 lot' : 'Ordinul a expirat fără să se execute.') :
@@ -3489,6 +3544,63 @@ document.addEventListener('click', function(e){
     var r = e.target.closest ? e.target.closest('.pt-r[data-tid]') : null; if(!r) return;
     openTrade(r.getAttribute('data-tid'));
   });
+
+  /* ===== MT5 account (MetaApi → robot → Supabase 'mt5/state') ===== */
+  var mt5State = null;
+  function isGoldSym(sym){ return /XAU|GOLD/i.test(sym || ''); }
+  function mt5Live(p){
+    if(!isGoldSym(p.symbol) || liveSpot == null || p.price == null) return { profit:p.profit, price:p.price };
+    var dir = p.side === 'BUY' ? 1 : -1;
+    return { profit: p.profit + (liveSpot - p.price) * dir * p.volume * 100, price: liveSpot };
+  }
+  function renderMt5(){
+    var el = document.getElementById('mt5Body'); if(!el) return;
+    var S = mt5State;
+    var card = document.getElementById('mt5Card');
+    if(!S || !S.info){ if(card) card.style.display = 'none'; return; }
+    if(card) card.style.display = '';
+    var cur = S.info.currency === 'USD' ? '$' : (S.info.currency || '') + ' ';
+    var money = function(v){ return (v >= 0 ? '+' : '−') + cur + Math.abs(v).toFixed(2); };
+    var pos = S.positions || [], lives = pos.map(mt5Live), fl = lives.reduce(function(a, x){ return a + (x.profit || 0); }, 0);
+    var eqLive = S.info.balance + fl;
+    var at = S._at ? new Date(S._at) : null, ago = at ? Math.max(0, Math.round((Date.now() - at.getTime()) / 60000)) : null;
+    window.__mt5Trades = {};
+    var h = '<div class="mt5-top"><div><div class="mt5-l">Equity · live</div><div class="mt5-eq">' + cur + eqLive.toFixed(2) + '</div>' +
+      '<div class="mt5-fl ' + (fl >= 0 ? 'hs-win' : 'hs-loss') + '">' + (pos.length ? money(fl) + ' în poziții deschise' : 'nicio poziție deschisă') + '</div></div>' +
+      '<div class="mt5-mini"><div><span>Balanță</span><b>' + cur + S.info.balance.toFixed(2) + '</b></div><div><span>Marjă liberă</span><b>' + cur + (S.info.freeMargin != null ? S.info.freeMargin.toFixed(2) : '–') + '</b></div>' +
+      (S.info.marginLevel != null && pos.length ? '<div><span>Nivel marjă</span><b class="' + (S.info.marginLevel < 150 ? 'hs-loss' : '') + '">' + S.info.marginLevel + '%</b></div>' : '<div><span>Levier</span><b>1:' + (S.info.leverage || '–') + '</b></div>') + '</div></div>';
+    if(pos.length){
+      h += '<div class="gd-sec">⏳ Poziții deschise</div>' + pos.map(function(p, i){
+        var L = lives[i], tid = 'mt5-' + p.id, gold1 = isGoldSym(p.symbol);
+        if(gold1) window.__mt5Trades[tid] = { id:tid, sid:'mt5', strat:'MT5 · ' + p.symbol + ' ' + p.volume + ' lot', side:p.side, entry:p.open, sl:p.sl || p.open, tp1:p.tp || p.open, tp2:p.tp || p.open,
+          status:'deschisă', opened:p.time, date:(p.time || '').slice(0, 10), closed:false };
+        return '<div class="pt-r"' + (gold1 ? ' data-tid="' + tid + '"' : '') + '><div class="pt-l"><div class="pt-t">' + p.symbol + ' <span class="' + (p.side === 'BUY' ? 'up' : 'dn') + '">' + p.side + '</span> ' + p.volume + '</div>' +
+          '<div class="pt-meta">' + p.open + ' → ' + (L.price != null ? (gold1 ? f2(L.price) : L.price) : '–') + ' · SL ' + (p.sl || '<b class="hs-loss">lipsă</b>') + ' · TP ' + (p.tp || '–') + '</div></div>' +
+          '<div class="pt-res ' + (L.profit >= 0 ? 'hs-win' : 'hs-loss') + '">' + (gold1 && liveSpot != null ? '<span class="lv-dot"></span>' : '') + money(L.profit) + '</div></div>';
+      }).join('');
+    }
+    if((S.orders || []).length) h += '<div class="gd-sec">🕒 Ordine în așteptare</div>' + S.orders.map(function(o){
+      return '<div class="pt-r"><div class="pt-l"><div class="pt-t">' + o.symbol + ' <span class="' + (o.side === 'BUY' ? 'up' : 'dn') + '">' + o.side + '</span> ' + o.volume + '</div><div class="pt-meta">la ' + o.price + ' · SL ' + (o.sl || '–') + ' · TP ' + (o.tp || '–') + '</div></div><div class="pt-res hs-open">în așteptare</div></div>'; }).join('');
+    var cl = S.closed || [];
+    if(cl.length){
+      var mk = todayKey.slice(0, 7), mth = cl.filter(function(c){ return String(c.closeTime || '').slice(0, 7) === mk; });
+      var mp = mth.reduce(function(a, c){ return a + (c.profit || 0); }, 0), mw = mth.filter(function(c){ return c.profit > 0; }).length;
+      h += '<div class="mt5-stats"><div><b class="' + (mp >= 0 ? 'hs-win' : 'hs-loss') + '">' + money(mp) + '</b><span>luna asta</span></div><div><b>' + mth.length + '</b><span>tranzacții</span></div><div><b>' + (mth.length ? Math.round(mw / mth.length * 100) + '%' : '–') + '</b><span>pe plus</span></div></div>';
+      h += hxHtml('mt5hist', 'istoricul MT5 (' + cl.length + ')', cl.slice(0, 25).map(function(c){
+        var d = c.closeTime ? new Date(c.closeTime) : null;
+        return '<div class="pt-r"><div class="pt-l"><div class="pt-t">' + c.symbol + ' <span class="' + (c.side === 'BUY' ? 'up' : 'dn') + '">' + c.side + '</span> ' + c.volume + '</div><div class="pt-meta">' + (d ? d.getDate() + ' ' + monthShort[d.getMonth()] + ' ' + hhmm(d) + ' · ' : '') + (c.open || '–') + ' → ' + c.close + ' · ' + (c.reason === 'TP' ? 'TP atins' : c.reason === 'SL' ? 'SL atins' : c.reason) + '</div></div><div class="pt-res ' + (c.profit >= 0 ? 'hs-win' : 'hs-loss') + '">' + money(c.profit) + '</div></div>'; }).join(''));
+    }
+    h += '<div class="hint">' + (S.info.broker ? S.info.broker + ' · ' : '') + (S.info.login ? 'cont ' + S.info.login + ' · ' : '') + 'actualizat de robot ' + (ago != null ? (ago < 1 ? 'acum' : 'acum ' + ago + ' min') : '') + (pos.some(function(p){ return isGoldSym(p.symbol); }) ? ' · profitul pe aur se mișcă live cu prețul' : '') + '. Atinge o poziție pe aur ca s-o vezi pe grafic.</div>';
+    el.innerHTML = h;
+  }
+  setInterval(function(){ if(mt5State && document.getElementById('view-money') && document.getElementById('view-money').classList.contains('active')) renderMt5(); }, 15000);
+  function openTradingFromLink(){
+    if(!/trading/.test(location.hash)) return;
+    var t = document.querySelector('.tab[data-view="money"]'); if(t) t.click();
+    setTimeout(function(){ var b = document.querySelector('[data-seg="trading"]'); if(b) b.click(); }, 150);
+  }
+  window.addEventListener('hashchange', openTradingFromLink);
+  setTimeout(openTradingFromLink, 1500);
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
@@ -3994,8 +4106,8 @@ document.addEventListener('click', function(e){
       '<div class="rp-row"><span>Investit luna asta</span><b>€' + Math.round(W.inv) + '</b></div></div>';
     // trading
     h += '<div class="rp-sec"><h4>📈 Trading (jurnalul tău)</h4>' + (W.tw ? '<div class="rp-row"><span>Tranzacții</span><b>' + W.tw + ' · ' + Math.round(W.wins / W.tw * 100) + '% pe plus</b></div>' +
-      '<div class="rp-row"><span>Rezultat</span><b class="' + (W.pnl >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.pnl, 2, '$') + '</b></div>' +
-      '<div class="rp-row"><span>Cea mai bună / cea mai slabă</span><b>' + sgn(W.best, 2, '$') + ' / ' + sgn(W.worst, 2, '$') + '</b></div>' : '<div class="rp-row"><span>Nicio tranzacție notată</span><b>–</b></div>') + '</div>';
+      '<div class="rp-row"><span>Rezultat</span><b class="' + (W.pnl >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.pnl, 2, '€') + '</b></div>' +
+      '<div class="rp-row"><span>Cea mai bună / cea mai slabă</span><b>' + sgn(W.best, 2, '€') + ' / ' + sgn(W.worst, 2, '€') + '</b></div>' : '<div class="rp-row"><span>Nicio tranzacție notată</span><b>–</b></div>') + '</div>';
     // gold
     var gch = (W.goldFrom && W.goldTo) ? W.goldTo - W.goldFrom : null;
     h += '<div class="rp-sec"><h4>🥇 Aur &amp; strategii (test)</h4><div class="rp-row"><span>Aurul în săptămână</span><b class="' + (gch == null ? '' : gch >= 0 ? 'rp-good' : 'rp-bad') + '">' + (gch == null ? '–' : sgn(gch, 2, '$') + ' (' + sgn(gch / W.goldFrom * 100, 2, '', '%') + ')') + '</b></div>' +
@@ -4017,7 +4129,7 @@ document.addEventListener('click', function(e){
         '\nGreutate: ' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg (' + sgn(wd, 1, '', ' kg') + ')' : '–') +
         '\nAvere: ' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd) + ' (' + sgn(dw, 0, '€') + ')' : '–') +
         (W.fit ? '\nFitness: ' + Math.round(W.fit.steps) + ' pași/zi, ' + Math.round(W.fit.kcal) + ' kcal, ' + Math.round(W.fit.exMin) + ' min exercițiu' : '') +
-        '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '$') +
+        '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '€') +
         '\nStrategii aur (test): ' + W.gClosed + ' închise, ' + sgn(W.gR, 2, '', 'R') + (W.bestS ? ', cea mai bună: ' + W.bestS : '');
       var btn = this;
       var ok = function(){ btn.textContent = '✓ Copiat'; setTimeout(function(){ btn.textContent = '📋 Copiază raportul (ca text)'; }, 2000); };
@@ -4102,6 +4214,14 @@ document.addEventListener('click', function(e){
       var mins = Math.round((newsTarget.t.getTime() - Date.now()) / 60000);
       return 'ZyP, următoarea știre ' + (newsTarget.i === 'High' ? 'roșie' : 'importantă') + ' e ' + newsTarget.c + ', ' + newsTarget.title + ', la ora ' + hhmm(newsTarget.t) + (mins > 0 ? ', peste ' + (mins >= 60 ? Math.floor(mins / 60) + ' ore și ' + (mins % 60) + ' minute' : mins + ' minute') : '') + '.' + (newsTarget.i === 'High' ? ' Atenție la aur în jurul ei.' : '');
     }
+    // --- MT5 account ---
+    if(jHas(t, ['mt5','metatrader','contul meu','cont real','pozitiile mele','equity','balanta','contul de trading'])){
+      var S5 = mt5State; if(!S5 || !S5.info) return 'ZyP, contul MT5 nu e conectat încă. După ce punem cheile MetaApi, îți spun tot despre el.';
+      var ps5 = S5.positions || [], fl5 = ps5.map(mt5Live).reduce(function(a, x){ return a + (x.profit || 0); }, 0);
+      var c5 = S5.info.currency === 'USD' ? ' dolari' : ' ' + (S5.info.currency || '');
+      return 'ZyP, în contul MT5 ai o balanță de ' + jNum(S5.info.balance, 2) + c5 + ' și equity ' + jNum(S5.info.balance + fl5, 2) + '. ' +
+        (ps5.length ? 'Ai ' + ps5.length + (ps5.length === 1 ? ' poziție deschisă' : ' poziții deschise') + ': ' + ps5.slice(0, 3).map(function(p){ var L = mt5Live(p); return p.symbol + ' ' + (p.side === 'BUY' ? 'cumpărare' : 'vânzare') + ' ' + p.volume + ' de la ' + p.open + ', acum ' + (L.profit >= 0 ? 'pe plus ' : 'pe minus ') + jNum(Math.abs(L.profit), 2); }).join('; ') + '.' + (ps5.some(function(p){ return !p.sl; }) ? ' Atenție: ai o poziție fără stop loss!' : '') : 'Nu ai nicio poziție deschisă acum.');
+    }
     // --- money ---
     if(jHas(t, ['avere','bani','cati bani','sold','conturi','cat am'])){
       var w = jWorth(); if(!w) return 'ZyP, încă n-ai salvat soldurile. Intră la Bani, Avere, și le trecem.';
@@ -4110,7 +4230,7 @@ document.addEventListener('click', function(e){
     if(jHas(t, ['trading','profit','pierdere','jurnal'])){
       var ym = todayKey.slice(0, 7), tm = trades.filter(function(x){ return x.date && x.date.slice(0, 7) === ym; });
       var pl = tm.reduce(function(a, x){ return a + (x.result || 0); }, 0), wn = tm.filter(function(x){ return x.result > 0; }).length;
-      return tm.length ? 'ZyP, luna asta ai ' + tm.length + (tm.length === 1 ? ' tranzacție, ' : ' tranzacții, ') + wn + ' pe plus, rezultat ' + (pl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(pl), 2) + ' dolari.' : 'ZyP, luna asta n-ai notat încă nicio tranzacție.';
+      return tm.length ? 'ZyP, luna asta ai ' + tm.length + (tm.length === 1 ? ' tranzacție, ' : ' tranzacții, ') + wn + ' pe plus, rezultat ' + (pl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(pl), 2) + ' euro.' : 'ZyP, luna asta n-ai notat încă nicio tranzacție.';
     }
     if(jHas(t, ['investit','investitii','etf','bitcoin'])){
       var tot = investments.reduce(function(a, x){ return a + (+x.amount || 0); }, 0);
@@ -4146,7 +4266,7 @@ document.addEventListener('click', function(e){
     }
     if(jHas(t, ['raport','saptamana','cum a fost'])){
       var W = (typeof weekStats === 'function') ? weekStats(0) : null;
-      return W ? 'ZyP, săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' dolari.' : '') : 'ZyP, raportul se află la Profil.';
+      return W ? 'ZyP, săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' euro.' : '') : 'ZyP, raportul se află la Profil.';
     }
     if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + ', ZyP! Sunt aici. Întreabă-mă de aur, intrări, știri, bani, sală sau obiceiuri.'; }
     if(jHas(t, ['ce poti','ajutor comenzi','ce stii','comenzi'])){ return 'ZyP, mă poți întreba: cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, câte zile fără țigări, ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune: am băut apă, am fost la sală, deschide terminalul, deschide seiful.'; }
@@ -4347,6 +4467,28 @@ document.addEventListener('click', function(e){
     fab.addEventListener('click', openJarvis); document.body.appendChild(fab);
   })();
 
+
+  /* ===== full reset: wipe every record, start again at day 1, trading from €100 ===== */
+  (function(){
+    var btn = document.getElementById('resetAllBtn'); if(!btn) return;
+    btn.addEventListener('click', function(){
+      if(!confirm('Ștergi TOT din aplicație?\n\nObiceiuri, jurnal, greutate, poze, avere, trading, investiții, obiective, profil, sport.\n\nNu se mai poate recupera. Descarcă întâi backup-ul dacă vrei să-l păstrezi.')) return;
+      var w = prompt('Scrie RESET ca să confirmi. Contul de trading pornește de la (€):', '100');
+      if(w === null) return;
+      var start = parseFloat(String(w).replace(',', '.'));
+      var typed = prompt('Ultima confirmare: scrie RESET (cu majuscule)');
+      if(typed !== 'RESET'){ alert('N-am șters nimic.'); return; }
+      if(!(start >= 0)) start = 100;
+      btn.disabled = true; btn.textContent = 'Se șterge…';
+      try{ Object.keys(localStorage).forEach(function(k){ if(k !== THEME_KEY && k.indexOf('sb-') !== 0) localStorage.removeItem(k); }); }catch(e){}
+      var done = function(){ try{ localStorage.setItem('reset_eq_start_v1', String(start)); }catch(e){} alert('Gata, ZyP. Totul e de la zero: ziua 1, trading de la €' + start + '. Succes! 💪'); location.hash = ''; location.reload(); };
+      if(window.__wipeAll){
+        window.__wipeAll().then(function(){ return window.__putDoc('settings', 'trading', { startBalance:start }); }).then(done)
+          .catch(function(e){ alert('Nu s-a putut șterge din cloud: ' + (e.message || e) + '. Încearcă din nou.'); btn.disabled = false; btn.textContent = '🗑️ Resetează tot (de la zero)'; });
+      } else done();
+    });
+  })();
+
   /* money segments */
   (function(){
     var btns = document.querySelectorAll('#moneySeg .seg-btn');
@@ -4375,7 +4517,7 @@ document.addEventListener('click', function(e){
     var sub = tt.length ? (tt.length + (tt.length===1 ? ' tranzacție' : ' tranzacții')) : 'nicio tranzacție încă';
     el.className = 'today-pl' + (tt.length ? (sum >= 0 ? ' pos' : ' neg') : '');
     el.innerHTML = '<div><div class="today-pl-l">' + label + '</div><div class="today-pl-sub">' + sub + '</div></div>' +
-      '<div class="today-pl-v">' + (tt.length ? fmtSigned(sum) : '$0.00') + '</div>';
+      '<div class="today-pl-v">' + (tt.length ? fmtSigned(sum) : '€0.00') + '</div>';
   }
 
   /* trading calendar */
@@ -4534,7 +4676,7 @@ document.addEventListener('click', function(e){
     var monthSum = trades.filter(function(t){ return t.date.slice(0,7) === thisMonth; })
       .reduce(function(s,t){ return s + t.result; }, 0);
     if(trades.length){
-      tradingEl.textContent = (monthSum>=0?'+':'') + '$' + Math.abs(monthSum).toFixed(2);
+      tradingEl.textContent = (monthSum>=0?'+':'') + '€' + Math.abs(monthSum).toFixed(2);
       tradingEl.style.color = monthSum >= 0 ? 'var(--accent)' : 'var(--danger)';
     } else { tradingEl.textContent = '–'; tradingEl.style.color = ''; }
     renderGrowth();
@@ -4568,7 +4710,7 @@ document.addEventListener('click', function(e){
   function gFmt(v){
     if(gMode === 'weight') return v.toFixed(1) + ' kg';
     if(gMode === 'worth') return '€' + Math.round(v).toLocaleString('ro-RO');
-    if(gMode === 'trading') return (v<0?'-':'') + '$' + Math.abs(v).toFixed(2);
+    if(gMode === 'trading') return (v<0?'-':'') + '€' + Math.abs(v).toFixed(2);
     return v + '/5';
   }
   function dLabel(k){ var d = new Date(k + 'T00:00:00'); return d.getDate() + ' ' + monthShort[d.getMonth()]; }
@@ -4617,7 +4759,7 @@ document.addEventListener('click', function(e){
     var pct = first ? (diff/Math.abs(first)*100) : 0;
     var good = gMode === 'weight' ? null : diff >= 0;
     var sign = diff > 0 ? '+' : diff < 0 ? '-' : '';
-    var abs = gMode === 'weight' ? Math.abs(diff).toFixed(1) + ' kg' : gMode === 'worth' ? '€' + Math.round(Math.abs(diff)) : '$' + Math.abs(diff).toFixed(2);
+    var abs = gMode === 'weight' ? Math.abs(diff).toFixed(1) + ' kg' : gMode === 'worth' ? '€' + Math.round(Math.abs(diff)) : '€' + Math.abs(diff).toFixed(2);
     dEl.textContent = sign + abs + (gMode !== 'weight' && first ? ' (' + (pct>=0?'+':'') + pct.toFixed(1) + '%)' : '');
     dEl.className = 'g-delta' + (good === null ? '' : good ? ' pos' : ' neg');
     var ys = pts.map(function(p){ return p.y; });
@@ -4686,6 +4828,11 @@ document.addEventListener('click', function(e){
       renderWorth();
     }, function(err){ console.error('accounts sub error', err); });
 
+    db.collection('mt5').onSnapshot(function(snap){
+      mt5State = null; snap.docs.forEach(function(d){ if(d.id === 'state') mt5State = d.data(); });
+      if(typeof renderMt5 === 'function') renderMt5();
+    }, function(err){ console.error('mt5 sub error', err); });
+
     db.collection('health').onSnapshot(function(snap){
       healthData = {}; snap.docs.forEach(function(d){ healthData[d.id] = d.data(); });
       if(typeof renderFitness === 'function') renderFitness();
@@ -4729,13 +4876,13 @@ document.addEventListener('click', function(e){
     var sp = document.getElementById('splash');
     var sub = document.getElementById('spSub');
     if(!sp) return;
-    var h = new Date().getHours();
-    var g = h<5 ? 'noapte bună' : h<12 ? 'bună dimineața' : h<18 ? 'bună ziua' : 'bună seara';
-    var steps = ['inițializare sistem','sincronizare date','calibrare obiective', g];
-    var i = 0;
-    var iv = setInterval(function(){ i++; if(i < steps.length){ sub.textContent = steps[i]; } }, 420);
-    setTimeout(function(){ clearInterval(iv); sub.textContent = g; sp.classList.add('hide'); }, 1900);
-    setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 2700);
+    var now = new Date(), h = now.getHours();
+    var g = h<5 ? 'Noapte bună' : h<12 ? 'Bună dimineața' : h<18 ? 'Bună ziua' : 'Bună seara';
+    var zile = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'], luni = ['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
+    sub.textContent = g + ', ZyP';
+    var dEl = document.getElementById('spDate'); if(dEl) dEl.textContent = zile[now.getDay()] + ' · ' + now.getDate() + ' ' + luni[now.getMonth()];
+    setTimeout(function(){ sp.classList.add('hide'); }, 2150);
+    setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 2900);
   })();
 
   function boot(){

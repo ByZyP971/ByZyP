@@ -836,6 +836,14 @@ def main():
         ptrades = old.get('ptrades', [])
     except Exception:
         pass
+    # reset.json {"from": "YYYY-MM-DD"} → forget every test trade / plan made before that day (fresh start)
+    try:
+        with open('reset.json') as f: rfrom = json.load(f).get('from', '')
+        if rfrom:
+            ptrades = [t for t in ptrades if t.get('date', '') >= rfrom]
+            history = [h for h in history if h.get('date', '') >= rfrom]
+    except Exception:
+        pass
     today_d = bars[-1]['d']
     idx = {b['d']: i for i, b in enumerate(bars)}
     OPEN = ('așteaptă intrarea', 'în desfășurare', 'TP1 atins')
