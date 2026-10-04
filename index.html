@@ -1169,6 +1169,16 @@
   .op-sum b{ display:block; font-size:16px; font-variant-numeric:tabular-nums; } .op-sum span{ font-size:10px; color:var(--text-faint); }
   .op-sum b .lv-dot{ margin-right:4px; }
   .op-empty{ text-align:center; padding:26px 10px; font-family:var(--serif, var(--display)); font-size:20px; } .op-empty span{ display:block; font-family:var(--body); font-size:12.5px; color:var(--text-dim); margin-top:8px; line-height:1.5; }
+
+  .lad-b{ font-style:normal; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:8px; margin-left:4px; vertical-align:middle; background:var(--bg-card-2); color:var(--text-dim); border:1px solid var(--line); }
+  .lad-b.near{ color:var(--gold); border-color:color-mix(in srgb, var(--gold) 55%, transparent); animation:livepulse 1.6s ease-in-out infinite; }
+  .lad-b.touch{ background:var(--gold); color:#1A1307; border-color:transparent; }
+  .lad-b.ok{ color:var(--accent); border-color:color-mix(in srgb, var(--accent) 50%, transparent); } .lad-b.bad{ color:var(--danger); border-color:color-mix(in srgb, var(--danger) 50%, transparent); }
+  .lad-b.bell{ border:0; background:none; opacity:.6; padding:0; }
+  .lvl-note{ margin-top:10px; padding:11px 13px; border-radius:14px; background:var(--bg-card-2); border:1px solid var(--line); font-size:12.5px; line-height:1.55; color:var(--text-dim); }
+  .lvl-note b{ color:var(--text); } .lvl-near{ margin-top:8px; padding-top:8px; border-top:1px solid var(--line); color:var(--text); }
+  .lvl-ev{ display:flex; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:12px; color:var(--text-dim); } .lvl-ev:first-child{ border-top:0; }
+  .lvl-ev > span{ flex:none; width:64px; font-family:var(--mono); color:var(--text-faint); } .lvl-ev b{ color:var(--text); font-size:12.5px; }
 </style>
 </head>
 <body>
@@ -3458,8 +3468,17 @@ document.addEventListener('click', function(e){
       fetch('https://api.gold-api.com/price/XAU', { cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){ if(j && j.price){ liveSpot = +j.price; liveAt = Date.now(); paintLive(); } }).catch(function(){});
     });
   }
+  function paintLvlNear(){
+    var el = document.getElementById('lvlNear'); if(!el || !gold || !gold.watch) return;
+    var p = liveSpot != null ? liveSpot : gold.price, best = null;
+    gold.watch.levels.forEach(function(w){ var d = Math.abs(w.v - p); if(best === null || d < best.d) best = { d:d, w:w }; });
+    if(!best){ el.textContent = ''; return; }
+    var kind = p > best.w.v ? 'suport' : 'rezistență', near = best.d <= (gold.watch.appr || 0);
+    el.innerHTML = 'Cel mai apropiat nivel: <b>' + (best.w.label && best.w.label !== 'PIVOT' ? best.w.label + ' · ' : '') + kind + ' ' + f2(best.w.v) + '</b> · la <b class="' + (near ? 'hs-loss' : '') + '">' + f2(best.d) + ' $</b>' + (near ? ' · 🔔 în zona de alertă' : '');
+  }
   function paintLive(){
     if(!gold) return;
+    paintLvlNear();
     var g = gold, prevClose = g.price - g.change;
     var p = liveSpot != null ? liveSpot : g.price;
     var ch = p - prevClose, pc = prevClose ? ch / prevClose * 100 : 0, up = ch >= 0;
@@ -3964,8 +3983,18 @@ document.addEventListener('click', function(e){
       { k:'R2', v:g.levels.R2, c:'res' }, { k:'R1', v:g.levels.R1, c:'res' }, { k:'PIVOT', v:g.pivots.P, c:'' },
       { k:'PREȚ', v:g.price, c:'now' }, { k:'S1', v:g.levels.S1, c:'sup' }, { k:'S2', v:g.levels.S2, c:'sup' }
     ].sort(function(a,b){ return b.v - a.v; });
+    var W = g.watch || { appr:0, levels:[] };
+    var wFor = function(v){ return W.levels.filter(function(w){ return Math.abs(w.v - v) <= 0.15 * (g.atr || 50); })[0]; };
+    var BADGE = { near:['se apropie', 'near'], touched:['atins · urmărește', 'touch'] };
     html += '<div class="gd-sec">Niveluri cheie</div><div class="lad">' + L.map(function(l){
-      var d = l.v - g.price; return '<div class="lad-r ' + l.c + '"><span>' + l.k + '</span><b>' + f2(l.v) + (l.c==='now' ? '' : '<em>' + (d>0?'+':'') + f2(d) + '</em>') + '</b></div>'; }).join('') + '</div>';
+      var d = l.v - g.price, w = l.c === 'now' ? null : wFor(l.v), bd = '';
+      if(w){ if(BADGE[w.phase]) bd = ' <i class="lad-b ' + BADGE[w.phase][1] + '">' + BADGE[w.phase][0] + '</i>'; else if(w.phase === 'done') bd = w.out === 'reject' ? ' <i class="lad-b ok">respins ✓</i>' : ' <i class="lad-b bad">spart</i>'; else bd = ' <i class="lad-b bell">🔔</i>'; }
+      return '<div class="lad-r ' + l.c + '"><span>' + l.k + bd + '</span><b>' + f2(l.v) + (l.c==='now' ? '' : '<em>' + (d>0?'+':'') + f2(d) + '</em>') + '</b></div>'; }).join('') + '</div>' +
+      '<div class="lvl-note"><b>🔔 Alerte pe niveluri</b> (le primești pe telefon):<br>① prețul se apropie la ≤ <b>$' + (W.appr || '–') + '</b> de un nivel, ca să poți verifica graficul · ② a ajuns la el · ③ <b>respins</b> → plan BUY (la suport) sau SELL (la rezistență) cu SL, TP și riscul tău · ④ <b>spart</b> → avertizare.' +
+      '<div id="lvlNear" class="lvl-near"></div></div>' +
+      (function(){ var ev = (g.events || []).filter(function(e){ return String(e.id).indexOf('lvl|') === 0; }).slice(-6).reverse();
+        return ev.length ? hxHtml('lvlHist', 'alertele de nivel recente (' + ev.length + ')', ev.map(function(e){ var dd = new Date(e.t);
+          return '<div class="lvl-ev"><span>' + dd.getDate() + ' ' + monthShort[dd.getMonth()] + ' ' + hhmm(dd) + '</span><div><b>' + e.title + '</b><div>' + String(e.body).split('\n').slice(0, 3).join(' · ') + '</div></div></div>'; }).join('')) : ''; })();
 
     // indicators + reasons
     html += '<div class="gd-sec">Indicatori (zilnic)</div><div class="gd-ind">' +
@@ -4229,6 +4258,15 @@ document.addEventListener('click', function(e){
     // --- open views ---
     if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return 'ZyP, deschid terminalul de trader.'; }
     if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return 'ZyP, deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
+    // --- support / resistance ---
+    if(jHas(t, ['suport','rezistenta','niveluri','nivelul','nivel '])){
+      if(!gold || !gold.watch || !gold.watch.levels.length) return 'ZyP, nu am încă nivelurile calculate. Mai așteaptă un minut.';
+      var pS = liveSpot != null ? liveSpot : gold.price, lv5 = gold.watch.levels;
+      var dn = lv5.filter(function(x){ return x.v < pS; }).sort(function(a, b){ return b.v - a.v; })[0], up5 = lv5.filter(function(x){ return x.v > pS; }).sort(function(a, b){ return a.v - b.v; })[0];
+      var ph = lv5.filter(function(x){ return x.phase === 'near' || x.phase === 'touched'; });
+      return 'ZyP, aurul e la ' + jNum(pS, 2) + '. ' + (dn ? 'Cel mai apropiat suport e ' + jNum(dn.v, 2) + ', la ' + jNum(pS - dn.v, 1) + ' dolari sub preț. ' : '') + (up5 ? 'Cea mai apropiată rezistență e ' + jNum(up5.v, 2) + ', la ' + jNum(up5.v - pS, 1) + ' dolari deasupra. ' : '') +
+        (ph.length ? 'Atenție, prețul e acum în zona nivelului ' + jNum(ph[0].v, 2) + ': ' + (ph[0].phase === 'touched' ? 'l-a atins, urmărește dacă e respins sau spart.' : 'se apropie, verifică graficul.') : 'Te anunț când se apropie de unul.');
+    }
     // --- gold: open entries ---
     if(jHas(t, ['intrari','intrare','tranzactii deschise','sunt deschise','pozitii','ce e deschis','tranzactii de test'])){
       var act = (gold && gold.ptrades || []).filter(function(x){ return !x.closed; });

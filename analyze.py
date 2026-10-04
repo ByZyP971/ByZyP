@@ -144,6 +144,17 @@ def load_h1():
     if len(out) < 120: raise ValueError('h1: too few bars')
     return out
 
+def load_5m():
+    """Gold futures 5-minute bars (Yahoo) — used only to catch wicks / rejections between runs (offset-adjusted to spot)."""
+    j = json.loads(get('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=5m&range=1d'))
+    res = j['chart']['result'][0]; q = res['indicators']['quote'][0]
+    out = []
+    for i, t in enumerate(res['timestamp']):
+        o, h, l, c = q['open'][i], q['high'][i], q['low'][i], q['close'][i]
+        if None in (o, h, l, c): continue
+        out.append({'t': t, 'o': o, 'h': h, 'l': l, 'c': c})
+    return out
+
 def to_h4(h1):
     out = []
     for i in range(0, len(h1) - len(h1) % 4, 4):
@@ -206,6 +217,7 @@ def main():
     piv = {'P': P, 'R1': 2 * P - y['l'], 'S1': 2 * P - y['h'], 'R2': P + (y['h'] - y['l']), 'S2': P - (y['h'] - y['l'])}
     hi, lo = swings(bars)
     lv = merge(hi + lo, 0.3 * A)
+    swing_lv = list(lv)
     res = sorted([l for l in lv if l[0] > price + 0.15 * A], key=lambda x: x[0])
     sup = sorted([l for l in lv if l[0] < price - 0.15 * A], key=lambda x: -x[0])
     R1 = res[0][0] if res else price + 1.0 * A; R2 = res[1][0] if len(res) > 1 else R1 + 1.0 * A
@@ -831,7 +843,7 @@ def main():
     ptrades = []
     try:
         with open('xauusd.json') as f: old = json.load(f)
-        old_sig = json.dumps([[t.get('id'), t.get('status')] for t in old.get('ptrades', [])] + [e.get('id') for e in old.get('events', [])])
+        old_sig = json.dumps([[t.get('id'), t.get('status')] for t in old.get('ptrades', [])] + [e.get('id') for e in old.get('events', [])] + [[x.get('id'), x.get('phase')] for x in (old.get('lw') or {}).get('levels', [])])
         history = old.get('history', [])
         ptrades = old.get('ptrades', [])
     except Exception:
@@ -1038,6 +1050,105 @@ def main():
         else:
             continue
         events.append({'id': f"{t['id']}|{cur}", 'sid': t['sid'], 't': now_iso, 'title': title, 'body': body})
+
+    # ---------- level watcher: approach → reached → rejection (BUY/SELL plan) or break ----------
+    def market_open():
+        if os.environ.get('FORCE_OPEN') == '1': return True          # testing only
+        n = dt.datetime.utcnow(); wd, h = n.weekday(), n.hour
+        return not (wd == 5 or (wd == 6 and h < 22) or (wd == 4 and h >= 22))
+    lw_old = old.get('lw') if isinstance(old, dict) else None
+    lw = lw_old if isinstance(lw_old, dict) and isinstance(lw_old.get('levels'), list) else {'levels': []}
+    appr = max(0.25 * A, 6.0); touch_tol = max(0.05 * A, 1.5); rej_dist = max(0.15 * A, 4.0); brk = max(0.30 * A, 6.0)
+    now_ts = int(dt.datetime.utcnow().timestamp())
+    bars5 = []
+    try:
+        raw5 = load_5m()
+        if raw5:
+            off = price - raw5[-1]['c']
+            bars5 = [{'t': b['t'], 'o': b['o'] + off, 'h': b['h'] + off, 'l': b['l'] + off, 'c': b['c'] + off} for b in raw5]
+    except Exception as e:
+        print('5m unavailable:', e)
+    # candidate levels: swing S/R close to price + daily pivot
+    cands = [(v, tch) for v, tch in swing_lv if abs(v - price) <= 1.6 * A] + [(P, 1)]
+    for v, tch in cands:
+        m = [e for e in lw['levels'] if abs(e['v'] - v) <= 0.12 * A]
+        if m: m[0]['v'] = round(v, 2)
+        else: lw['levels'].append({'id': f"{int(round(v))}", 'v': round(v, 2), 'phase': 'idle', 'dir': None, 'tp': now_ts, 'ext': None, 'cd': 0, 'pivot': abs(v - P) < 1e-6})
+    # forget far-away idle levels
+    lw['levels'] = [e for e in lw['levels'] if e['phase'] != 'idle' or abs(e['v'] - price) <= 2.6 * A]
+    def lab(e):
+        for k, val in (('R2', R2), ('R1', R1), ('S1', S1), ('S2', S2)):
+            if abs(val - e['v']) <= 0.12 * A: return k
+        return 'PIVOT' if e.get('pivot') else None
+    def fm(x): return f"{x:.2f}"
+    def lvl_event(e, kind, title, body):
+        events.append({'id': f"lvl|{e['id']}|{kind}|{now_ts}", 'sid': f"L{now_ts % 100000}{kind[:1]}", 't': now_iso, 'title': title, 'body': body})
+    if market_open():
+        last_closed = bars5[-2]['c'] if len(bars5) >= 2 else price
+        for e in lw['levels']:
+            v = e['v']; name_l = lab(e); dist = abs(price - v)
+            sup_side = (e['dir'] == 'sup') if e['dir'] else (price > v)
+            word = 'suportul' if sup_side else 'rezistența'
+            def mk_tag():
+                if name_l == 'PIVOT': return ' (pivot)'
+                if name_l and ((name_l[0] == 'S') == sup_side): return f" ({name_l})"
+                return ''
+            tag = mk_tag()
+            if e['phase'] == 'idle':
+                if now_ts < e.get('cd', 0): continue
+                if dist <= appr:
+                    e['dir'] = 'sup' if price > v else 'res'; sup_side = e['dir'] == 'sup'; word = 'suportul' if sup_side else 'rezistența'
+                    tag = mk_tag()
+                    e['phase'] = 'near'; e['tp'] = now_ts; e['ext'] = None
+                    # a wick may already have reached it between two runs
+                    wick = [b for b in bars5 if b['t'] >= now_ts - 900 and ((b['l'] <= v + touch_tol) if sup_side else (b['h'] >= v - touch_tol))]
+                    if wick: e['phase'] = 'touched'; e['tp'] = wick[0]['t']
+                    nxt = 'BUY dacă e respins (se întoarce în sus)' if sup_side else 'SELL dacă e respins (se întoarce în jos)'
+                    lvl_event(e, 'near', f"📍 Se apropie de {word} {fm(v)}{tag}",
+                        f"Prețul e la {fm(price)}, doar {dist:.1f} $ de nivel.\nVerifică graficul acum și așteaptă reacția: {nxt}. Dacă îl sparge, nu intra împotrivă.\nTe anunț când ajunge și dacă e respins sau spart.")
+                    continue
+            if e['phase'] == 'near' and ((price <= v - brk) if sup_side else (price >= v + brk)):
+                e['phase'] = 'touched'; e['tp'] = now_ts; e['ext'] = round(price, 2); e['quiet'] = True      # gap through the level: go straight to the break report
+            if e['phase'] == 'near':
+                reached = (price - v <= touch_tol) if sup_side else (v - price <= touch_tol)
+                wick = [b for b in bars5 if b['t'] >= e['tp'] and ((b['l'] <= v + touch_tol) if sup_side else (b['h'] >= v - touch_tol))]
+                if reached or wick:
+                    e['phase'] = 'touched'; e['tp'] = wick[0]['t'] if wick else now_ts
+                    if not e.get('quiet'): lvl_event(e, 'touch', f"🎯 A ajuns la {word} {fm(v)}{tag}",
+                        f"Prețul e la {fm(price)}. Acum se decide: urmărește lumânarea.\nRespins → îți dau planul de {'BUY' if sup_side else 'SELL'} cu SL, TP și riscul. Spart → te avertizez.")
+                elif dist > 2.2 * appr or now_ts - e['tp'] > 4 * 3600:
+                    e['phase'] = 'idle'; e['cd'] = now_ts + 3600
+            if e['phase'] == 'touched':
+                since = [b for b in bars5 if b['t'] >= e['tp']]
+                lows = [b['l'] for b in since] + [price]; highs = [b['h'] for b in since] + [price]
+                ext = min(lows + ([e['ext']] if e.get('ext') is not None else [])) if sup_side else max(highs + ([e['ext']] if e.get('ext') is not None else []))
+                e['ext'] = round(ext, 2)
+                broke = (price <= v - brk) if sup_side else (price >= v + brk)
+                bounced = ((price >= v + rej_dist and last_closed >= v + 0.6 * rej_dist) if sup_side else (price <= v - rej_dist and last_closed <= v - 0.6 * rej_dist))
+                pierce_ok = (ext >= v - brk) if sup_side else (ext <= v + brk)
+                if broke:
+                    e['phase'] = 'done'; e['cd'] = now_ts + 3 * 3600; e['tp'] = now_ts; e['out'] = 'break'
+                    others = sorted([x['v'] for x in lw['levels'] if x is not e and (x['v'] < v if sup_side else x['v'] > v)], key=lambda z: -z if sup_side else z)
+                    lvl_event(e, 'break', f"⚠️ {word.capitalize()} {fm(v)}{tag} a fost spart",
+                        f"Prețul e la {fm(price)}, {'sub' if sup_side else 'peste'} nivel cu {abs(price - v):.1f} $. Nu {'cumpăra' if sup_side else 'vinde'} de aici.\n" +
+                        (f"Următorul nivel: {fm(others[0])}. " if others else '') + f"Un retest al {fm(v)} dinspre {'jos' if sup_side else 'sus'} poate fi intrare {'SELL' if sup_side else 'BUY'}.")
+                elif bounced and pierce_ok:
+                    e['phase'] = 'done'; e['cd'] = now_ts + 3 * 3600; e['tp'] = now_ts; e['out'] = 'reject'
+                    side_ = 'BUY' if sup_side else 'SELL'; buf = max(0.12 * A, 2.5)
+                    entry = price
+                    sl = (ext - buf) if sup_side else (ext + buf)
+                    if abs(entry - sl) < 0.2 * A: sl = entry - 0.2 * A if sup_side else entry + 0.2 * A
+                    rk = abs(entry - sl)
+                    tp1 = entry + 1.5 * rk if sup_side else entry - 1.5 * rk; tp2 = entry + 3 * rk if sup_side else entry - 3 * rk
+                    tt = {'entry': r2(entry), 'sl': r2(sl), 'tp1': r2(tp1), 'tp2': r2(tp2), 'side': side_}
+                    ahead = sorted([x['v'] for x in lw['levels'] if x is not e and ((x['v'] > entry + 0.3 * rk) if sup_side else (x['v'] < entry - 0.3 * rk))], key=lambda z: z if sup_side else -z)
+                    obst = f"\nPrimul obstacol: {fm(ahead[0])} ({abs(ahead[0] - entry):.1f} $)." if ahead else ''
+                    lvl_event(e, 'reject', f"{'🟢' if sup_side else '🔴'} Respingere la {word} {fm(v)}{tag} → {side_}",
+                        f"A ținut nivelul: {'minim' if sup_side else 'maxim'} {fm(ext)} și s-a întors {abs(price - v):.1f} $. Intrare {side_} ≈ {fm(entry)}\n{lvl(tt)}{money_lines(tt)}{obst}\nVerifică lumânarea înainte să intri.")
+            if e['phase'] == 'done' and now_ts >= e.get('cd', 0) and dist > appr:
+                e['phase'] = 'idle'; e['dir'] = None; e['ext'] = None; e.pop('quiet', None); e.pop('out', None)
+    lw['t'] = now_ts
+    watch_out = {'appr': round(appr, 1), 'levels': [{'v': e['v'], 'k': e.get('dir') or ('sup' if e['v'] < price else 'res'), 'phase': e['phase'], 'out': e.get('out'), 'label': lab(e)} for e in sorted(lw['levels'], key=lambda z: z['v'])]}
     events = events[-80:]
 
     pstats = {}
@@ -1071,7 +1182,7 @@ def main():
         'scenarios': [scen('BUY'), scen('SELL')],
         'strategies': strategies, 'confluence': confluence, 'mtf': mtf, 'session': session_now(),
         'fib': {'high': r2(H), 'low': r2(Lw)},
-        'ptrades': ptrades, 'pstats': pstats, 'ptotal': tot, 'events': events,
+        'ptrades': ptrades, 'pstats': pstats, 'ptotal': tot, 'events': events, 'lw': lw, 'watch': watch_out,
         'story': story, 'where': where, 'plan': plan, 'avoid': avoid, 'history': history, 'track': track,
         'candles': [[b['d'], r2(b['o']), r2(b['h']), r2(b['l']), r2(b['c'])] for b in bars[-90:]],
         'ema20s': [r2(x) for x in ema(closes, 20)[-90:]],
@@ -1080,7 +1191,7 @@ def main():
     # QUICK mode (every ~5 min, from the notifications workflow): only rewrite the file when a test trade changed
     # or the last saved analysis is older than 25 min — keeps GitHub Pages rebuilds low while alerts stay fast.
     if os.environ.get('QUICK') == '1' and old:
-        sig = lambda d: json.dumps([[t.get('id'), t.get('status')] for t in d.get('ptrades', [])] + [e.get('id') for e in d.get('events', [])])
+        sig = lambda d: json.dumps([[t.get('id'), t.get('status')] for t in d.get('ptrades', [])] + [e.get('id') for e in d.get('events', [])] + [[x.get('id'), x.get('phase')] for x in (d.get('lw') or {}).get('levels', [])])
         try: age_min = (dt.datetime.utcnow() - dt.datetime.strptime(old.get('updated', ''), '%Y-%m-%dT%H:%M:%SZ')).total_seconds() / 60
         except Exception: age_min = 999
         if old_sig == sig(out) and age_min < 25:
