@@ -1179,6 +1179,18 @@
   .lvl-note b{ color:var(--text); } .lvl-near{ margin-top:8px; padding-top:8px; border-top:1px solid var(--line); color:var(--text); }
   .lvl-ev{ display:flex; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:12px; color:var(--text-dim); } .lvl-ev:first-child{ border-top:0; }
   .lvl-ev > span{ flex:none; width:64px; font-family:var(--mono); color:var(--text-faint); } .lvl-ev b{ color:var(--text); font-size:12.5px; }
+
+  .tln-row{ border:1px solid var(--line); border-radius:14px; padding:11px 13px; margin-bottom:8px; background:var(--bg-card-2); position:relative; }
+  .tln-row.sup{ border-left:3px solid var(--accent); } .tln-row.res{ border-left:3px solid var(--danger); }
+  .tln-t{ font-size:12.5px; font-weight:700; padding-right:90px; } .tln-t i{ font-style:normal; color:var(--text-faint); font-weight:600; }
+  .tln-v{ position:absolute; right:13px; top:9px; font-family:var(--serif, var(--display)); font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tln-s{ font-size:11.5px; color:var(--text-dim); margin-top:4px; line-height:1.45; }
+
+  .tv-open{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--gold); text-decoration:none; }
+  .tv-open span{ font-size:11px; font-weight:600; color:var(--text-faint); }
+  a.term-btn{ text-decoration:none; display:inline-block; }
+  .gd-btns{ display:flex; gap:8px; justify-content:flex-end; margin:0 0 10px; }
+  .gd-btns .term-btn{ float:none; margin:0; }
 </style>
 </head>
 <body>
@@ -1680,6 +1692,7 @@
       </div>
       <div class="card" data-gsp="open" style="display:none;"><div id="openPane"><div class="hint" style="margin-top:0;">Se încarcă…</div></div></div>
       <div class="card gs-live" data-gsp="live" style="display:none;padding:0;">
+        <a class="tv-open" href="https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD" target="_blank" rel="noopener">📈 Deschide în aplicația TradingView <span>contul tău · desenele tale ↗</span></a>
         <div class="tv-full" id="goldLive"></div>
       </div>
       <div id="goldBox"></div>
@@ -3715,10 +3728,11 @@ document.addEventListener('click', function(e){
     var lo = Infinity, hi = -Infinity;
     C.forEach(function(k){ lo = Math.min(lo, k[3]); hi = Math.max(hi, k[2]); });
     lo = Math.min(lo, nowP); hi = Math.max(hi, nowP);
-    if(!intra){ [g.levels.R1, g.levels.S1, sc2.sl, sc2.tp1].forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); }); }
+    var tlNow = [g.trend && g.trend.sup && g.trend.sup.now, g.trend && g.trend.res && g.trend.res.now].filter(function(v){ return v != null; });
+    if(!intra){ [g.levels.R1, g.levels.S1, sc2.sl, sc2.tp1].concat(tlNow).forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); }); }
     else {
       var span = Math.max(hi - lo, (g.atr || 30) * 0.25);
-      [sc2.entry, sc2.sl, sc2.tp1, g.levels.R1, g.levels.S1, g.pivots && g.pivots.P].forEach(function(v){ if(v != null && v > lo - span * 0.8 && v < hi + span * 0.8){ lo = Math.min(lo, v); hi = Math.max(hi, v); } });
+      [sc2.entry, sc2.sl, sc2.tp1, g.levels.R1, g.levels.S1, g.pivots && g.pivots.P].concat(tlNow).forEach(function(v){ if(v != null && v > lo - span * 0.8 && v < hi + span * 0.8){ lo = Math.min(lo, v); hi = Math.max(hi, v); } });
     }
     var pad = (hi - lo) * 0.04; lo -= pad; hi += pad;
     var cw = (W - padL - padR) / C.length;
@@ -3760,6 +3774,24 @@ document.addEventListener('click', function(e){
     hline(g.levels.S1, 'var(--accent)', true, 'S1'); hline(g.levels.S2, 'var(--accent)', true, 'S2');
     hline(sc2.tp2, '#3DE0C4', false, 'TP2', true); hline(sc2.tp1, '#3DE0C4', false, 'TP1', true);
     hline(sc2.sl, '#FF4D4D', false, 'SL', true); hline(sc2.entry, 'var(--gold)', false, 'IN', true);
+    // trend lines (from the daily analysis)
+    var cpId = 'tlc' + String(wrapId || 'chWrap').replace(/[^a-z0-9]/gi, '');
+    svg += '<clipPath id="' + cpId + '"><rect x="' + padL + '" y="' + padT + '" width="' + (W - padL - padR) + '" height="' + (H - padT - padB) + '"/></clipPath>';
+    ['sup', 'res'].forEach(function(k){
+      var t = g.trend && g.trend[k]; if(!t) return;
+      var col = k === 'sup' ? 'var(--accent)' : 'var(--danger)', dash = t.conf ? '' : ' stroke-dasharray="5 3"', arr = t.dir === 'asc' ? '↗' : '↘';
+      var x0, y0, x1, y1, a1 = null, a2 = null;
+      if(!intra){
+        var i1 = -1, i2 = -1; C.forEach(function(c, j){ if(c[0] === t.p1.d) i1 = j; if(c[0] === t.p2.d) i2 = j; });
+        var st = i1 >= 0 ? i1 : 0, last = C.length - 1;
+        x0 = X(st); y0 = Y(t.now + t.slope * (st - last)); x1 = X(last); y1 = Y(t.now);       // anchored on today's value, so it also works when the anchors are older than the chart
+        if(i1 >= 0) a1 = [X(i1), Y(t.p1.p)]; if(i2 >= 0) a2 = [X(i2), Y(t.p2.p)];
+      } else { x0 = padL; x1 = W - padR; y0 = y1 = Y(t.now); }
+      svg += '<g clip-path="url(#' + cpId + ')"><line x1="' + x0.toFixed(1) + '" y1="' + y0.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="' + col + '" stroke-width="' + (t.status === 'broken' ? 1 : 1.7) + '"' + dash + (t.status === 'broken' ? ' opacity="0.45"' : '') + '/>';
+      [a1, a2].forEach(function(a){ if(a) svg += '<circle cx="' + a[0].toFixed(1) + '" cy="' + a[1].toFixed(1) + '" r="3" fill="var(--bg)" stroke="' + col + '" stroke-width="1.4"/>'; });
+      svg += '</g>';
+      labels.push({ v:t.now, y:Y(t.now), t:'TREND' + arr, col:col, strong:true });
+    });
     // EMAs
     function pathOf(arr, col){ var d = ''; arr.forEach(function(v, i){ if(v == null) return; d += (d ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); });
       return '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="1.1" opacity="0.85"/>'; }
@@ -3803,7 +3835,7 @@ document.addEventListener('click', function(e){
     svg += '</svg>';
     var tfBar = opt.noTf ? '' : '<div class="ch-tf">' + ['5m','15m','1h','D1'].map(function(t){ return '<button data-tf="' + t + '" class="' + (t === tf ? 'on' : '') + '">' + t + '</button>'; }).join('') + '<span class="ch-live">' + (intra ? '● LIVE' : 'D1 + preț live') + '</span></div>';
     wrap.innerHTML = tfBar + (scOv && !opt.plan ? '' : opt.plan ? '' : '<div class="ch-scn"><button data-s="BUY" class="' + (side==='BUY'?'on':'') + '">🟢 Arată BUY</button><button data-s="SELL" class="' + (side==='SELL'?'on':'') + '">🔴 Arată SELL</button></div>') + svg +
-      '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>' + (intra ? C.length + ' lumânări · ' + tf : '60 zile · D1') + '</span></div>';
+      '<div class="ch-leg"><span><i style="background:#6C8CFF"></i>EMA20</span><span><i style="background:var(--gold)"></i>EMA50</span><span><i style="background:var(--accent);height:2px"></i>linie trend</span><span><i style="background:var(--gold);opacity:.4;height:8px"></i>zonă intrare</span><span><i style="background:#FF4D4D"></i>SL</span><span><i style="background:#3DE0C4"></i>TP</span><span>' + (intra ? C.length + ' lumânări · ' + tf : '60 zile · D1') + '</span></div>';
     var myId = wrapId || 'chWrap';
     wrap.querySelectorAll('.ch-scn button').forEach(function(b){ b.addEventListener('click', function(){ goldChartSide = b.getAttribute('data-s'); drawGoldChart(wrapId, scOv, opt); }); });
     wrap.querySelectorAll('.ch-tf button').forEach(function(b){ b.addEventListener('click', function(){
@@ -3890,7 +3922,7 @@ document.addEventListener('click', function(e){
     var g = gold, up = g.change >= 0;
     var meter = ''; for(var i=-5;i<=5;i++){ if(i===0) continue; var on = (g.score>0 && i>0 && i<=g.score) || (g.score<0 && i<0 && i>=g.score); meter += '<i class="' + (on ? (i>0?'on-b':'on-s') : '') + '"></i>'; }
     var upd = new Date(g.updated);
-    var html = '<button class="term-btn" onclick="window.__openTerminal && window.__openTerminal()">🖥️ Terminal</button><div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
+    var html = '<div class="gd-btns"><a class="term-btn" href="https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD" target="_blank" rel="noopener">📈 TradingView</a><button class="term-btn" onclick="window.__openTerminal && window.__openTerminal()">🖥️ Terminal</button></div><div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
       '<div class="gd-chg ' + (up?'pos':'neg') + '" id="gdChg">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
       '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
 
@@ -3982,11 +4014,22 @@ document.addEventListener('click', function(e){
     var L = [
       { k:'R2', v:g.levels.R2, c:'res' }, { k:'R1', v:g.levels.R1, c:'res' }, { k:'PIVOT', v:g.pivots.P, c:'' },
       { k:'PREȚ', v:g.price, c:'now' }, { k:'S1', v:g.levels.S1, c:'sup' }, { k:'S2', v:g.levels.S2, c:'sup' }
-    ].sort(function(a,b){ return b.v - a.v; });
+    ].concat(['sup', 'res'].map(function(k){ var t = g.trend && g.trend[k]; return t && t.status === 'ok' ? { k:'TREND' + (t.dir === 'asc' ? '↗' : '↘'), v:t.now, c:k } : null; }).filter(Boolean)).sort(function(a,b){ return b.v - a.v; });
     var W = g.watch || { appr:0, levels:[] };
+    var tlHtml = (function(){
+      var T = g.trend || {}, out = '';
+      [['sup', 'Suport', 'sub preț'], ['res', 'Rezistență', 'deasupra prețului']].forEach(function(a){
+        var t = T[a[0]]; if(!t) return;
+        var dn = t.dir === 'asc' ? 'ascendentă ↗' : 'descendentă ↘', d = Math.abs(t.dist);
+        var st = t.status === 'broken' ? '<b class="hs-loss">spartă</b> · prețul e cu ' + f2(d) + ' $ ' + (a[0] === 'sup' ? 'sub' : 'peste') + ' ea' : 'prețul e la <b>' + f2(d) + ' $</b> ' + (a[0] === 'sup' ? 'deasupra' : 'dedesubt');
+        out += '<div class="tln-row ' + a[0] + '"><div class="tln-t">' + a[1] + ' · linie ' + dn + (t.conf ? '' : ' <i>(provizorie)</i>') + '</div>' +
+          '<div class="tln-v">' + f2(t.now) + '</div><div class="tln-s">' + st + ' · atinsă de ' + t.touches + ' ori · mâine ≈ ' + f2(t.next) + '</div></div>';
+      });
+      return out ? '<div class="gd-sec">📐 Linii de trend</div>' + out + '<div class="hint">Linia e trasă prin ultimele minime (suport) și maxime (rezistență), pe graficul zilnic. Primești alertă și la ea: se apropie · respinsă (BUY/SELL) · spartă. Pe graficele de 5m/15m/1h apare ca o linie orizontală, la valoarea de azi.</div>' : '<div class="gd-sec">📐 Linii de trend</div><div class="hint" style="margin-top:0;">Acum nu e nicio linie de trend clară pe grafic. Piața e în interval, fără minime sau maxime care urcă sau coboară regulat.</div>';
+    })();
     var wFor = function(v){ return W.levels.filter(function(w){ return Math.abs(w.v - v) <= 0.15 * (g.atr || 50); })[0]; };
     var BADGE = { near:['se apropie', 'near'], touched:['atins · urmărește', 'touch'] };
-    html += '<div class="gd-sec">Niveluri cheie</div><div class="lad">' + L.map(function(l){
+    html += tlHtml + '<div class="gd-sec">Niveluri cheie</div><div class="lad">' + L.map(function(l){
       var d = l.v - g.price, w = l.c === 'now' ? null : wFor(l.v), bd = '';
       if(w){ if(BADGE[w.phase]) bd = ' <i class="lad-b ' + BADGE[w.phase][1] + '">' + BADGE[w.phase][0] + '</i>'; else if(w.phase === 'done') bd = w.out === 'reject' ? ' <i class="lad-b ok">respins ✓</i>' : ' <i class="lad-b bad">spart</i>'; else bd = ' <i class="lad-b bell">🔔</i>'; }
       return '<div class="lad-r ' + l.c + '"><span>' + l.k + bd + '</span><b>' + f2(l.v) + (l.c==='now' ? '' : '<em>' + (d>0?'+':'') + f2(d) + '</em>') + '</b></div>'; }).join('') + '</div>' +
@@ -4258,6 +4301,13 @@ document.addEventListener('click', function(e){
     // --- open views ---
     if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return 'ZyP, deschid terminalul de trader.'; }
     if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return 'ZyP, deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
+    if(jHas(t, ['tradingview','trading view','tradingviu'])){ setTimeout(function(){ window.open('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD', '_blank'); }, 500); return 'ZyP, deschid TradingView pe aur. Acolo ai contul tău și desenele tale.'; }
+    if(jHas(t, ['linie de trend','linia de trend','linii de trend','trendline','trend line'])){
+      var T5 = gold && gold.trend; if(!T5 || (!T5.sup && !T5.res)) return 'ZyP, acum nu e nicio linie de trend clară pe aur. Piața e în interval.';
+      var pT = liveSpot != null ? liveSpot : gold.price, outT = [];
+      [['sup', 'suport'], ['res', 'rezistență']].forEach(function(a){ var q = T5[a[0]]; if(!q) return; outT.push('linia de trend ' + (q.dir === 'asc' ? 'ascendentă' : 'descendentă') + ' de ' + a[1] + ' e acum la ' + jNum(q.now, 2) + ', la ' + jNum(Math.abs(pT - q.now), 1) + ' dolari de preț' + (q.status === 'broken' ? ', dar a fost spartă' : '') + ', atinsă de ' + q.touches + ' ori'); });
+      return 'ZyP, ' + outT.join('; ') + '.';
+    }
     // --- support / resistance ---
     if(jHas(t, ['suport','rezistenta','niveluri','nivelul','nivel '])){
       if(!gold || !gold.watch || !gold.watch.levels.length) return 'ZyP, nu am încă nivelurile calculate. Mai așteaptă un minut.';

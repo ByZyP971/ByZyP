@@ -80,6 +80,49 @@ def swings(bars, k=2, look=150):
         if all(b[i]['l'] <= b[j]['l'] for j in range(i - k, i + k + 1)): lo.append(b[i]['l'])
     return hi, lo
 
+def swing_pts(bars, k=3, look=170):
+    """Confirmed swing highs/lows WITH their bar index: [(idx, price)]."""
+    off = max(0, len(bars) - look); b = bars[off:]; hi, lo = [], []
+    for i in range(k, len(b) - k):
+        if all(b[i]['h'] >= b[j]['h'] for j in range(i - k, i + k + 1)) and b[i]['h'] > max(b[i - 1]['h'], b[i + 1]['h']) - 1e-9: hi.append((off + i, b[i]['h']))
+        if all(b[i]['l'] <= b[j]['l'] for j in range(i - k, i + k + 1)) and b[i]['l'] < min(b[i - 1]['l'], b[i + 1]['l']) + 1e-9: lo.append((off + i, b[i]['l']))
+    return hi, lo
+
+def trend_lines(bars, A):
+    """Best support trendline (through swing lows) and resistance trendline (through swing highs).
+    A line is valid if closes did not cut through it between its two anchors and now (last 2 bars may break it → status 'broken')."""
+    n = len(bars); hi, lo = swing_pts(bars)
+    tol, viol = 0.30 * A, 0.20 * A
+    def line_val(p1, p2, t): return p1[1] + (p2[1] - p1[1]) / (p2[0] - p1[0]) * (t - p1[0])
+    def find(points, side):
+        best = None
+        pts = points[-12:]
+        for ai in range(len(pts)):
+            for bi in range(ai + 1, len(pts)):
+                a, b = pts[ai], pts[bi]
+                if b[0] - a[0] < 8: continue
+                slope = (b[1] - a[1]) / (b[0] - a[0])
+                if abs(slope) > 0.35 * A or abs(slope) * 20 < 0.25 * A: continue       # too steep / basically flat (= a horizontal level)
+                ok = True
+                for t in range(a[0], n - 2):
+                    lv_ = line_val(a, b, t)
+                    if side == 'sup' and (bars[t]['c'] < lv_ - viol or bars[t]['l'] < lv_ - 0.6 * A): ok = False; break
+                    if side == 'res' and (bars[t]['c'] > lv_ + viol or bars[t]['h'] > lv_ + 0.6 * A): ok = False; break
+                if not ok: continue
+                nowv = line_val(a, b, n - 1); dst = (bars[-1]['c'] - nowv) if side == 'sup' else (nowv - bars[-1]['c'])    # >0 = price on the right side
+                if dst < -1.0 * A or dst > 3.5 * A: continue                       # line must be near price (not 130 $ away, not already far behind)
+                if b[0] < n - 75: continue                                         # second anchor must be recent
+                touches = sum(1 for q in points if q[0] >= a[0] and abs(q[1] - line_val(a, b, q[0])) <= tol)
+                score = touches * 3 + (b[0] / n) * 2 + min(b[0] - a[0], 60) / 30 - max(0, dst) / A
+                if best is None or score > best[0]: best = (score, a, b, slope, touches)
+        if not best: return None
+        _, a, b, slope, touches = best
+        now = line_val(a, b, n - 1); last = bars[-1]['c']
+        broken = (last < now - viol) if side == 'sup' else (last > now + viol)
+        return {'side': side, 'dir': 'asc' if slope > 0 else 'desc', 'p1': {'d': bars[a[0]]['d'], 'p': round(a[1], 2)}, 'p2': {'d': bars[b[0]]['d'], 'p': round(b[1], 2)},
+                'slope': round(slope, 3), 'now': round(now, 2), 'next': round(now + slope, 2), 'touches': touches, 'conf': touches >= 3, 'status': 'broken' if broken else 'ok', 'dist': round(last - now, 2)}
+    return {'sup': find(lo, 'sup'), 'res': find(hi, 'res')}
+
 def merge(levels, tol):
     levels = sorted(levels); out = []
     for v in levels:
@@ -218,6 +261,8 @@ def main():
     hi, lo = swings(bars)
     lv = merge(hi + lo, 0.3 * A)
     swing_lv = list(lv)
+    try: TL = trend_lines(bars, A)
+    except Exception as ex: print('trendlines failed:', ex); TL = {'sup': None, 'res': None}
     res = sorted([l for l in lv if l[0] > price + 0.15 * A], key=lambda x: x[0])
     sup = sorted([l for l in lv if l[0] < price - 0.15 * A], key=lambda x: -x[0])
     R1 = res[0][0] if res else price + 1.0 * A; R2 = res[1][0] if len(res) > 1 else R1 + 1.0 * A
@@ -233,6 +278,12 @@ def main():
     add(R > 50, 'RSI peste 50 (cumpărătorii domină)', 'RSI sub 50 (vânzătorii domină)')
     add(e20 > e20_prev, 'EMA20 urcă', 'EMA20 coboară')
     bias = 'BULLISH' if score >= 2 else 'BEARISH' if score <= -2 else 'NEUTRU'
+    for key, nm in (('sup', 'suport'), ('res', 'rezistență')):
+        t_ = TL.get(key)
+        if not t_: continue
+        dn = 'ascendentă' if t_['dir'] == 'asc' else 'descendentă'
+        if t_['status'] == 'broken': notes.append(f"📐 Linia de trend {dn} ({nm}) a fost spartă: acum la {t_['now']}, prețul e cu {abs(t_['dist']):.1f} $ {'sub' if key == 'sup' else 'peste'} ea")
+        else: notes.append(f"📐 Linia de trend {dn} ({nm}): acum la {t_['now']}, prețul e cu {abs(t_['dist']):.1f} $ {'deasupra' if key == 'sup' else 'dedesubt'} (atinsă de {t_['touches']} ori)")
     if R > 70: notes.append('⚠️ RSI peste 70: supracumpărat, risc de corecție')
     if R < 30: notes.append('⚠️ RSI sub 30: supravândut, risc de revenire')
 
@@ -1069,14 +1120,20 @@ def main():
     except Exception as e:
         print('5m unavailable:', e)
     # candidate levels: swing S/R close to price + daily pivot
-    cands = [(v, tch) for v, tch in swing_lv if abs(v - price) <= 1.6 * A] + [(P, 1)]
-    for v, tch in cands:
+    cands = [(v, tch, None) for v, tch in swing_lv if abs(v - price) <= 1.6 * A] + [(P, 1, None)]
+    for k_, t_ in (('sup', TL.get('sup')), ('res', TL.get('res'))):
+        if t_ and t_.get('conf') and t_['status'] == 'ok' and abs(t_['now'] - price) <= 1.6 * A: cands.append((t_['now'], 3, t_['dir']))
+    for e in lw['levels']: e['tl'] = None
+    for v, tch, tl_dir in cands:
         m = [e for e in lw['levels'] if abs(e['v'] - v) <= 0.12 * A]
-        if m: m[0]['v'] = round(v, 2)
-        else: lw['levels'].append({'id': f"{int(round(v))}", 'v': round(v, 2), 'phase': 'idle', 'dir': None, 'tp': now_ts, 'ext': None, 'cd': 0, 'pivot': abs(v - P) < 1e-6})
+        if m:
+            m[0]['v'] = round(v, 2)
+            if tl_dir: m[0]['tl'] = tl_dir
+        else: lw['levels'].append({'id': f"{'t' if tl_dir else ''}{int(round(v))}", 'v': round(v, 2), 'phase': 'idle', 'dir': None, 'tp': now_ts, 'ext': None, 'cd': 0, 'pivot': abs(v - P) < 1e-6, 'tl': tl_dir})
     # forget far-away idle levels
     lw['levels'] = [e for e in lw['levels'] if e['phase'] != 'idle' or abs(e['v'] - price) <= 2.6 * A]
     def lab(e):
+        if e.get('tl'): return 'TREND↗' if e['tl'] == 'asc' else 'TREND↘'
         for k, val in (('R2', R2), ('R1', R1), ('S1', S1), ('S2', S2)):
             if abs(val - e['v']) <= 0.12 * A: return k
         return 'PIVOT' if e.get('pivot') else None
@@ -1088,8 +1145,12 @@ def main():
         for e in lw['levels']:
             v = e['v']; name_l = lab(e); dist = abs(price - v)
             sup_side = (e['dir'] == 'sup') if e['dir'] else (price > v)
-            word = 'suportul' if sup_side else 'rezistența'
+            def wd(sd):
+                if e.get('tl'): return f"linia de trend {'ascendentă' if e['tl'] == 'asc' else 'descendentă'} ({'suport' if sd else 'rezistență'})"
+                return 'suportul' if sd else 'rezistența'
+            word = wd(sup_side); fem = bool(e.get('tl')); held = 'linia' if fem else 'nivelul'
             def mk_tag():
+                if e.get('tl'): return ''
                 if name_l == 'PIVOT': return ' (pivot)'
                 if name_l and ((name_l[0] == 'S') == sup_side): return f" ({name_l})"
                 return ''
@@ -1097,7 +1158,7 @@ def main():
             if e['phase'] == 'idle':
                 if now_ts < e.get('cd', 0): continue
                 if dist <= appr:
-                    e['dir'] = 'sup' if price > v else 'res'; sup_side = e['dir'] == 'sup'; word = 'suportul' if sup_side else 'rezistența'
+                    e['dir'] = 'sup' if price > v else 'res'; sup_side = e['dir'] == 'sup'; word = wd(sup_side)
                     tag = mk_tag()
                     e['phase'] = 'near'; e['tp'] = now_ts; e['ext'] = None
                     # a wick may already have reached it between two runs
@@ -1129,7 +1190,7 @@ def main():
                 if broke:
                     e['phase'] = 'done'; e['cd'] = now_ts + 3 * 3600; e['tp'] = now_ts; e['out'] = 'break'
                     others = sorted([x['v'] for x in lw['levels'] if x is not e and (x['v'] < v if sup_side else x['v'] > v)], key=lambda z: -z if sup_side else z)
-                    lvl_event(e, 'break', f"⚠️ {word.capitalize()} {fm(v)}{tag} a fost spart",
+                    lvl_event(e, 'break', f"⚠️ {word.capitalize()} {fm(v)}{tag} a fost {'spartă' if fem else 'spart'}",
                         f"Prețul e la {fm(price)}, {'sub' if sup_side else 'peste'} nivel cu {abs(price - v):.1f} $. Nu {'cumpăra' if sup_side else 'vinde'} de aici.\n" +
                         (f"Următorul nivel: {fm(others[0])}. " if others else '') + f"Un retest al {fm(v)} dinspre {'jos' if sup_side else 'sus'} poate fi intrare {'SELL' if sup_side else 'BUY'}.")
                 elif bounced and pierce_ok:
@@ -1144,7 +1205,7 @@ def main():
                     ahead = sorted([x['v'] for x in lw['levels'] if x is not e and ((x['v'] > entry + 0.3 * rk) if sup_side else (x['v'] < entry - 0.3 * rk))], key=lambda z: z if sup_side else -z)
                     obst = f"\nPrimul obstacol: {fm(ahead[0])} ({abs(ahead[0] - entry):.1f} $)." if ahead else ''
                     lvl_event(e, 'reject', f"{'🟢' if sup_side else '🔴'} Respingere la {word} {fm(v)}{tag} → {side_}",
-                        f"A ținut nivelul: {'minim' if sup_side else 'maxim'} {fm(ext)} și s-a întors {abs(price - v):.1f} $. Intrare {side_} ≈ {fm(entry)}\n{lvl(tt)}{money_lines(tt)}{obst}\nVerifică lumânarea înainte să intri.")
+                        f"A ținut {held}: {'minim' if sup_side else 'maxim'} {fm(ext)} și s-a întors {abs(price - v):.1f} $. Intrare {side_} ≈ {fm(entry)}\n{lvl(tt)}{money_lines(tt)}{obst}\nVerifică lumânarea înainte să intri.")
             if e['phase'] == 'done' and now_ts >= e.get('cd', 0) and dist > appr:
                 e['phase'] = 'idle'; e['dir'] = None; e['ext'] = None; e.pop('quiet', None); e.pop('out', None)
     lw['t'] = now_ts
@@ -1177,7 +1238,7 @@ def main():
         'dayHigh': r2(bars[-1]['h']), 'dayLow': r2(bars[-1]['l']),
         'ema20': r2(e20), 'ema50': r2(e50), 'ema200': r2(e200), 'rsi': round(R, 1), 'atr': r2(A),
         'bias': bias, 'score': score, 'notes': notes,
-        'levels': {'R2': r2(R2), 'R1': r2(R1), 'S1': r2(S1), 'S2': r2(S2)},
+        'levels': {'R2': r2(R2), 'R1': r2(R1), 'S1': r2(S1), 'S2': r2(S2)}, 'trend': TL,
         'pivots': {k: r2(v) for k, v in piv.items()},
         'scenarios': [scen('BUY'), scen('SELL')],
         'strategies': strategies, 'confluence': confluence, 'mtf': mtf, 'session': session_now(),
