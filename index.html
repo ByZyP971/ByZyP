@@ -1191,6 +1191,35 @@
   a.term-btn{ text-decoration:none; display:inline-block; }
   .gd-btns{ display:flex; gap:8px; justify-content:flex-end; margin:0 0 10px; }
   .gd-btns .term-btn{ float:none; margin:0; }
+
+  .ph-pick{ display:block; text-align:center; padding:15px; margin-top:10px; cursor:pointer; }
+  .ph-ta{ width:100%; margin-top:12px; background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; color:var(--text); font-family:inherit; font-size:16px; padding:11px 13px; resize:none; }
+  .ph-busy{ display:flex; align-items:center; gap:14px; padding:18px 4px; font-weight:700; } .ph-busy span{ font-weight:500; font-size:12px; color:var(--text-dim); }
+  .ph-spin{ width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--gold); animation:phspin .9s linear infinite; flex:none; }
+  @keyframes phspin{ to{ transform:rotate(360deg); } }
+  .ph-actions{ display:flex; gap:8px; margin-bottom:10px; } .ph-actions .ghost-btn{ flex:1; }
+  .ph-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:10px; } .ph-head b{ font-family:var(--serif, var(--display)); font-size:22px; font-weight:600; } .ph-head span{ font-variant-numeric:tabular-nums; color:var(--text-dim); }
+  .ph-tr{ font-style:normal; font-size:11.5px; font-weight:800; padding:4px 9px; border-radius:10px; border:1px solid var(--line); margin-left:auto; } .ph-tr.up{ color:var(--accent); } .ph-tr.down{ color:var(--danger); } .ph-tr.range{ color:var(--gold); }
+  .ph-tg{ display:flex; gap:6px; margin-bottom:8px; overflow-x:auto; } .ph-tg button{ flex:none; background:transparent; border:1px solid var(--line); color:var(--text-faint); border-radius:16px; padding:6px 11px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; } .ph-tg button.on{ color:var(--gold); border-color:var(--gold); }
+  .ph-wrap{ position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#000; line-height:0; }
+  .ph-img{ width:100%; height:auto; display:block; } .ph-img.dim{ opacity:.45; margin-top:6px; border-radius:12px; }
+  .ph-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; } .ph-lbs{ position:absolute; inset:0; pointer-events:none; line-height:1; }
+  .ph-ln{ stroke-width:1.5; vector-effect:non-scaling-stroke; opacity:.9; } .ph-ln.sup{ stroke:#5FBF8F; } .ph-ln.res{ stroke:#E0685C; } .ph-ln.ent{ stroke:#D6B26E; stroke-width:2; } .ph-ln.slx{ stroke:#FF5A4D; } .ph-ln.tpx{ stroke:#5FE0A0; } .ph-ln.tl{ stroke-width:2; opacity:.95; }
+  .ph-lb{ position:absolute; right:4px; transform:translateY(-50%); font-size:10px; font-weight:800; padding:3px 6px; border-radius:6px; color:#101010; font-variant-numeric:tabular-nums; }
+  .ph-lb.sup{ background:#5FBF8F; } .ph-lb.res{ background:#E0685C; } .ph-lb.ent{ background:#D6B26E; } .ph-lb.slx{ background:#FF5A4D; } .ph-lb.tpx{ background:#5FE0A0; }
+  .ph-wrap[data-off~="lv"] .g-lv, .ph-wrap[data-off~="us"] .g-us, .ph-wrap[data-off~="sc"] .g-sc{ display:none; }
+  .ph-sum{ margin:12px 0; font-size:14px; line-height:1.55; }
+  .ph-card{ margin-top:10px; padding:13px 14px; border-radius:16px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .ph-h{ font-family:var(--serif, var(--display)); font-size:19px; font-weight:600; margin-bottom:8px; }
+  .ph-vals{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; } .ph-vals div span{ display:block; font-size:10.5px; color:var(--text-faint); } .ph-vals div b{ font-size:15px; font-variant-numeric:tabular-nums; }
+  .td-side.WAIT{ background:var(--gold); color:#1A1307; }
+  .ph-vd{ display:inline-block; margin:10px 0 2px; font-size:12px; font-weight:800; padding:4px 10px; border-radius:10px; border:1px solid var(--line); text-transform:capitalize; } .ph-vd.bun{ color:var(--accent); border-color:var(--accent); } .ph-vd.mediu{ color:var(--gold); border-color:var(--gold); } .ph-vd.riscant{ color:var(--danger); border-color:var(--danger); }
+  .ph-tx{ font-size:13.5px; line-height:1.5; margin-top:8px; } .ph-tx.dim{ color:var(--text-dim); }
+  .ph-ul{ margin:8px 0 0; padding:0; list-style:none; font-size:13px; line-height:1.5; color:var(--text-dim); } .ph-ul li{ margin-bottom:4px; }
+  .ph-cmp{ margin-top:10px; padding:9px 12px; border-radius:12px; font-size:12.5px; line-height:1.45; } .ph-cmp.ok{ background:color-mix(in srgb, var(--accent) 10%, var(--bg-card)); } .ph-cmp.no{ background:color-mix(in srgb, var(--danger) 10%, var(--bg-card)); }
+  .ph-lv{ padding:7px 0; border-top:1px solid var(--line); font-size:13px; } .ph-lv:first-of-type{ border-top:0; } .ph-lv b{ display:block; } .ph-lv.sup b{ color:var(--accent); } .ph-lv.res b{ color:var(--danger); } .ph-lv span{ color:var(--text-dim); font-size:12.5px; }
+  .ph-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; } .ph-chips i{ font-style:normal; font-size:11.5px; padding:5px 10px; border-radius:12px; border:1px solid var(--hair, var(--line)); color:var(--gold); }
+  .ph-row{ display:flex; gap:12px; align-items:center; padding:8px 0; border-top:1px solid var(--line); cursor:pointer; } .ph-row img{ width:46px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--line); } .ph-row b{ display:block; font-size:13.5px; } .ph-row span{ font-size:12px; color:var(--text-dim); }
 </style>
 </head>
 <body>
@@ -1686,11 +1715,13 @@
         <button data-gs="open">⚡ Deschise <span class="gs-cnt" id="openCnt"></span></button>
         <button data-gs="live">📡 Live</button>
         <button data-gs="chart">📐 Analiză</button>
+        <button data-gs="photo">📸 Poză</button>
         <button data-gs="strat">🧪 Strategii</button>
         <button data-gs="risk">🛡️ Risc</button>
         <button data-gs="hist">📜 Istoric</button>
       </div>
       <div class="card" data-gsp="open" style="display:none;"><div id="openPane"><div class="hint" style="margin-top:0;">Se încarcă…</div></div></div>
+      <div class="card" data-gsp="photo" style="display:none;"><div id="photoPane"></div></div>
       <div class="card gs-live" data-gsp="live" style="display:none;padding:0;">
         <a class="tv-open" href="https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD" target="_blank" rel="noopener">📈 Deschide în aplicația TradingView <span>contul tău · desenele tale ↗</span></a>
         <div class="tv-full" id="goldLive"></div>
@@ -3466,6 +3497,7 @@ document.addEventListener('click', function(e){
     document.querySelectorAll('#goldSeg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-gs') === goldSeg); });
     document.querySelectorAll('[data-gsp]').forEach(function(c){ c.style.display = c.getAttribute('data-gsp') === goldSeg ? '' : 'none'; });
     if(goldSeg === 'live' && document.getElementById('view-gold').classList.contains('active')) loadGoldLive();
+    if(goldSeg === 'photo' && typeof renderPhotoPane === 'function') renderPhotoPane();
   }
   document.querySelectorAll('#goldSeg button').forEach(function(b){ b.addEventListener('click', function(){
     goldSeg = b.getAttribute('data-gs'); try{ localStorage.setItem('byzyp_gseg', goldSeg); }catch(e){}
@@ -3673,6 +3705,163 @@ document.addEventListener('click', function(e){
   }
   window.addEventListener('hashchange', openTradingFromLink);
   setTimeout(openTradingFromLink, 1500);
+
+  /* ===== 📸 Poză: analiză AI a unei capturi de grafic (Supabase Edge Function → Claude vision) ===== */
+  var shotHist = [], photoSt = { busy:false, err:null, setup:false, img:null, res:null, ctx:'', fromHist:null, tg:{ lv:true, us:true, sc:true } };
+  var PH_FN = 'https://bskujbfaynbeqjonqydb.supabase.co/functions/v1/analyze-chart', PH_KEY = 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX';
+  function phNum(v){ return (v == null || v === '' || isNaN(+v)) ? null : +v; }
+  function phEsc(t){ return String(t == null ? '' : t).replace(/[&<>]/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]; }); }
+  function phIsGold(r){ return /XAU|GOLD|AUR/i.test((r && r.symbol) || '') || (r && !r.symbol && r.price_now > 1500 && r.price_now < 9000); }
+  function phBalance(){ try{ return eqStart + trades.reduce(function(a, t){ return a + (t.result || 0); }, 0); }catch(e){ return 0; } }
+  function phMoney(entry, sl, tp1){            // risk 2% of YOUR trading balance, XTB gold 1:20
+    var bal = phBalance(), fx = 1.08, d = Math.abs(entry - sl), g = tp1 != null ? Math.abs(tp1 - entry) : null;
+    if(!(bal > 0) || !(d > 0)) return '';
+    var marg = entry / 20 / fx;
+    if(bal < marg) return '<div class="td-risk warn">❌ Cu <b>€' + bal.toFixed(2) + '</b> nu poți deschide nici 0.01 lot (marja ≈ €' + marg.toFixed(0) + '). Risc la SL ≈ €' + (d / fx).toFixed(2) + (g != null ? ', la TP ≈ +€' + (g / fx).toFixed(2) : '') + '.</div>';
+    var lot = Math.floor(bal * fx * 0.02 / d) / 100;
+    if(lot >= 0.01) return '<div class="td-risk">💶 Pentru <b>€' + bal.toFixed(2) + '</b> (risc 2%): <b>lot ' + lot.toFixed(2) + '</b> → risc ≈ €' + (lot * 100 * d / fx).toFixed(2) + (g != null ? ' · la TP ≈ +€' + (lot * 100 * g / fx).toFixed(2) : '') + '</div>';
+    return '<div class="td-risk warn">⚠️ Cu <b>€' + bal.toFixed(2) + '</b>, chiar și 0.01 lot riscă ≈ €' + (d / fx).toFixed(2) + ' (' + Math.round(d / fx / bal * 100) + '% din cont)' + (g != null ? '; la TP ≈ +€' + (g / fx).toFixed(2) : '') + '.</div>';
+  }
+  function phShrink(file, cb){
+    var fr = new FileReader();
+    fr.onerror = function(){ cb('Nu pot citi fișierul.'); };
+    fr.onload = function(){ var im = new Image(); im.onerror = function(){ cb('Nu pot citi imaginea. Încearcă o captură de ecran (PNG sau JPEG).'); };
+      im.onload = function(){
+        var k = Math.min(1, 1568 / Math.max(im.width, im.height)), w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k));
+        var cv = document.createElement('canvas'); cv.width = w; cv.height = h; var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(im, 0, 0, w, h);
+        var k2 = Math.min(1, 640 / Math.max(w, h)), c2 = document.createElement('canvas'); c2.width = Math.round(w * k2); c2.height = Math.round(h * k2); c2.getContext('2d').drawImage(cv, 0, 0, c2.width, c2.height);
+        cb(null, { full: cv.toDataURL('image/jpeg', 0.85), thumb: c2.toDataURL('image/jpeg', 0.6), w:w, h:h });
+      }; im.src = fr.result; };
+    fr.readAsDataURL(file);
+  }
+  function phContext(userText){
+    var out = ['Contul utilizatorului: ~€' + phBalance().toFixed(2) + ' (jurnalul de trading), risc dorit 2% pe tranzacție, broker XTB (aur: levier 1:20, 0.01 lot = 1 uncie).'];
+    if(userText) out.push('Ce spune utilizatorul: ' + userText);
+    try{ if(gold){ var c = gold.confluence || {}, L = gold.levels || {}, T = gold.trend || {};
+      out.push('Analiza aplicației pe XAUUSD (doar pentru comparație, dacă poza e cu aur): preț acum ' + f2(liveSpot != null ? liveSpot : gold.price) + ', verdict ' + (c.verdict || gold.bias) + ' (BUY ' + (c.buyN || 0) + ' / SELL ' + (c.sellN || 0) + '), suporturi S1 ' + L.S1 + ', S2 ' + L.S2 + ', rezistențe R1 ' + L.R1 + ', R2 ' + L.R2 + '.' +
+        (T.sup ? ' Linie de trend suport ' + T.sup.now + '.' : '') + (T.res ? ' Linie de trend rezistență ' + T.res.now + '.' : '')); } }catch(e){}
+    return out.join('\n');
+  }
+  function phFail(msg, setup){ photoSt.busy = false; photoSt.err = msg; photoSt.setup = !!setup; renderPhotoPane(); }
+  function runPhotoAnalysis(){
+    var st = photoSt; if(!st.img) return;
+    st.busy = true; st.err = null; st.setup = false; st.res = null; st.fromHist = null; renderPhotoPane();
+    var sbc = window.__sb; if(!sbc || !sbc.auth) return phFail('Analiza din poză cere cont online. Intră în cont și încearcă din nou.');
+    sbc.auth.getSession().then(function(r){
+      var tok = r && r.data && r.data.session && r.data.session.access_token; if(!tok) throw { msg:'Intră în cont ca să poți folosi analiza din poză.' };
+      return fetch(PH_FN, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + tok, apikey:PH_KEY },
+        body: JSON.stringify({ image: st.img.full.split(',')[1], mime:'image/jpeg', context: phContext(st.ctx) }) });
+    }).then(function(resp){
+      return resp.json().catch(function(){ return {}; }).then(function(j){
+        if(resp.status === 404) throw { msg:'Funcția „analyze-chart” nu e creată încă în Supabase.', setup:true };
+        if(!resp.ok || j.error) throw { msg: j.error || ('Eroare ' + resp.status), setup: j.code === 'nokey' };
+        return j; });
+    }).then(function(j){
+      st.busy = false; st.res = j.result || { ok:false, reason:'Răspuns gol.' };
+      if(st.res.ok) phSave(); renderPhotoPane();
+    }).catch(function(e){ phFail((e && e.msg) || 'Nu s-a putut face analiza. Verifică internetul și încearcă din nou.', e && e.setup); });
+  }
+  function phSave(){
+    var st = photoSt, id = String(Date.now()), rec = { ts:Date.now(), thumb: st.img.thumb, res: st.res, ctx: st.ctx || '' };
+    shotHist.unshift(Object.assign({ id:id }, rec));
+    try{ chainWrite('shots/' + id, function(){ return db.doc('shots/' + id).set(rec); }); }catch(e){}
+    shotHist.slice(25).forEach(function(x){ try{ db.doc('shots/' + x.id).delete(); }catch(e){} });
+    shotHist = shotHist.slice(0, 25);
+  }
+  // price → y (fraction of image height): linear fit on the axis labels the AI read; fallback to the AI's own y
+  function phYFn(r){
+    var ax = (r.axis || []).filter(function(a){ return a && isFinite(a.y) && isFinite(a.price); }); if(ax.length < 2) return null;
+    var n = ax.length, sx = 0, sy = 0, sxx = 0, sxy = 0; ax.forEach(function(a){ sx += a.price; sy += a.y; sxx += a.price * a.price; sxy += a.price * a.y; });
+    var den = n * sxx - sx * sx; if(Math.abs(den) < 1e-9) return null;
+    var m = (n * sxy - sx * sy) / den, c = (sy - m * sx) / n, worst = 0; ax.forEach(function(a){ worst = Math.max(worst, Math.abs(a.y - (m * a.price + c))); });
+    return (worst < 0.03 && Math.abs(m) > 1e-9) ? function(pr){ return m * pr + c; } : null;
+  }
+  function phOverlay(r, ratio){
+    var Yf = phYFn(r), items = [], lines = '';
+    var Y = function(pr, fy){ var v = Yf && pr != null ? Yf(pr) : phNum(fy); return (v == null || v < 0.005 || v > 0.995) ? null : v; };
+    (r.levels || []).forEach(function(l){ var pr = phNum(l.price), y = Y(pr, l.y); if(y == null || pr == null) return;
+      items.push({ y:y, t:(l.type === 'support' ? 'S ' : 'R ') + pr, c: l.type === 'support' ? 'sup' : 'res', g:'lv', d:0 }); });
+    var u = r.user_trade; if(u && u.found){ [['entry', 'INTRARE ', 'ent'], ['sl', 'SL ', 'slx'], ['tp', 'TP ', 'tpx']].forEach(function(a){ var pr = phNum(u[a[0]]), y = Y(pr, u[a[0] + '_y']); if(y != null && pr != null) items.push({ y:y, t:a[1] + pr, c:a[2], g:'us', d:0 }); }); }
+    var sc = r.scenario; if(sc && sc.side && sc.side !== 'WAIT'){ [['entry', 'PLAN ', 'ent'], ['sl', 'SL ', 'slx'], ['tp1', 'TP1 ', 'tpx'], ['tp2', 'TP2 ', 'tpx']].forEach(function(a){ var pr = phNum(sc[a[0]]), y = Yf && pr != null ? Yf(pr) : null; if(y != null && y > 0.005 && y < 0.995) items.push({ y:y, t:a[1] + pr, c:a[2], g:'sc', d:1 }); }); }
+    items.forEach(function(it){ lines += '<line class="g-' + it.g + ' ph-ln ' + it.c + '" x1="0" x2="100" y1="' + (it.y * 100).toFixed(2) + '" y2="' + (it.y * 100).toFixed(2) + '"' + (it.d ? ' stroke-dasharray="3 2"' : '') + '/>'; });
+    (r.trendlines || []).slice(0, 2).forEach(function(t){ var a = t.a, b = t.b; if(!a || !b || !isFinite(a.x) || !isFinite(b.x) || Math.abs(b.x - a.x) < 0.02) return;
+      var sl = (b.y - a.y) / (b.x - a.x), y0 = a.y - sl * a.x, y1 = a.y + sl * (1 - a.x);
+      lines += '<line class="g-lv ph-ln tl ' + (t.type === 'support' ? 'sup' : 'res') + '" x1="0" y1="' + (y0 * 100).toFixed(2) + '" x2="100" y2="' + (y1 * 100).toFixed(2) + '"/>'; });
+    var gap = 15 / (320 * (ratio || 1.4)) * 100, sorted = items.slice().sort(function(a, b){ return a.y - b.y; }), last = -9;
+    sorted.forEach(function(it){ var py = it.y * 100; if(py < last + gap) py = last + gap; it.py = py; last = py; });
+    var lbls = sorted.map(function(it){ return '<span class="ph-lb g-' + it.g + ' ' + it.c + '" style="top:' + it.py.toFixed(2) + '%">' + phEsc(it.t) + '</span>'; }).join('');
+    return '<svg class="ph-svg" viewBox="0 0 100 100" preserveAspectRatio="none">' + lines + '</svg><div class="ph-lbs">' + lbls + '</div>';
+  }
+  function phList(a, ic){ return (a && a.length) ? '<ul class="ph-ul">' + a.slice(0, 5).map(function(x){ return '<li>' + ic + ' ' + phEsc(x) + '</li>'; }).join('') + '</ul>' : ''; }
+  function phResultHtml(r, src, ratio){
+    var gold1 = phIsGold(r), h = '';
+    var trTxt = r.trend === 'up' ? '↗ trend urcător' : r.trend === 'down' ? '↘ trend coborâtor' : '↔ în interval';
+    h += '<div class="ph-head"><b>' + phEsc(r.symbol || 'Grafic') + (r.timeframe ? ' · ' + phEsc(r.timeframe) : '') + '</b>' + (r.price_now != null ? '<span>' + phEsc(r.price_now) + '</span>' : '') + '<i class="ph-tr ' + (r.trend || '') + '">' + trTxt + '</i></div>';
+    h += '<div class="ph-tg"><button data-tg="lv" class="on">📍 Niveluri</button><button data-tg="us" class="on">🧾 Ce am făcut</button><button data-tg="sc" class="on">🧭 Plan</button></div>';
+    h += '<div class="ph-wrap"><img class="ph-img" src="' + src + '" alt="captura ta">' + phOverlay(r, ratio) + '</div>';
+    h += '<div class="ph-sum">' + phEsc(r.summary || r.trend_text || '') + '</div>';
+    var u = r.user_trade;
+    h += '<div class="ph-card"><div class="ph-h">🧾 Ce ai făcut</div>';
+    if(u && u.found){
+      var en = phNum(u.entry), sl = phNum(u.sl), tp = phNum(u.tp), risk = en != null && sl != null ? Math.abs(en - sl) : null, rew = en != null && tp != null ? Math.abs(tp - en) : null;
+      h += '<div class="ph-vals"><span class="td-side ' + (u.side === 'SELL' ? 'SELL' : 'BUY') + '">' + phEsc(u.side || '?') + '</span>' +
+        '<div><span>intrare</span><b>' + (en != null ? en : '–') + '</b></div><div><span>SL</span><b class="hs-loss">' + (sl != null ? sl : 'lipsă') + '</b></div><div><span>TP</span><b class="hs-win">' + (tp != null ? tp : 'lipsă') + '</b></div>' +
+        (risk && rew ? '<div><span>risc : câștig</span><b>1 : ' + (rew / risk).toFixed(1) + '</b></div>' : '') + '</div>';
+      if(u.verdict) h += '<div class="ph-vd ' + phEsc(u.verdict) + '">Verdict: ' + phEsc(u.verdict) + '</div>';
+      h += '<div class="ph-tx">' + phEsc(u.comment || '') + '</div>' + phList(u.good, '✅') + phList(u.problems, '⚠️');
+      if(gold1 && en != null && sl != null) h += phMoney(en, sl, tp);
+    } else h += '<div class="ph-tx dim">Nu văd nicio tranzacție desenată pe poză (intrare, SL sau TP). Desenează-le pe grafic și trimite din nou, ca să ți le evaluez.</div>';
+    h += '</div>';
+    var sc = r.scenario;
+    if(sc && sc.side){
+      h += '<div class="ph-card"><div class="ph-h">🧭 Scenariu propus</div><div class="ph-vals"><span class="td-side ' + (sc.side === 'SELL' ? 'SELL' : sc.side === 'BUY' ? 'BUY' : 'WAIT') + '">' + phEsc(sc.side === 'WAIT' ? 'AȘTEAPTĂ' : sc.side) + '</span>' +
+        (sc.side !== 'WAIT' ? '<div><span>intrare</span><b>' + (phNum(sc.entry) != null ? sc.entry : '–') + '</b></div><div><span>SL</span><b class="hs-loss">' + (phNum(sc.sl) != null ? sc.sl : '–') + '</b></div><div><span>TP1</span><b class="hs-win">' + (phNum(sc.tp1) != null ? sc.tp1 : '–') + '</b></div>' + (phNum(sc.tp2) != null ? '<div><span>TP2</span><b class="hs-win">' + sc.tp2 + '</b></div>' : '') : '') + '</div>' +
+        '<div class="ph-tx">' + phEsc(sc.why || '') + '</div>' + (sc.invalid_if ? '<div class="ph-tx dim">❌ Nu mai e valabil dacă: ' + phEsc(sc.invalid_if) + '</div>' : '');
+      if(gold1 && sc.side !== 'WAIT' && phNum(sc.entry) != null && phNum(sc.sl) != null) h += phMoney(+sc.entry, +sc.sl, phNum(sc.tp1));
+      try{ if(gold1 && gold && sc.side !== 'WAIT'){ var av = (gold.confluence || {}).verdict; if(av === 'BUY' || av === 'SELL') h += '<div class="ph-cmp ' + (av === sc.side ? 'ok' : 'no') + '">' + (av === sc.side ? '✅ Se potrivește cu analiza aplicației: majoritatea strategiilor spun ' + av + '.' : '⚠️ Aplicația spune altceva: majoritatea strategiilor spun ' + av + '. Gândește-te de două ori.') + '</div>'; } }catch(e){}
+      h += '</div>';
+    }
+    var lv = (r.levels || []);
+    if(lv.length || (r.patterns || []).length) h += '<div class="ph-card"><div class="ph-h">📍 Ce văd pe grafic</div>' +
+      lv.map(function(l){ return '<div class="ph-lv ' + (l.type === 'support' ? 'sup' : 'res') + '"><b>' + (l.type === 'support' ? 'Suport' : 'Rezistență') + ' ' + phEsc(l.price) + '</b><span>' + phEsc(l.note || '') + '</span></div>'; }).join('') +
+      ((r.patterns || []).length ? '<div class="ph-chips">' + r.patterns.slice(0, 5).map(function(x){ return '<i>' + phEsc(x) + '</i>'; }).join('') + '</div>' : '') + '</div>';
+    if((r.risks || []).length) h += '<div class="ph-card"><div class="ph-h">⚠️ Atenție</div>' + phList(r.risks, '•') + '</div>';
+    h += '<div class="hint">Analiză făcută de AI din poză: poate citi greșit un preț sau o linie. Verifică întotdeauna pe grafic. Nu e sfat financiar, iar decizia rămâne a ta.</div>';
+    return h;
+  }
+  function renderPhotoPane(){
+    var el = document.getElementById('photoPane'); if(!el) return;
+    var st = photoSt, h = '<div class="card-title">📸 Analiză din poză</div>';
+    if(st.busy){
+      el.innerHTML = h + '<div class="ph-busy"><div class="ph-spin"></div><div>Analizez poza…<br><span>de obicei 10–25 de secunde</span></div></div>' + (st.img ? '<img class="ph-img dim" src="' + st.img.full + '" alt="">' : ''); return; }
+    if(st.res && st.res.ok){
+      var src = st.fromHist ? st.fromHist.thumb : (st.img && st.img.full), ratio = st.img ? st.img.h / st.img.w : 1.8;
+      el.innerHTML = h + '<div class="ph-actions"><button class="ghost-btn" id="phNew">← Poză nouă</button>' + (st.fromHist ? '<button class="ghost-btn" id="phDel" style="color:var(--danger);">🗑️ Șterge</button>' : '') + '</div>' + phResultHtml(st.res, src, ratio);
+      var wrap = el.querySelector('.ph-wrap'); if(wrap) wrap.setAttribute('data-off', ['lv', 'us', 'sc'].filter(function(k){ return !st.tg[k]; }).join(' '));
+      el.querySelectorAll('.ph-tg button').forEach(function(b){ var k = b.getAttribute('data-tg'); b.classList.toggle('on', !!st.tg[k]);
+        b.addEventListener('click', function(){ st.tg[k] = !st.tg[k]; b.classList.toggle('on', st.tg[k]); if(wrap) wrap.setAttribute('data-off', ['lv', 'us', 'sc'].filter(function(x){ return !st.tg[x]; }).join(' ')); }); });
+      document.getElementById('phNew').addEventListener('click', function(){ st.res = null; st.fromHist = null; st.img = null; renderPhotoPane(); });
+      var dl = document.getElementById('phDel'); if(dl) dl.addEventListener('click', function(){ var id = st.fromHist.id; if(!confirm('Ștergi această analiză?')) return;
+        try{ db.doc('shots/' + id).delete(); }catch(e){} shotHist = shotHist.filter(function(x){ return x.id !== id; }); st.res = null; st.fromHist = null; renderPhotoPane(); });
+      return;
+    }
+    h += '<div class="hint" style="margin-top:0;">Alege o captură de ecran cu graficul (TradingView, MT5, XTB). AI-ul citește graficul, marchează nivelurile, îți <b>evaluează tranzacția</b> dacă ai desenat intrarea, SL și TP, și îți propune un scenariu, cu riscul pe contul tău.</div>';
+    if(st.res && !st.res.ok) h += '<div class="td-risk warn">⚠️ ' + phEsc(st.res.reason || 'Nu am găsit un grafic de preț în poză.') + '</div>';
+    if(st.err) h += '<div class="td-risk warn">⚠️ ' + phEsc(st.err) + (st.setup ? '<br>Analiza din poză trebuie activată o singură dată în Supabase (pașii îi primești de la Claude).' : '') + '</div>';
+    h += '<textarea id="phCtx" class="ph-ta" rows="3" placeholder="Opțional: ce ai făcut sau ce vrei să verifici (ex. am intrat BUY la 4300, SL 4285)">' + phEsc(st.ctx) + '</textarea>';
+    h += '<label class="primary-btn ph-pick">📸 Alege captura<input type="file" accept="image/*" id="phFile" hidden></label>';
+    if(shotHist.length) h += hxHtml('shotHist', 'analizele tale (' + shotHist.length + ')', shotHist.map(function(x){ var d = new Date(x.ts), r = x.res || {}, sc = r.scenario || {};
+      return '<div class="ph-row" data-sid="' + x.id + '"><img src="' + x.thumb + '" alt=""><div><b>' + phEsc(r.symbol || 'Grafic') + (r.timeframe ? ' · ' + phEsc(r.timeframe) : '') + '</b><span>' + d.getDate() + ' ' + monthShort[d.getMonth()] + ' ' + hhmm(d) +
+        (sc.side ? ' · plan ' + phEsc(sc.side) : '') + (r.user_trade && r.user_trade.found ? ' · ' + phEsc(r.user_trade.side || '') + ' evaluat' : '') + '</span></div></div>'; }).join(''));
+    el.innerHTML = h;
+    var inp = document.getElementById('phFile'), ta = document.getElementById('phCtx');
+    if(ta) ta.addEventListener('input', function(){ st.ctx = ta.value; });
+    if(inp) inp.addEventListener('change', function(){ var f = inp.files && inp.files[0]; if(!f) return; st.ctx = ta ? ta.value : st.ctx; st.err = null;
+      phShrink(f, function(err, img){ if(err) return phFail(err); st.img = img; runPhotoAnalysis(); }); });
+    el.querySelectorAll('.ph-row').forEach(function(r){ r.addEventListener('click', function(){ var x = shotHist.filter(function(s){ return s.id === r.getAttribute('data-sid'); })[0]; if(!x) return;
+      st.res = x.res; st.fromHist = x; st.img = null; renderPhotoPane(); }); });
+  }
+  window.__openPhoto = function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); setTimeout(function(){ var b = document.querySelector('#goldSeg [data-gs="photo"]'); if(b) b.click(); }, 80); };
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
@@ -4308,6 +4497,7 @@ document.addEventListener('click', function(e){
       [['sup', 'suport'], ['res', 'rezistență']].forEach(function(a){ var q = T5[a[0]]; if(!q) return; outT.push('linia de trend ' + (q.dir === 'asc' ? 'ascendentă' : 'descendentă') + ' de ' + a[1] + ' e acum la ' + jNum(q.now, 2) + ', la ' + jNum(Math.abs(pT - q.now), 1) + ' dolari de preț' + (q.status === 'broken' ? ', dar a fost spartă' : '') + ', atinsă de ' + q.touches + ' ori'); });
       return 'ZyP, ' + outT.join('; ') + '.';
     }
+    if(jHas(t, ['analizeaza poza','analiza poza','analiza din poza','analizeaza captura','screenshot','captura de ecran','am o poza','poza cu grafic'])){ setTimeout(function(){ window.__openPhoto && window.__openPhoto(); }, 500); return 'ZyP, deschid analiza din poză. Alege captura din galerie și o analizez.'; }
     // --- support / resistance ---
     if(jHas(t, ['suport','rezistenta','niveluri','nivelul','nivel '])){
       if(!gold || !gold.watch || !gold.watch.levels.length) return 'ZyP, nu am încă nivelurile calculate. Mai așteaptă un minut.';
@@ -4955,6 +5145,11 @@ document.addEventListener('click', function(e){
       accounts = snap.docs.map(function(d){ return d.data(); });
       renderWorth();
     }, function(err){ console.error('accounts sub error', err); });
+
+    db.collection('shots').onSnapshot(function(snap){
+      shotHist = snap.docs.map(function(d){ var x = d.data(); x.id = d.id; return x; }).sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+      if(typeof renderPhotoPane === 'function' && goldSeg === 'photo' && !photoSt.busy && !photoSt.res) renderPhotoPane();
+    }, function(err){ console.error('shots sub error', err); });
 
     db.collection('mt5').onSnapshot(function(snap){
       mt5State = null; snap.docs.forEach(function(d){ if(d.id === 'state') mt5State = d.data(); });
