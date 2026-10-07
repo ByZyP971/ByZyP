@@ -1,17 +1,15 @@
 name: Notificari
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
     inputs:
       test:
         description: 'Trimite o notificare de test'
         type: boolean
-        default: true
+        default: false
 permissions:
   contents: write
 concurrency:
-  group: push-bot
+  group: data-bot
 jobs:
   push:
     runs-on: ubuntu-latest
@@ -20,18 +18,47 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verifica aurul si strategiile
+        env:
+          QUICK: '1'
+        run: |
+          python3 analyze.py || echo "analiza - esec temporar"
       - name: Trimite notificarile
         env:
           VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
           PUSH_SUB: ${{ secrets.PUSH_SUB }}
           TEST_PUSH: ${{ github.event.inputs.test }}
         run: |
-          npm install --no-save --silent web-push@3.6.7
+          for i in 1 2 3; do npm install --no-save --silent web-push@3.6.7 && break; sleep 5; done
           cp push-bot.js push-bot.mjs
           node push-bot.mjs
+      - name: Contul MT5 (doar daca e conectat)
+        env:
+          METAAPI_TOKEN: ${{ secrets.METAAPI_TOKEN }}
+          METAAPI_ACCOUNT: ${{ secrets.METAAPI_ACCOUNT }}
+          METAAPI_REGION: ${{ secrets.METAAPI_REGION }}
+          BYZYP_KEY: ${{ secrets.BYZYP_KEY }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          PUSH_SUB: ${{ secrets.PUSH_SUB }}
+        run: |
+          if [ -f mt5-bot.js ] && [ -n "$METAAPI_TOKEN" ]; then
+            cp mt5-bot.js mt5-bot.mjs
+            node mt5-bot.mjs || echo "MT5 - esec temporar"
+          else
+            echo "MT5 neconectat - sar peste"
+          fi
       - name: Salveaza starea
         run: |
           git config user.name "byzyp-bot"
           git config user.email "byzyp-bot@users.noreply.github.com"
           git add sent.json 2>/dev/null || true
-          git diff --cached --quiet || (git commit -m "Notificari trimise" && git pull --rebase && git push)
+          git add xauusd.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Aur live si notificari"
+            for i in 1 2 3 4; do
+              if git pull --rebase -X theirs && git push; then break; fi
+              git rebase --abort 2>/dev/null || true
+              sleep $((i * 3))
+            done
+          fi
+
