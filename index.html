@@ -3759,7 +3759,7 @@ document.addEventListener('click', function(e){
     }).then(function(j){
       st.busy = false; st.res = j.result || { ok:false, reason:'Răspuns gol.' };
       if(st.res.ok) phSave(); renderPhotoPane();
-    }).catch(function(e){ phFail((e && e.msg) || 'Nu s-a putut face analiza. Verifică internetul și încearcă din nou.', e && e.setup); });
+    }).catch(function(e){ phFail((e && e.msg) || 'Aplicația nu ajunge la funcția „analyze-chart” din Supabase. De obicei înseamnă că funcția nu e creată încă sau că are pornit „Verify JWT”.', !(e && e.msg)); });
   }
   function phSave(){
     var st = photoSt, id = String(Date.now()), rec = { ts:Date.now(), thumb: st.img.thumb, res: st.res, ctx: st.ctx || '' };
@@ -3847,7 +3847,7 @@ document.addEventListener('click', function(e){
     }
     h += '<div class="hint" style="margin-top:0;">Alege o captură de ecran cu graficul (TradingView, MT5, XTB). AI-ul citește graficul, marchează nivelurile, îți <b>evaluează tranzacția</b> dacă ai desenat intrarea, SL și TP, și îți propune un scenariu, cu riscul pe contul tău.</div>';
     if(st.res && !st.res.ok) h += '<div class="td-risk warn">⚠️ ' + phEsc(st.res.reason || 'Nu am găsit un grafic de preț în poză.') + '</div>';
-    if(st.err) h += '<div class="td-risk warn">⚠️ ' + phEsc(st.err) + (st.setup ? '<br>Analiza din poză trebuie activată o singură dată în Supabase (pașii îi primești de la Claude).' : '') + '</div>';
+    if(st.err) h += '<div class="td-risk warn">⚠️ ' + phEsc(st.err) + (st.setup ? '<br>Analiza din poză trebuie activată o singură dată în Supabase: funcția „analyze-chart” + secretul ANTHROPIC_API_KEY. Deschide în Safari adresa funcției ca să vezi ce lipsește.' : '') + '</div>';
     h += '<textarea id="phCtx" class="ph-ta" rows="3" placeholder="Opțional: ce ai făcut sau ce vrei să verifici (ex. am intrat BUY la 4300, SL 4285)">' + phEsc(st.ctx) + '</textarea>';
     h += '<label class="primary-btn ph-pick">📸 Alege captura<input type="file" accept="image/*" id="phFile" hidden></label>';
     if(shotHist.length) h += hxHtml('shotHist', 'analizele tale (' + shotHist.length + ')', shotHist.map(function(x){ var d = new Date(x.ts), r = x.res || {}, sc = r.scenario || {};
@@ -5267,10 +5267,10 @@ document.addEventListener('click', function(e){
     fetch('sent.json?t=' + Date.now(), { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
       var st = (j._status || []).slice(-8).reverse();
       if(!st.length){ logEl.innerHTML = '<div class="hint" style="margin-top:0;">Robotul n-a trimis încă notificări.</div>'; return; }
-      var bad = st.filter(function(x){ return !x.ok && (x.code === 404 || x.code === 410); }).length;
+      var bad = st.filter(function(x){ return !x.ok && (x.code === 404 || x.code === 410); }).length, cfg = st.filter(function(x){ return !x.ok && x.code === 'config'; })[0];
       logEl.innerHTML = '<div style="margin-top:14px;"></div>' + (window.hxHtml || function(k,l,x){ return x; })('notifLog', 'ultimele notificări trimise', st.map(function(x){ var d = new Date(x.t);
-        return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : ' <em>(eroare ' + x.code + ')</em>') + '</span></div>'; }).join('')) +
-        (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
+        return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : (x.code === 'config' ? ' <em>(configurare)</em>' : ' <em>(eroare ' + x.code + ')</em>')) + '</span></div>'; }).join('')) +
+        (cfg && st[0] && st[0].code === 'config' ? '<div class="hint" style="color:var(--gold)">⚠️ ' + String(cfg.err || 'Secretele din GitHub nu sunt valide.').replace(/</g, '&lt;') + '</div>' : '') + (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
     }).catch(function(){});
   }
   function hh(d){ return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }

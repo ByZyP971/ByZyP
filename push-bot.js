@@ -8,20 +8,29 @@ const PRIVATE = process.env.VAPID_PRIVATE;
 const SUB = process.env.PUSH_SUB;
 const TZ = process.env.APP_TZ || 'Atlantic/Canary';
 const TEST = process.env.TEST_PUSH === 'true';
-if (!PRIVATE || !SUB) { console.log('Secrets missing (VAPID_PRIVATE / PUSH_SUB) — nothing to do.'); process.exit(0); }
-webpush.setVapidDetails('mailto:byzyp@users.noreply.github.com', PUBLIC, PRIVATE);
-const subs = (() => { const j = JSON.parse(SUB); return Array.isArray(j) ? j : [j]; })();
-
 const STATE = 'sent.json';
 let sent = {}; try { sent = JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) {}
+const status = Array.isArray(sent._status) ? sent._status : [];
 let changed = false;
+// a wrong secret must NOT crash the run (red X + e-mails every 5 min): log it, show it in the app (Profil → Notificări) and stop quietly
+function bail(msg) {
+  console.log('CONFIG ERROR:', msg);
+  const last = status[status.length - 1];
+  if (!(last && last.code === 'config' && last.err === msg)) { status.push({ t: new Date().toISOString(), title: 'Configurare notificări', ok: false, code: 'config', err: msg }); sent._status = status.slice(-15); fs.writeFileSync(STATE, JSON.stringify(sent)); }
+  process.exit(0);
+}
+if (!PRIVATE || !SUB) { console.log('Secrets missing (VAPID_PRIVATE / PUSH_SUB) — nothing to do.'); process.exit(0); }
+try { webpush.setVapidDetails('mailto:byzyp@users.noreply.github.com', PUBLIC, PRIVATE.trim()); }
+catch (e) { bail('VAPID_PRIVATE nu e valid sau nu se potrivește cu cheia publică din aplicație.'); }
+let subs = [];
+try { const j = JSON.parse(SUB.trim()); subs = Array.isArray(j) ? j : [j]; if (!subs.length || !subs.every(x => x && x.endpoint && x.keys)) throw new Error('missing fields'); }
+catch (e) { bail('PUSH_SUB nu e un cod valid. Copiază din nou codul întreg din aplicație și lipește-l în secret.'); }
 
 function local(d) {
   const p = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false })
     .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
   return { date: `${p.year}-${p.month}-${p.day}`, hm: +p.hour * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
 }
-const status = Array.isArray(sent._status) ? sent._status : [];
 async function send(title, body, tag, url) {
   let ok = false;
   for (const s of subs) {
