@@ -1889,7 +1889,8 @@ document.addEventListener('click', function(e){
 
     function mapFF(arr){
       return (arr || []).filter(function(e){ return e && e.impact && e.impact !== 'Holiday'; }).map(function(e){
-        return { title:e.title, c:e.country, t:e.date, i:e.impact, f:e.forecast || '', p:e.previous || '' }; });
+        var q = function(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]; }); };   /* third-party feed: never reach innerHTML raw */
+      return { title:q(e.title), c:q(e.country), t:e.date, i:e.impact, f:q(e.forecast), p:q(e.previous) }; });
     }
     function getJSON(url){ return fetch(url, { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error(url + ' ' + r.status); return r.json(); }); }
     function newsSnapshot(next){
@@ -4562,8 +4563,8 @@ document.addEventListener('click', function(e){
       var sf = jSmokeFree(); return 'ZyP, ai ' + sf + (sf === 1 ? ' zi' : ' zile') + ' la rând fără țigări. ' + (sf >= 7 ? 'Plămânii tăi deja respiră mai bine. Nu da totul înapoi pentru una singură.' : 'Fiecare zi contează. Dacă vine pofta, trece în câteva minute: bea un pahar de apă.');
     }
     if(jHas(t, ['ce mai am','ce am de bifat','obiceiuri','bifat','ce am facut','cum stau azi'])){
-      var lf = jLeft(), dn = HABITS.length - lf.length;
-      return 'ZyP, azi ai bifat ' + dn + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
+      var lf = jLeft(), dnN = HABITS.length - lf.length;
+      return 'ZyP, azi ai bifat ' + dnN + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
     }
     if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ return 'ZyP, azi e ziua ' + jDayNum() + ' din viața ta nouă. Ai ' + jSmokeFree() + ' zile la rând fără țigări.'; }
     if(jHas(t, ['greutate','kg','kilograme','cantaresc'])){
@@ -4596,7 +4597,7 @@ document.addEventListener('click', function(e){
     try{
       if(!window.speechSynthesis) return;
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text.replace(/[🔥💪🏆]/g, ''));
+      var u = new SpeechSynthesisUtterance(text.replace(/[🔥💪🏆]/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&'));
       u.lang = 'ro-RO'; u.rate = 1.02; u.pitch = 1;
       var vs = speechSynthesis.getVoices().filter(function(v){ return /^ro/i.test(v.lang); }); if(vs[0]) u.voice = vs[0];
       speechSynthesis.speak(u);

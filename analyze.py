@@ -240,6 +240,8 @@ def main():
     try: bars, src = load_stooq()
     except Exception as e:
         print('stooq failed:', e, file=sys.stderr); bars, src = load_yahoo()
+    if len(bars) < 215:
+        print(f'prea putine bare zilnice ({len(bars)}) — pastrez analiza anterioara'); return
     spot = load_spot()
     spot_used = False
     if spot and abs(spot - bars[-1]['c']) / bars[-1]['c'] < 0.08:      # sanity check vs daily data
@@ -306,7 +308,7 @@ def main():
             inval = f'Invalid dacă se închide o lumânare H4 peste {r2(sl)}.'
         return {'side': side, 'entry': r2(entry), 'zone': [r2(entry - 0.15 * A), r2(entry + 0.15 * A)], 'sl': r2(sl),
                 'tp1': r2(tp1), 'tp2': r2(tp2), 'slDist': r2(abs(entry - sl)),
-                'rr1': round(abs(tp1 - entry) / abs(entry - sl), 2), 'rr2': round(abs(tp2 - entry) / abs(entry - sl), 2),
+                'rr1': round(abs(tp1 - entry) / (abs(entry - sl) or 1e-9), 2), 'rr2': round(abs(tp2 - entry) / (abs(entry - sl) or 1e-9), 2),
                 'cond': cond, 'inval': inval,
                 'main': (side == 'BUY' and bias == 'BULLISH') or (side == 'SELL' and bias == 'BEARISH')}
 
@@ -520,7 +522,7 @@ def main():
         for x in v[n:]: a = a - a / n + x; out.append(a)
         return out
     TRn, Pn, Nn = wild(trs), wild(pdm), wild(ndm)
-    pdi = [100 * p_ / t for p_, t in zip(Pn, TRn)]; ndi = [100 * n_ / t for n_, t in zip(Nn, TRn)]
+    pdi = [100 * p_ / t if t else 0.0 for p_, t in zip(Pn, TRn)]; ndi = [100 * n_ / t if t else 0.0 for n_, t in zip(Nn, TRn)]
     dxs = [100 * abs(a - b) / max(1e-9, a + b) for a, b in zip(pdi, ndi)]
     adx_v = sum(dxs[:14]) / 14
     for x in dxs[14:]: adx_v = (adx_v * 13 + x) / 14
@@ -1130,6 +1132,14 @@ def main():
             m[0]['v'] = round(v, 2)
             if tl_dir: m[0]['tl'] = tl_dir
         else: lw['levels'].append({'id': f"{'t' if tl_dir else ''}{int(round(v))}", 'v': round(v, 2), 'phase': 'idle', 'dir': None, 'tp': now_ts, 'ext': None, 'cd': 0, 'pivot': abs(v - P) < 1e-6, 'tl': tl_dir})
+    # merge entries that ended up within 0.12 ATR of each other (pivot / trendline / swing levels drift together) — otherwise the same level alerts twice
+    _rank = {'touched': 3, 'near': 2, 'done': 1, 'idle': 0}; _m = []
+    for e in sorted(lw['levels'], key=lambda z: z['v']):
+        if _m and abs(_m[-1]['v'] - e['v']) <= 0.12 * A:
+            a_, b_ = _m[-1], e; keep, drop = (b_, a_) if _rank.get(b_['phase'], 0) > _rank.get(a_['phase'], 0) else (a_, b_)
+            keep['tl'] = keep.get('tl') or drop.get('tl'); keep['pivot'] = bool(keep.get('pivot') or drop.get('pivot')); _m[-1] = keep
+        else: _m.append(e)
+    lw['levels'] = _m
     # forget far-away idle levels
     lw['levels'] = [e for e in lw['levels'] if e['phase'] != 'idle' or abs(e['v'] - price) <= 2.6 * A]
     def lab(e):
@@ -1138,8 +1148,11 @@ def main():
             if abs(val - e['v']) <= 0.12 * A: return k
         return 'PIVOT' if e.get('pivot') else None
     def fm(x): return f"{x:.2f}"
+    fired = []
     def lvl_event(e, kind, title, body):
-        events.append({'id': f"lvl|{e['id']}|{kind}|{now_ts}", 'sid': f"L{now_ts % 100000}{kind[:1]}", 't': now_iso, 'title': title, 'body': body})
+        if any(k_ == kind and abs(v_ - e['v']) <= 0.2 * A for k_, v_ in fired): return
+        fired.append((kind, e['v']))
+        events.append({'id': f"lvl|{e['id']}|{kind}|{now_ts // 1200}", 'sid': f"L{now_ts % 100000}{kind[:1]}", 't': now_iso, 'title': title, 'body': body})
     if market_open():
         last_closed = bars5[-2]['c'] if len(bars5) >= 2 else price
         for e in lw['levels']:

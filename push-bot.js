@@ -93,6 +93,7 @@ for (const k of Object.keys(groups)) {
 let gold = {}; try { gold = JSON.parse(fs.readFileSync('xauusd.json', 'utf8')); } catch (e) {}
 const evs = (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
 const MAXN = 5;
+evs.sort((a, b) => (b.id.startsWith('lvl|') ? 1 : 0) - (a.id.startsWith('lvl|') ? 1 : 0));   // support/resistance alerts first: they are the most time-sensitive
 for (const e of evs.slice(0, MAXN)) {
   if (await send(e.title, e.body, 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
 }
