@@ -1240,6 +1240,14 @@
   .eth-chart svg{ display:block; width:100%; height:auto; } .eth-tip{ font-size:12px; color:var(--text-dim); min-height:18px; margin:2px 0 8px; } .eth-tip b{ color:var(--text); }
   .eth-form{ margin-top:6px; padding:12px; border-radius:14px; border:1px solid var(--line); background:var(--bg-card-2); } .eth-fh{ font-weight:700; font-size:13.5px; margin-bottom:8px; }
   .eth-btns{ display:flex; gap:8px; margin-top:6px; } .eth-btns button{ flex:1; }
+
+  .am-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); } .am-row:first-of-type{ border-top:0; }
+  .am-ic{ width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none; } .am-row b{ flex:1; font-size:14px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .am-b{ width:36px; height:36px; border-radius:11px; border:1px solid var(--line); background:var(--bg-card-2); font-size:15px; cursor:pointer; }
+  .am-h{ font-family:var(--serif, var(--display)); font-size:18px; font-weight:600; margin:16px 0 8px; }
+  .am-chips{ display:flex; flex-wrap:wrap; gap:6px; } .am-chips button{ background:transparent; border:1px solid var(--hair, var(--line)); color:var(--gold); border-radius:14px; padding:7px 11px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
+  .am-custom{ display:flex; gap:6px; margin-top:10px; align-items:stretch; } .am-custom .primary-btn{ margin:0; } .am-custom input{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; color:var(--text); font-size:16px; padding:10px 11px; font-family:inherit; min-width:0; }
+  .am-custom input:first-child{ width:56px; text-align:center; } .am-custom input:nth-child(2){ flex:1; } .am-custom .primary-btn{ width:auto; padding:0 16px; }
 </style>
 </head>
 <body>
@@ -1617,17 +1625,17 @@
         <div class="goal-marks" id="goalMarks"></div>
       </div>
 
+      <div class="card" data-seg-card="worth" id="accMgrCard">
+        <div class="card-title">⚙️ Conturile mele</div>
+        <div id="accMgr"></div>
+      </div>
+
       <div class="card" data-seg-card="worth">
         <div class="card-title">Actualizează soldurile</div>
-        <div class="field-row acc-f"><label><i style="background:#F2B84B"></i>💵 Cash (€)</label><input type="number" id="accCash" inputmode="decimal" placeholder="0"></div>
-        <div class="field-row acc-f"><label><i style="background:#6C8CFF"></i>💳 Revolut (€)</label><input type="number" id="accRevolut" inputmode="decimal" placeholder="0"></div>
-        <div class="field-row acc-f"><label><i style="background:#B18CFF"></i>🏦 iCard (€)</label><input type="number" id="accIcard" inputmode="decimal" placeholder="0"></div>
-        <div class="field-row acc-f"><label><i style="background:#3DE0C4"></i>📊 XTB (€)</label><input type="number" id="accXtb" inputmode="decimal" placeholder="0"></div>
-        <div class="field-row acc-f"><label><i style="background:#FF9A3C"></i>⟠ ETH · MetaMask (€)</label><input type="number" id="accEth" inputmode="decimal" placeholder="0"></div>
-        <div class="hint" id="accEthHint" style="display:none;margin:-4px 0 8px;"></div>
+        <div id="accFields"></div>
         <div class="acc-live" id="accLive"></div>
         <button class="primary-btn" id="accSaveBtn">Salvează soldurile de azi</button>
-        <div class="hint">La ETH treci valoarea în euro, nu cantitatea. Salvează o dată pe săptămână sau după fiecare schimbare mare, ca graficul să arate evoluția reală.</div>
+        <div class="hint">Treci valoarea în euro, nu cantitatea. Salvează o dată pe săptămână sau după fiecare schimbare mare, ca graficul să arate evoluția reală.</div>
       </div>
 
       <div class="card" data-seg-card="worth">
@@ -2876,21 +2884,69 @@ document.addEventListener('click', function(e){
 
   /* accounts / net worth */
   var accounts = [];
-  var accCash = document.getElementById('accCash');
-  var accRevolut = document.getElementById('accRevolut');
-  var accIcard = document.getElementById('accIcard');
-  var accXtb = document.getElementById('accXtb');
-  var accEth = document.getElementById('accEth');
 
   function fmtEUR(n){ var sign = n<0?'-':''; return sign + '€' + Math.abs(n).toFixed(0); }
 
-  var ACC = [
+  var ACC_DEFAULT = [
     { k:'cash', n:'Cash', ic:'💵', c:'#F2B84B' },
     { k:'revolut', n:'Revolut', ic:'💳', c:'#6C8CFF' },
     { k:'icard', n:'iCard', ic:'🏦', c:'#B18CFF' },
     { k:'xtb', n:'XTB', ic:'📊', c:'#3DE0C4' },
     { k:'eth', n:'ETH · MetaMask', ic:'⟠', c:'#FF9A3C' }
   ];
+  var ACC = ACC_DEFAULT.slice();                     // the list is yours: add / rename / delete (saved in the account as settings/accounts)
+  var ACC_PAL = ['#F2B84B', '#6C8CFF', '#B18CFF', '#3DE0C4', '#FF9A3C', '#5FBF8F', '#E0685C', '#7FD1FF', '#F4A6D7', '#C8E36B'];
+  var accTyped = {};
+  function accClean(list){
+    var out = []; (Array.isArray(list) ? list : []).forEach(function(x, i){ if(!x || typeof x.k !== 'string' || !/^[a-z0-9_]{1,24}$/i.test(x.k) || out.some(function(o){ return o.k === x.k; })) return;
+      var n = String(x.n == null ? '' : x.n).trim().slice(0, 30); if(!n) return;
+      out.push({ k:x.k, n:n, ic:String(x.ic || '💼').trim().slice(0, 6) || '💼', c:/^#[0-9a-f]{6}$/i.test(x.c || '') ? x.c : ACC_PAL[i % ACC_PAL.length] }); });
+    return out.length ? out : null;
+  }
+  function accEsc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(ch){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]; }); }
+  function accSaveList(){
+    if(useLocal) safeSet('reset_acc_list_v1', JSON.stringify(ACC));
+    else chainWrite('settings/accounts', function(){ return db.doc('settings/accounts').set({ list: ACC, v:1 }); });
+    renderWorth();
+  }
+  function accStrip(key){        // remove a deleted account's values from the saved snapshots too (so re-adding it later starts clean)
+    if(useLocal){ accounts.forEach(function(a){ delete a[key]; }); safeSet('reset_accounts_local_v1', JSON.stringify(accounts)); return; }
+    accounts.forEach(function(a){ if(a._id && a[key] !== undefined){ var c = {}; Object.keys(a).forEach(function(f){ if(f !== key && f !== '_id') c[f] = a[f]; }); try{ db.doc('accounts/' + a._id).set(c); }catch(e){} } });
+  }
+  var AM_PRESETS = [['💵', 'Cash'], ['💳', 'Revolut'], ['🏦', 'Bancă'], ['📊', 'XTB'], ['📈', 'Trading 212'], ['🪙', 'Binance'], ['₿', 'Bitcoin'], ['⟠', 'ETH · MetaMask'], ['🥇', 'Aur fizic'], ['🏠', 'Economii'], ['🧾', 'Pilon III'], ['💼', 'Altceva']];
+  function accAdd(ic, name){
+    name = String(name || '').trim().slice(0, 30); if(!name) return false;
+    var key = (name === 'ETH · MetaMask' && !ACC.some(function(x){ return x.k === 'eth'; })) ? 'eth' : 'c' + Date.now().toString(36) + Math.floor(Math.random() * 36).toString(36);
+    ACC.push({ k:key, n:name, ic:String(ic || '💼').trim().slice(0, 6) || '💼', c:ACC_PAL[ACC.length % ACC_PAL.length] }); accSaveList(); return true;
+  }
+  function renderAccMgr(){
+    var el = document.getElementById('accMgr'); if(!el) return;
+    var have = ACC.map(function(x){ return x.n.toLowerCase(); });
+    var h = '<div class="hint" style="margin-top:0;">Alege ce conturi vrei să urmărești. Ce ștergi dispare din avere, grafic și istoric.</div>' +
+      ACC.map(function(x){ return '<div class="am-row"><span class="am-ic" style="background:color-mix(in srgb, ' + x.c + ' 16%, var(--bg-card-2));">' + accEsc(x.ic) + '</span><b>' + accEsc(x.n) + '</b>' +
+        '<button class="am-b" data-ed="' + x.k + '" aria-label="Editează">✏️</button><button class="am-b" data-del="' + x.k + '" aria-label="Șterge">🗑️</button></div>'; }).join('') +
+      '<div class="am-h">➕ Adaugă un cont</div><div class="am-chips">' + AM_PRESETS.filter(function(p){ return have.indexOf(p[1].toLowerCase()) < 0 || p[1] === 'Altceva'; }).map(function(p){ return '<button data-pre="' + accEsc(p[0] + '|' + p[1]) + '">' + p[0] + ' ' + accEsc(p[1]) + '</button>'; }).join('') + '</div>' +
+      '<div class="am-custom"><input id="amIc" placeholder="💼" maxlength="4" aria-label="Iconiță"><input id="amName" placeholder="Nume propriu (ex. Pensie privată)" maxlength="30"><button class="primary-btn" id="amAdd">Adaugă</button></div>';
+    el.innerHTML = h;
+    el.querySelectorAll('[data-pre]').forEach(function(b){ b.addEventListener('click', function(){ var q = b.getAttribute('data-pre').split('|'); if(q[1] === 'Altceva'){ var nm = prompt('Cum se numește contul?', ''); if(nm) accAdd(q[0], nm); } else accAdd(q[0], q[1]); }); });
+    document.getElementById('amAdd').addEventListener('click', function(){ var nm = document.getElementById('amName').value; if(!nm.trim()){ document.getElementById('amName').focus(); return; } accAdd(document.getElementById('amIc').value || '💼', nm); });
+    el.querySelectorAll('[data-ed]').forEach(function(b){ b.addEventListener('click', function(){ var x = ACC.filter(function(a){ return a.k === b.getAttribute('data-ed'); })[0]; if(!x) return;
+      var nm = prompt('Nume cont', x.n); if(nm == null) return; nm = nm.trim().slice(0, 30); if(!nm) return; var ic = prompt('Iconiță (un emoji)', x.ic); x.n = nm; if(ic && ic.trim()) x.ic = ic.trim().slice(0, 6); accSaveList(); }); });
+    el.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){ var k = b.getAttribute('data-del'), x = ACC.filter(function(a){ return a.k === k; })[0]; if(!x) return;
+      if(ACC.length <= 1){ alert('Păstrează cel puțin un cont. Poți adăuga altul și apoi îl ștergi pe acesta.'); return; }
+      if(!confirm('Ștergi contul „' + x.n + '”?\n\nDispare din avere, din grafic și din istoric (valorile lui nu se mai numără).')) return;
+      ACC = ACC.filter(function(a){ return a.k !== k; }); delete accTyped[k]; accStrip(k); accSaveList(); }); });
+  }
+  function accInputs(){ return Array.prototype.slice.call(document.querySelectorAll('#accFields input[data-k]')); }
+  function renderAccForm(last){
+    var box = document.getElementById('accFields'); if(!box) return;
+    if(box.contains(document.activeElement) && document.activeElement.tagName === 'INPUT' && box.querySelectorAll('input[data-k]').length === ACC.length) return;     // do not disturb typing
+    box.innerHTML = ACC.map(function(x){ var v = accTyped[x.k] !== undefined ? accTyped[x.k] : ((last && last[x.k]) || '');
+      return '<div class="field-row acc-f"><label><i style="background:' + x.c + '"></i>' + accEsc(x.ic) + ' ' + accEsc(x.n) + ' (€)</label><input type="number" data-k="' + x.k + '" inputmode="decimal" placeholder="0" value="' + accEsc(v) + '"></div>' +
+        (x.k === 'eth' ? '<div class="hint" id="accEthHint" style="display:none;margin:-4px 0 8px;"></div>' : ''); }).join('');
+    accInputs().forEach(function(el){ el.addEventListener('input', function(){ accTyped[el.getAttribute('data-k')] = el.value; updateLive(); }); });
+    updateLive(); if(typeof paintEthHint === 'function') paintEthHint();
+  }
   var worthGoal = 0;
   try{ worthGoal = parseFloat(localStorage.getItem('byzyp_goal')) || 0; }catch(e){}
   function accTotal(a){ return ACC.reduce(function(s2,x){ return s2 + (a[x.k]||0); }, 0); }
@@ -2910,7 +2966,7 @@ document.addEventListener('click', function(e){
       chart.innerHTML = '<div class="eq-empty">Completează soldurile mai jos și apasă „Salvează”. De la a doua salvare apare graficul.</div>';
       document.getElementById('wcFrom').textContent = ''; document.getElementById('wcTo').textContent = '';
       histEl.innerHTML = '<div class="hint" style="margin-top:0;">Încă nimic salvat.</div>';
-      renderAlloc(null, null); renderGoal(0); updateLive();
+      renderAlloc(null, null); renderGoal(0); renderAccForm(null); renderAccMgr();
       return;
     }
     var last = list[list.length-1], prev = list.length > 1 ? list[list.length-2] : null, first = list[0];
@@ -2944,10 +3000,9 @@ document.addEventListener('click', function(e){
 
     renderAlloc(last, prev);
     renderGoal(total);
+    renderAccMgr();
 
-    accCash.value = last.cash || ''; accRevolut.value = last.revolut || ''; accIcard.value = last.icard || '';
-    accXtb.value = last.xtb || ''; accEth.value = last.eth || '';
-    updateLive();
+    renderAccForm(last);
 
     var rev = list.slice().reverse().slice(0,12);
     histEl.innerHTML = rev.map(function(a, i){
@@ -2975,14 +3030,14 @@ document.addEventListener('click', function(e){
     donut.innerHTML = svg;
     legend.innerHTML = ACC.map(function(x){
       var v = last ? (last[x.k]||0) : 0;
-      return '<div class="al-row"><i style="background:' + x.c + '"></i><span>' + x.n + '</span><b>' + (total ? Math.round(v/total*100) : 0) + '%</b></div>';
+      return '<div class="al-row"><i style="background:' + x.c + '"></i><span>' + accEsc(x.n) + '</span><b>' + (total ? Math.round(v/total*100) : 0) + '%</b></div>';
     }).join('');
     rows.innerHTML = ACC.map(function(x){
       var v = last ? (last[x.k]||0) : 0;
       var d = (last && prev) ? v - (prev[x.k]||0) : null;
       var dh = d === null ? '<div class="acc-d">–</div>' : '<div class="acc-d ' + (d>0?'pos':d<0?'neg':'') + '">' + (d>0?'↑ +':d<0?'↓ ':'') + (d===0?'fără schimbare':eur(d).replace('-','')) + '</div>';
-      return '<div class="acc-row"><div class="acc-ic" style="background:color-mix(in srgb, ' + x.c + ' 14%, var(--bg-card-2));">' + x.ic + '</div>' +
-        '<div class="acc-mid"><div class="acc-n">' + x.n + '</div><div class="acc-bar"><i style="width:' + (total ? v/total*100 : 0) + '%;background:' + x.c + '"></i></div></div>' +
+      return '<div class="acc-row"><div class="acc-ic" style="background:color-mix(in srgb, ' + x.c + ' 14%, var(--bg-card-2));">' + accEsc(x.ic) + '</div>' +
+        '<div class="acc-mid"><div class="acc-n">' + accEsc(x.n) + '</div><div class="acc-bar"><i style="width:' + (total ? v/total*100 : 0) + '%;background:' + x.c + '"></i></div></div>' +
         '<div class="acc-r"><div class="acc-v">' + eur(v) + '</div>' + dh + '</div></div>';
     }).join('');
   }
@@ -3004,20 +3059,13 @@ document.addEventListener('click', function(e){
     var l = sortedAccounts(); renderGoal(l.length ? accTotal(l[l.length-1]) : 0);
   });
   function updateLive(){
-    var t = [accCash, accRevolut, accIcard, accXtb, accEth].reduce(function(s2,el){ return s2 + (parseFloat(el.value)||0); }, 0);
+    var t = accInputs().reduce(function(s2, el){ return s2 + (parseFloat(el.value) || 0); }, 0);
     document.getElementById('accLive').innerHTML = '<span>Total de salvat</span><b>' + eur(t) + '</b>';
   }
-  [accCash, accRevolut, accIcard, accXtb, accEth].forEach(function(el){ el.addEventListener('input', updateLive); });
   document.getElementById('accSaveBtn').addEventListener('click', function(){
-    var entry = {
-      date: todayKey,
-      cash: parseFloat(accCash.value) || 0,
-      revolut: parseFloat(accRevolut.value) || 0,
-      icard: parseFloat(accIcard.value) || 0,
-      xtb: parseFloat(accXtb.value) || 0,
-      eth: parseFloat(accEth.value) || 0,
-      ts: Date.now()
-    };
+    var entry = { date: todayKey, ts: Date.now() };
+    accInputs().forEach(function(el){ entry[el.getAttribute('data-k')] = parseFloat(el.value) || 0; });
+    accTyped = {};
     if(useLocal){
       accounts.push(entry);
       safeSet('reset_accounts_local_v1', JSON.stringify(accounts));
@@ -4006,7 +4054,7 @@ document.addEventListener('click', function(e){
     var hnt = document.getElementById('accEthHint'); if(!hnt) return;
     if(!eth.pos || eth.live == null){ hnt.style.display = 'none'; return; }
     var v = eth.pos.qty * eth.live; hnt.style.display = 'block'; hnt.innerHTML = '⟠ Valoarea live a pozițiilor tale ETH: <b>' + ethEur(v) + '</b> · <a href="#" id="accEthUse" style="color:var(--gold);font-weight:700;">Folosește-o</a>';
-    var a = document.getElementById('accEthUse'); if(a) a.addEventListener('click', function(e){ e.preventDefault(); accEth.value = v.toFixed(2); accEth.dispatchEvent(new Event('input')); });
+    var a = document.getElementById('accEthUse'); if(a) a.addEventListener('click', function(e){ e.preventDefault(); var inp = document.querySelector('#accFields input[data-k="eth"]'); if(inp){ inp.value = v.toFixed(2); inp.dispatchEvent(new Event('input')); } });
   }
   var _ethRender = renderEth; renderEth = function(){ _ethRender(); paintEthHint(); };
   document.querySelectorAll('.tab[data-view="money"], [data-seg="worth"]').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(function(){ ethRefresh(true); }, 60); }); });
@@ -5142,7 +5190,7 @@ document.addEventListener('click', function(e){
     var worthEl = document.getElementById('dashWorth');
     if(accounts.length){
       var sa = sortedAccounts(); var lastA = sa[sa.length-1];
-      var total = (lastA.cash||0)+(lastA.revolut||0)+(lastA.icard||0)+(lastA.xtb||0)+(lastA.eth||0);
+      var total = accTotal(lastA);
       worthEl.textContent = '€' + total.toFixed(0);
     } else { worthEl.textContent = '–'; }
 
@@ -5172,7 +5220,7 @@ document.addEventListener('click', function(e){
     }
     if(gMode === 'worth'){
       return { pts: sortedAccounts().map(function(a){
-        return { d:a.date, y:(a.cash||0)+(a.revolut||0)+(a.icard||0)+(a.xtb||0)+(a.eth||0) }; }) };
+        return { d:a.date, y:accTotal(a) }; }) };
     }
     // trading: cumulative balance
     var st = (typeof eqStart === 'number') ? eqStart : 0;
@@ -5271,6 +5319,7 @@ document.addEventListener('click', function(e){
     try{ var raw = safeGet('reset_days_local_v1'); data = raw ? JSON.parse(raw) : {}; }catch(e){ data = {}; }
     try{ var rawP = safeGet('reset_profile_v1'); profile = rawP ? JSON.parse(rawP) : {}; }catch(e){ profile = {}; }
     try{ var rawA = safeGet('reset_accounts_local_v1'); accounts = rawA ? JSON.parse(rawA) : []; }catch(e){ accounts = []; }
+    try{ var rawL = safeGet('reset_acc_list_v1'); var cl = rawL ? accClean(JSON.parse(rawL)) : null; if(cl) ACC = cl; }catch(e){}
     try{ var rawT = safeGet('reset_trades_local_v1'); trades = rawT ? JSON.parse(rawT) : []; }catch(e){ trades = []; }
     renderNews();
     eqStart = parseFloat(safeGet('reset_eq_start_v1')) || 0; eqStartInput.value = eqStart || '';
@@ -5299,7 +5348,7 @@ document.addEventListener('click', function(e){
     }, function(err){ console.error('profile sub error', err); });
 
     db.collection('accounts').orderBy('date','asc').onSnapshot(function(snap){
-      accounts = snap.docs.map(function(d){ return d.data(); });
+      accounts = snap.docs.map(function(d){ var x = d.data(); x._id = d.id; return x; });
       renderWorth();
     }, function(err){ console.error('accounts sub error', err); });
 
@@ -5334,6 +5383,8 @@ document.addEventListener('click', function(e){
       var w = snap.exists ? snap.data() : {};
       if(w.goal != null){ worthGoal = parseFloat(w.goal) || 0; try{ localStorage.setItem('byzyp_goal', String(worthGoal)); }catch(e){} renderWorth(); }
     }, function(err){ console.error('worth settings sub error', err); });
+
+    db.doc('settings/accounts').onSnapshot(function(snap){ var l = snap.exists ? accClean((snap.data() || {}).list) : null; ACC = l || ACC_DEFAULT.slice(); renderWorth(); }, function(err){ console.error('accounts list sub error', err); });
 
     db.doc('settings/eth').onSnapshot(function(snap){ eth.pos = snap.exists ? (snap.data() || null) : null; if(eth.pos && !(eth.pos.qty > 0)) eth.pos = null; renderEth(); }, function(err){ console.error('eth sub error', err); });
 
