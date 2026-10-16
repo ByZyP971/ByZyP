@@ -3581,14 +3581,40 @@ document.addEventListener('click', function(e){
   }); });
   document.querySelectorAll('.tab[data-view="gold"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ applyGoldSeg(); fetchIntraday(); redrawLiveCharts(); }, 30); }); });
 
-  var liveSpot = null, liveAt = 0;
-  function fetchSpot(){
+  var liveSpot = null, liveAt = 0, liveSrc = '', tickWs = null, tickMid = null, tickAt = 0, tickOff = null, tickPaint = 0, tickRetry = 0, tickTimer = null;
+  function spotStale(j){ try{ var ds = j.data_state || {}, st = String(ds.status || '').toLowerCase();
+      if(/^(stale|delayed|unavailable|closed|error|offline)$/.test(st)) return true;
+      var ts = ds.as_of || ds.updated_at || j.as_of || j.updated_at || j.timestamp; if(ts){ var t = typeof ts === 'number' ? (ts > 1e11 ? ts : ts * 1000) : Date.parse(ts); if(t && Date.now() - t > 150000) return true; }
+    }catch(e){} return false; }
+  function setSpot(v, src){ if(!(v > 500 && v < 20000)) return; liveSpot = +v; liveAt = Date.now(); liveSrc = src;
+    if(tickMid != null && Date.now() - tickAt < 20000){ var o = liveSpot - tickMid; tickOff = tickOff == null ? o : 0.6 * tickOff + 0.4 * o; }     // calibrate the per-second stream on the real spot quote
+    paintLive(); }
+  function fetchSpot(){      // a STALE quote is never used: if xaus.com says stale/delayed (or is old) we go to the next source
     fetch('https://xaus.com/api/v1/spot?compact=1', { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
-      var v = j.spot_usd_oz || (j.xau && j.xau.price); if(!v) throw 0; liveSpot = +v; liveAt = Date.now(); paintLive();
+      var v = j.spot_usd_oz || (j.xau && j.xau.price); if(!v || spotStale(j)) throw 0; setSpot(v, 'xaus');
     }).catch(function(){
-      fetch('https://api.gold-api.com/price/XAU', { cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){ if(j && j.price){ liveSpot = +j.price; liveAt = Date.now(); paintLive(); } }).catch(function(){});
+      fetch('https://api.gold-api.com/price/XAU', { cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){
+        if(!(j && j.price)) throw 0; var t = j.updatedAt ? Date.parse(j.updatedAt) : 0; if(t && Date.now() - t > 240000) throw 0; setSpot(j.price, 'gold-api');
+      }).catch(function(){
+        fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT', { cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){ if(j && j.price) setSpot(j.price, 'PAXG'); }).catch(function(){});
+      });
     });
   }
+  // second-by-second price: Binance PAXG (tokenised gold) order-book stream + the offset to the real spot quote
+  function startTicks(){
+    try{
+      if(tickWs && (tickWs.readyState === 0 || tickWs.readyState === 1)) return;
+      tickWs = new WebSocket('wss://stream.binance.com:9443/ws/paxgusdt@bookTicker');
+      tickWs.onopen = function(){ tickRetry = 0; };
+      tickWs.onmessage = function(ev){ try{ var d = JSON.parse(ev.data), b = +d.b, a = +d.a; if(!(b > 0 && a > 0)) return;
+        tickMid = (b + a) / 2; tickAt = Date.now();
+        if(tickOff == null && liveSpot != null) tickOff = liveSpot - tickMid;
+        if(tickOff != null && Date.now() - tickPaint >= 900){ tickPaint = Date.now(); liveSpot = tickMid + tickOff; liveAt = Date.now(); liveSrc = 'live·PAXG'; paintLive(); } }catch(e){} };
+      tickWs.onerror = function(){ try{ tickWs.close(); }catch(e){} };
+      tickWs.onclose = function(){ tickWs = null; clearTimeout(tickTimer); if(!document.hidden) tickTimer = setTimeout(startTicks, Math.min(30000, 1500 * (++tickRetry))); };
+    }catch(e){}
+  }
+  document.addEventListener('visibilitychange', function(){ if(document.hidden){ clearTimeout(tickTimer); try{ if(tickWs){ var w = tickWs; tickWs = null; w.onclose = null; w.close(); } }catch(e){} } else { fetchSpot(); startTicks(); } });
   function paintLvlNear(){
     var el = document.getElementById('lvlNear'); if(!el || !gold || !gold.watch) return;
     var p = liveSpot != null ? liveSpot : gold.price, best = null;
@@ -3613,7 +3639,7 @@ document.addEventListener('click', function(e){
       var moved = liveSpot != null ? liveSpot - g.price : 0;
       var warn = liveSpot != null && Math.abs(moved) > 0.35 * (g.atr || 30);
       fr.className = 'gd-fresh' + (warn ? ' warn' : '');
-      fr.innerHTML = (liveSpot != null ? 'Preț live actualizat acum ' + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + ' s · ' : '') +
+      fr.innerHTML = (liveSpot != null ? ((Date.now() - tickAt < 5000 && tickOff != null) ? '⚡ Preț live la secundă (PAXG calibrat pe spot) · ' : 'Preț live (' + (liveSrc || 'spot') + ') actualizat acum ' + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + ' s · ') : '') +
         'Analiza (niveluri, strategii) calculată la ' + hhmm(upd) + ', acum ' + age + ' la prețul ' + f2(g.price) + '.' +
         (warn ? '<br>⚠️ Prețul s-a mișcat ' + (moved > 0 ? '+' : '') + f2(moved) + ' $ de atunci: unele niveluri pot fi deja depășite. Verifică pe Live înainte de orice intrare.' : '');
     }
@@ -3629,7 +3655,7 @@ document.addEventListener('click', function(e){
     });
     if(typeof renderPlanTiles === 'function' && document.getElementById('view-today') && document.getElementById('view-today').classList.contains('active')) renderPlanTiles();
   }
-  fetchSpot(); setInterval(fetchSpot, 60000); setInterval(paintLive, 15000);
+  fetchSpot(); setInterval(fetchSpot, 15000); setInterval(paintLive, 15000); startTicks();
 
   function activeTrades(){ return (gold && gold.ptrades || []).filter(function(t){ return !t.closed; }).slice().reverse(); }
   function activeEntriesHtml(max){

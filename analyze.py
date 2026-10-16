@@ -2,13 +2,13 @@
 """By ZyP — XAUUSD technical snapshot (runs in GitHub Actions, stdlib only).
 Writes xauusd.json: price, indicators, key levels and two rule-based scenarios.
 Educational, rule-based output — not financial advice."""
-import csv, io, json, math, os, sys, urllib.request, urllib.parse, datetime as dt
+import csv, io, json, math, os, sys, time, urllib.request, urllib.parse, datetime as dt
 
 UA = {'User-Agent': 'Mozilla/5.0'}
 
-def get(url):
+def get(url, timeout=30):
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode('utf-8', 'replace')
 
 def load_stooq():
@@ -35,21 +35,88 @@ def load_yahoo():
     return out[-400:], 'Aur futures GC=F (Yahoo, aproximativ)'
 
 
-def load_spot():
-    """Live XAU/USD spot (keyless public APIs). Returns float or None."""
+SPOT_INFO = {}
+
+def _ts(v):
+    """epoch seconds from an ISO string / epoch seconds / epoch milliseconds (None if unknown)"""
     try:
-        j = json.loads(get('https://xaus.com/api/v1/spot?compact=1'))
-        st = (j.get('data_state') or {}).get('status')
-        v = j.get('spot_usd_oz') or (j.get('xau') or {}).get('price')
-        if v and st != 'unavailable': return float(v)
+        if v is None or v == '': return None
+        if isinstance(v, (int, float)): x = float(v)
+        else:
+            v = str(v).strip()
+            if v.replace('.', '', 1).isdigit(): x = float(v)
+            else: return dt.datetime.fromisoformat(v.replace('Z', '+00:00')).timestamp()
+        return x / 1000 if x > 1e11 else x
+    except Exception:
+        return None
+
+def spot_sources():
+    """Every keyless live gold quote we can reach. kind 'spot' = XAU/USD spot; 'paxg' = tokenised gold ounce (trades within ~0.2% of spot).
+    fresh: True = verified live, False = verified stale/delayed, None = freshness unknown."""
+    out = []; now = time.time()
+    try:                                                              # 1) xaus.com
+        j = json.loads(get('https://xaus.com/api/v1/spot?compact=1', 8))
+        ds = j.get('data_state') or {}; xa = j.get('xau') or {}
+        v = j.get('spot_usd_oz') or xa.get('price'); st = str(ds.get('status') or '').lower()
+        ts = None
+        for d in (j, ds, xa):
+            for k in ('as_of', 'asof', 'updated_at', 'updatedAt', 'timestamp', 'ts', 'time'):
+                ts = ts or _ts(d.get(k))
+        if st in ('stale', 'delayed', 'unavailable', 'closed', 'error', 'offline'): fresh = False
+        elif st in ('live', 'fresh', 'ok', 'realtime', 'real-time', 'streaming', 'active'): fresh = True
+        elif ts: fresh = (now - ts) <= 120
+        else: fresh = None
+        print(f"xaus: price={v} status={st or '-'} ts={'%.0fs ago' % (now - ts) if ts else '-'} keys={sorted(j.keys())[:8]}", file=sys.stderr)
+        if v: out.append({'src': 'xaus', 'p': float(v), 'ts': ts, 'fresh': fresh, 'kind': 'spot'})
     except Exception as e:
         print('xaus spot failed:', e, file=sys.stderr)
-    try:
-        j = json.loads(get('https://api.gold-api.com/price/XAU'))
-        if j.get('price'): return float(j['price'])
+    try:                                                              # 2) gold-api.com
+        j = json.loads(get('https://api.gold-api.com/price/XAU', 8))
+        ts = _ts(j.get('updatedAt')); 
+        if j.get('price'): out.append({'src': 'gold-api', 'p': float(j['price']), 'ts': ts, 'fresh': (None if ts is None else (now - ts) <= 180), 'kind': 'spot'})
     except Exception as e:
         print('gold-api spot failed:', e, file=sys.stderr)
+    try:                                                              # 3) Coinbase PAXG-USD (real time, has a timestamp)
+        j = json.loads(get('https://api.exchange.coinbase.com/products/PAXG-USD/ticker', 8)); ts = _ts(j.get('time'))
+        if j.get('price'): out.append({'src': 'coinbase-paxg', 'p': float(j['price']), 'ts': ts, 'fresh': (ts is not None and (now - ts) <= 90), 'kind': 'paxg'})
+    except Exception as e:
+        print('coinbase paxg failed:', e, file=sys.stderr)
+    try:                                                              # 4) Kraken PAXG/USD (REST ticker = live)
+        j = json.loads(get('https://api.kraken.com/0/public/Ticker?pair=PAXGUSD', 8)); r = list((j.get('result') or {}).values())
+        if r and r[0].get('c'): out.append({'src': 'kraken-paxg', 'p': float(r[0]['c'][0]), 'ts': now, 'fresh': True, 'kind': 'paxg'})
+    except Exception as e:
+        print('kraken paxg failed:', e, file=sys.stderr)
+    return out
+
+def pick_spot(srcs=None):
+    """The price alerts may be based on: a verified-fresh spot quote, else an unverified one that another source confirms, else tokenised gold. Never a stale price."""
+    srcs = [x for x in (spot_sources() if srcs is None else srcs) if x.get('p') and 500 < x['p'] < 20000]
+    now = time.time(); info = SPOT_INFO; info.clear(); info.update({'n': len(srcs), 'live': False, 'src': None, 'age': None, 'p': None, 'note': ''})
+    pax = [x for x in srcs if x['kind'] == 'paxg' and x['fresh']]
+    ref = sorted(x['p'] for x in pax)[len(pax) // 2] if pax else None
+    def done(x, note=''):
+        age = (now - x['ts']) if x.get('ts') else None
+        info.update({'live': True, 'src': x['src'], 'p': x['p'], 'age': round(age) if age is not None else None, 'note': note}); return x['p']
+    fresh = [x for x in srcs if x['kind'] == 'spot' and x['fresh']]
+    if fresh:
+        if ref: fresh.sort(key=lambda x: abs(x['p'] - ref))                      # if two disagree, trust the one nearer the tokenised-gold market
+        else: fresh.sort(key=lambda x: -(x['ts'] or 0))                           # else the newest
+        return done(fresh[0])
+    unknown = [x for x in srcs if x['kind'] == 'spot' and x['fresh'] is None]
+    for x in unknown:                                                             # freshness unknown: accept only if another live source agrees (0.25%)
+        if any(o is not x and (o['fresh'] or o['fresh'] is None) and abs(o['p'] - x['p']) / x['p'] <= 0.0025 for o in srcs):
+            return done(x, 'confirmată de altă sursă')
+    if pax:
+        x = sorted(pax, key=lambda z: -(z['ts'] or 0))[0]; return done(x, 'aur tokenizat (PAXG), aproximativ')
+    stale = [x['src'] for x in srcs if x['fresh'] is False]
+    info['note'] = ('surse vechi: ' + ','.join(stale)) if stale else 'nicio sursă live'
     return None
+
+def load_spot():
+    """Live XAU/USD price (float) or None when nothing fresh is available. Details in SPOT_INFO."""
+    v = pick_spot()
+    if v is None: print('LIVE PRICE UNAVAILABLE:', SPOT_INFO.get('note'), file=sys.stderr)
+    return v
 
 def ema(vals, n):
     k = 2 / (n + 1); e = sum(vals[:n]) / n; out = [None] * (n - 1) + [e]
@@ -242,7 +309,8 @@ def main():
         print('stooq failed:', e, file=sys.stderr); bars, src = load_yahoo()
     if len(bars) < 215:
         print(f'prea putine bare zilnice ({len(bars)}) — pastrez analiza anterioara'); return
-    spot = load_spot()
+    SPOT_INFO.clear(); spot = load_spot()
+    sinfo = dict(SPOT_INFO) if SPOT_INFO else ({'src': 'ext', 'live': True, 'age': 0, 'p': spot} if spot else {'src': None, 'live': False, 'age': None, 'p': None, 'note': 'nicio sursă live'})
     spot_used = False
     if spot and abs(spot - bars[-1]['c']) / bars[-1]['c'] < 0.08:      # sanity check vs daily data
         today_u = dt.datetime.utcnow().strftime('%Y-%m-%d')
@@ -255,6 +323,7 @@ def main():
         spot_used = True
     closes = [b['c'] for b in bars]
     price = closes[-1]; prev = closes[-2]
+    price_live = bool(spot_used and sinfo.get('live'))          # False = the price below is only the last daily close → no price-based alerts / no new test trades
     e20, e50, e200 = ema(closes, 20)[-1], ema(closes, 50)[-1], ema(closes, 200)[-1]
     e20_prev = ema(closes, 20)[-6]
     R = rsi(closes); A = atr(bars)
@@ -993,7 +1062,7 @@ def main():
                 res_r = base + (0.5 if state == 'tp1' else 1) * mv / risk; exit_p = cur; state = 'done'; closed_d = b['d']
                 status = 'închisă după 20 de zile'; break
         # trade created today: no completed bar after it yet -> follow the live price, run by run
-        if state != 'done' and not later and not lv.get('done'):
+        if state != 'done' and not later and not lv.get('done') and price_live:
             p_ = price
             if state == 'pending' and ((buy and p_ <= t['entry']) or ((not buy) and p_ >= t['entry'])):
                 state = 'open'; status = 'deschisă'; lv['f'] = 1
@@ -1035,6 +1104,7 @@ def main():
     for x in strategies:
         if x['verdict'] not in ('BUY', 'SELL') or x.get('entry') is None or x['id'] in open_ids: continue
         if abs(x['entry'] - x['sl']) < 0.15 * A: continue          # ignore unrealistically tight stops
+        if not price_live: continue                                # never open a test trade on a stale price
         market = abs(x['entry'] - price) <= 0.25 * A
         e = price if market else x['entry']
         shift = e - x['entry']
@@ -1153,7 +1223,7 @@ def main():
         if any(k_ == kind and abs(v_ - e['v']) <= 0.2 * A for k_, v_ in fired): return
         fired.append((kind, e['v']))
         events.append({'id': f"lvl|{e['id']}|{kind}|{now_ts // 1200}", 'sid': f"L{now_ts % 100000}{kind[:1]}", 't': now_iso, 'title': title, 'body': body})
-    if market_open():
+    if market_open() and price_live:
         last_closed = bars5[-2]['c'] if len(bars5) >= 2 else price
         for e in lw['levels']:
             v = e['v']; name_l = lab(e); dist = abs(price - v)
@@ -1223,6 +1293,8 @@ def main():
                 e['phase'] = 'idle'; e['dir'] = None; e['ext'] = None; e.pop('quiet', None); e.pop('out', None)
     lw['t'] = now_ts
     watch_out = {'appr': round(appr, 1), 'levels': [{'v': e['v'], 'k': e.get('dir') or ('sup' if e['v'] < price else 'res'), 'phase': e['phase'], 'out': e.get('out'), 'label': lab(e)} for e in sorted(lw['levels'], key=lambda z: z['v'])]}
+    for e_ in events:                                  # stamp what THIS run saw, so the alert can say "price X at HH:MM:SS"
+        if e_.get('t') == now_iso and 'px' not in e_: e_['px'] = r2(price); e_['ps'] = sinfo.get('src')
     events = events[-80:]
 
     pstats = {}
@@ -1245,7 +1317,7 @@ def main():
     tot['rate'] = round(tot['wins'] / tot['n'] * 100) if tot['n'] else None
 
     out = {
-        'symbol': 'XAUUSD', 'source': src + (' + preț live' if spot_used else ''), 'spotUsed': spot_used, 'barDate': bars[-1]['d'],
+        'symbol': 'XAUUSD', 'source': src + (' + preț live' if spot_used else ''), 'spotUsed': spot_used, 'spot': {'src': sinfo.get('src'), 'live': price_live, 'age': sinfo.get('age'), 'note': sinfo.get('note', '')}, 'barDate': bars[-1]['d'],
         'updated': dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
         'price': r2(price), 'change': r2(price - prev), 'changePct': round((price - prev) / prev * 100, 2),
         'dayHigh': r2(bars[-1]['h']), 'dayLow': r2(bars[-1]['l']),

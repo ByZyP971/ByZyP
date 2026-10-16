@@ -19,12 +19,26 @@ function bail(msg) {
   if (!(last && last.code === 'config' && last.err === msg)) { status.push({ t: new Date().toISOString(), title: 'Configurare notificări', ok: false, code: 'config', err: msg }); sent._status = status.slice(-15); fs.writeFileSync(STATE, JSON.stringify(sent)); }
   process.exit(0);
 }
-if (!PRIVATE || !SUB) { console.log('Secrets missing (VAPID_PRIVATE / PUSH_SUB) — nothing to do.'); process.exit(0); }
+if (!PRIVATE || (!SUB && !process.env.BYZYP_KEY)) { console.log('Secrets missing (VAPID_PRIVATE and PUSH_SUB or BYZYP_KEY) — nothing to do.'); process.exit(0); }
 try { webpush.setVapidDetails('mailto:byzyp@users.noreply.github.com', PUBLIC, PRIVATE.trim()); }
 catch (e) { bail('VAPID_PRIVATE nu e valid sau nu se potrivește cu cheia publică din aplicație.'); }
+// subscriptions: (1) the phone saves its own code in the account (Supabase) — read here with the private key BYZYP_KEY; (2) fallback: the PUSH_SUB secret
 let subs = [];
-try { const j = JSON.parse(SUB.trim()); subs = Array.isArray(j) ? j : [j]; if (!subs.length || !subs.every(x => x && x.endpoint && x.keys)) throw new Error('missing fields'); }
-catch (e) { bail('PUSH_SUB nu e un cod valid. Copiază din nou codul întreg din aplicație și lipește-l în secret.'); }
+const okSub = (x) => x && x.endpoint && x.keys;
+const KEY = process.env.BYZYP_KEY;
+if (KEY) {
+  try {
+    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_push_subs', { method: 'POST',
+      headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
+    if (r.ok) { const j = await r.json(); subs = (Array.isArray(j) ? j : []).filter(okSub); console.log('subscriptions from account:', subs.length); }
+    else console.log('account lookup failed: HTTP', r.status);
+  } catch (e) { console.log('account lookup failed:', e.message); }
+}
+if (SUB && SUB.trim()) {
+  try { const j = JSON.parse(SUB.trim()); for (const x of (Array.isArray(j) ? j : [j])) if (okSub(x) && !subs.some(y => y.endpoint === x.endpoint)) subs.push(x); }
+  catch (e) { if (!subs.length) bail('PUSH_SUB nu e un cod valid. Copiază din nou codul întreg din aplicație și lipește-l în secret.'); }
+}
+if (!subs.length) bail('Nu am niciun cod de telefon. În aplicație: Profil → Notificări → Activează (codul se salvează singur în cont).');
 
 function local(d) {
   const p = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false })
@@ -93,9 +107,16 @@ for (const k of Object.keys(groups)) {
 let gold = {}; try { gold = JSON.parse(fs.readFileSync('xauusd.json', 'utf8')); } catch (e) {}
 const evs = (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
 const MAXN = 5;
+// every alert says WHEN the price was read and from where (the analysis time), and how late it reaches you if the queue was slow
+const stamp = (iso) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(iso));
+function withStamp(e) {
+  const t = new Date(e.t); if (isNaN(t)) return e.body || '';
+  const late = Math.round((Date.now() - t.getTime()) / 60000), src = e.ps ? (/paxg/i.test(e.ps) ? ' (≈ PAXG)' : ` (${e.ps})`) : '';
+  return (e.body || '') + `\n🕒 ${stamp(e.t)}` + (e.px ? ` · preț ${Number(e.px).toFixed(2)}${src}` : '') + (late >= 3 ? ` · acum ${late} min` : '');
+}
 evs.sort((a, b) => (b.id.startsWith('lvl|') ? 1 : 0) - (a.id.startsWith('lvl|') ? 1 : 0));   // support/resistance alerts first: they are the most time-sensitive
 for (const e of evs.slice(0, MAXN)) {
-  if (await send(e.title, e.body, 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
+  if (await send(e.title, withStamp(e), 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
 }
 if (evs.length > MAXN) {
   if (await send('🧪 Strategii XAUUSD', `Încă ${evs.length - MAXN} actualizări la tranzacțiile de test. Deschide fila Aur → Istoric.`, 'strat-more')) {
