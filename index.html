@@ -1225,21 +1225,6 @@
   .pw-eye{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border:0; background:none; font-size:19px; cursor:pointer; opacity:.55; color:var(--text); }
   .pw-eye.on{ opacity:1; }
 
-  .eth-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-  .eth-l{ font-size:12px; font-weight:600; color:var(--text-dim); } .eth-p{ font-family:var(--serif, var(--display)); font-size:40px; font-weight:600; line-height:1.05; font-variant-numeric:tabular-nums; }
-  .eth-ch{ font-weight:800; font-size:14px; text-align:right; padding-top:4px; } .eth-ch span{ display:block; font-size:10px; font-weight:600; color:var(--text-faint); }
-  .eth-pos{ margin:12px 0 4px; padding:14px; border-radius:16px; border:1px solid var(--line); background:var(--bg-card-2); }
-  .eth-pos.up{ border-color:color-mix(in srgb, var(--accent) 45%, transparent); background:color-mix(in srgb, var(--accent) 7%, var(--bg-card-2)); }
-  .eth-pos.dn{ border-color:color-mix(in srgb, var(--danger) 45%, transparent); background:color-mix(in srgb, var(--danger) 7%, var(--bg-card-2)); }
-  .eth-pl{ font-family:var(--serif, var(--display)); font-size:34px; font-weight:600; line-height:1.1; font-variant-numeric:tabular-nums; } .eth-pl span{ font-family:var(--body, sans-serif); font-size:15px; font-weight:700; }
-  .eth-pos.up .eth-pl{ color:var(--accent); } .eth-pos.dn .eth-pl{ color:var(--danger); }
-  .eth-sub{ font-size:12.5px; color:var(--text-dim); margin:2px 0 10px; }
-  .eth-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; } .eth-grid div{ background:var(--bg-card); border:1px solid var(--line); border-radius:11px; padding:8px 10px; }
-  .eth-grid span{ display:block; font-size:10.5px; color:var(--text-faint); } .eth-grid b{ font-size:14px; font-variant-numeric:tabular-nums; }
-  .eth-rg{ display:flex; gap:6px; margin:12px 0 6px; } .eth-rg button{ flex:1; background:transparent; border:1px solid var(--line); color:var(--text-faint); border-radius:12px; padding:7px 0; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; } .eth-rg button.on{ color:var(--gold); border-color:var(--gold); }
-  .eth-chart svg{ display:block; width:100%; height:auto; } .eth-tip{ font-size:12px; color:var(--text-dim); min-height:18px; margin:2px 0 8px; } .eth-tip b{ color:var(--text); }
-  .eth-form{ margin-top:6px; padding:12px; border-radius:14px; border:1px solid var(--line); background:var(--bg-card-2); } .eth-fh{ font-weight:700; font-size:13.5px; margin-bottom:8px; }
-  .eth-btns{ display:flex; gap:8px; margin-top:6px; } .eth-btns button{ flex:1; }
 
   .am-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); } .am-row:first-of-type{ border-top:0; }
   .am-ic{ width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none; } .am-row b{ flex:1; font-size:14px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -1248,6 +1233,59 @@
   .am-chips{ display:flex; flex-wrap:wrap; gap:6px; } .am-chips button{ background:transparent; border:1px solid var(--hair, var(--line)); color:var(--gold); border-radius:14px; padding:7px 11px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
   .am-custom{ display:flex; gap:6px; margin-top:10px; align-items:stretch; } .am-custom .primary-btn{ margin:0; } .am-custom input{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; color:var(--text); font-size:16px; padding:10px 11px; font-family:inherit; min-width:0; }
   .am-custom input:first-child{ width:56px; text-align:center; } .am-custom input:nth-child(2){ flex:1; } .am-custom .primary-btn{ width:auto; padding:0 16px; }
+
+  /* ===== Ethereum card ===== */
+  .eth-card{ background:radial-gradient(130% 70% at 0% 0%, rgba(140,158,255,.17), transparent 58%), radial-gradient(90% 55% at 100% 0%, rgba(214,178,110,.09), transparent 62%), linear-gradient(180deg, var(--bg-raised), var(--bg-card)) !important;
+    border-color:color-mix(in srgb, #8C9EFF 30%, var(--line)) !important; overflow:hidden; }
+  :root[data-theme="light"] .eth-card{ background:radial-gradient(130% 70% at 0% 0%, rgba(110,125,230,.13), transparent 58%), linear-gradient(180deg, #fff, var(--bg-card)) !important; }
+  .eth-hd{ display:flex; align-items:center; gap:12px; }
+  .eth-logo{ width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; background:radial-gradient(circle at 30% 25%, rgba(180,192,255,.30), rgba(80,96,220,.16) 70%); box-shadow:0 0 0 1px rgba(140,158,255,.35), 0 8px 26px -8px rgba(110,125,255,.65); }
+  .eth-hn{ flex:1; min-width:0; } .eth-hn b{ display:block; font-family:var(--serif, var(--display)); font-size:22px; font-weight:600; line-height:1.1; }
+  .eth-hn span{ font-size:11.5px; color:var(--text-dim); } .eth-hn u{ text-decoration:none; color:var(--text-faint); }
+  .eth-ch{ font-weight:800; font-size:13px; text-align:right; padding:6px 10px; border-radius:12px; background:color-mix(in srgb, currentColor 10%, transparent); border:1px solid color-mix(in srgb, currentColor 35%, transparent); line-height:1.1; }
+  .eth-ch span{ display:block; font-size:9.5px; font-weight:600; opacity:.7; }
+  .eth-p{ font-family:var(--serif, var(--display)); font-size:48px; font-weight:600; line-height:1.05; margin:12px 0 4px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .eth-p.up{ animation:ethUp .9s ease-out; } .eth-p.dn{ animation:ethDn .9s ease-out; }
+  @keyframes ethUp{ 0%{ color:#5FBF8F; text-shadow:0 0 26px rgba(95,191,143,.75); } 100%{ color:var(--text); text-shadow:none; } }
+  @keyframes ethDn{ 0%{ color:#E0685C; text-shadow:0 0 26px rgba(224,104,92,.75); } 100%{ color:var(--text); text-shadow:none; } }
+  .eth-r24{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-dim); font-variant-numeric:tabular-nums; margin-top:4px; }
+  .eth-r24b{ flex:1; height:5px; border-radius:4px; position:relative; background:linear-gradient(90deg, #E0685C, #D6B26E, #5FBF8F); opacity:.85; }
+  .eth-r24b i{ position:absolute; top:50%; width:13px; height:13px; border-radius:50%; background:#fff; border:3px solid #8C9EFF; transform:translate(-50%,-50%); box-shadow:0 0 12px rgba(140,158,255,.8); transition:left .5s ease; }
+  .eth-r24l{ font-size:10px; color:var(--text-faint); text-align:center; margin:3px 0 0; }
+  .eth-pos{ margin:16px 0 4px; padding:15px; border-radius:18px; border:1px solid var(--line); background:linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,0)), var(--bg-card-2); box-shadow:0 18px 40px -26px rgba(0,0,0,.9); transition:border-color .4s, background .4s; }
+  .eth-pos.up{ border-color:color-mix(in srgb, #5FBF8F 50%, transparent); background:linear-gradient(160deg, rgba(95,191,143,.14), rgba(95,191,143,0) 70%), var(--bg-card-2); }
+  .eth-pos.dn{ border-color:color-mix(in srgb, #E0685C 50%, transparent); background:linear-gradient(160deg, rgba(224,104,92,.14), rgba(224,104,92,0) 70%), var(--bg-card-2); }
+  .eth-ph{ display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:var(--text-dim); } .eth-ph em{ font-style:normal; font-weight:600; color:var(--text-faint); }
+  .eth-pl{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:4px; } .eth-pl b{ font-family:var(--serif, var(--display)); font-size:38px; font-weight:600; line-height:1.1; font-variant-numeric:tabular-nums; } .eth-pl span{ font-size:15px; font-weight:800; }
+  .eth-pos.up .eth-pl{ color:#5FBF8F; } .eth-pos.dn .eth-pl{ color:#E0685C; }
+  .eth-sub{ font-size:12.5px; color:var(--text-dim); margin:2px 0 12px; } .eth-sub b{ color:var(--text); }
+  .eth-bar{ position:relative; height:8px; border-radius:6px; background:var(--line); } .eth-bf{ position:absolute; top:0; bottom:0; border-radius:6px; }
+  .eth-pos.up .eth-bf{ background:linear-gradient(90deg, #D6B26E, #5FBF8F); } .eth-pos.dn .eth-bf{ background:linear-gradient(90deg, #E0685C, #D6B26E); }
+  .eth-be{ position:absolute; top:-3px; width:3px; height:14px; border-radius:2px; background:#D6B26E; transform:translateX(-50%); }
+  .eth-bn{ position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:#fff; transform:translate(-50%,-50%); box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 2px 8px rgba(0,0,0,.5); }
+  .eth-bl{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin:7px 0 12px; }
+  .eth-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; } .eth-grid div{ background:color-mix(in srgb, var(--bg) 45%, var(--bg-card)); border:1px solid var(--line); border-radius:12px; padding:9px 11px; }
+  .eth-grid span{ display:block; font-size:10.5px; color:var(--text-faint); } .eth-grid b{ font-size:14.5px; font-variant-numeric:tabular-nums; }
+  .eth-rg{ display:flex; gap:3px; margin:16px 0 8px; padding:3px; border-radius:15px; background:var(--bg-card-2); border:1px solid var(--line); }
+  .eth-rg button{ flex:1; background:transparent; border:0; color:var(--text-faint); border-radius:12px; padding:8px 0; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; transition:background .2s, color .2s; }
+  .eth-rg button.on{ background:var(--bg-raised); color:var(--gold); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); }
+  .eth-chart{ position:relative; border-radius:16px; padding:6px 2px 0; background:linear-gradient(180deg, rgba(255,255,255,.025), transparent); } .eth-chart svg{ display:block; width:100%; height:auto; overflow:visible; }
+  .eth-bub{ position:absolute; top:-4px; left:0; padding:6px 10px; border-radius:12px; background:var(--bg-raised); border:1px solid var(--hair, var(--line)); box-shadow:0 10px 26px -10px rgba(0,0,0,.8); font-size:11px; line-height:1.35; pointer-events:none; opacity:0; transition:opacity .15s; white-space:nowrap; z-index:3; }
+  .eth-bub b{ font-size:14px; margin-right:6px; } .eth-bub span{ color:var(--text-dim); } .eth-bub em{ display:block; font-style:normal; color:var(--gold); }
+  .eth-st{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 0 12px; } .eth-st div{ text-align:center; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
+  .eth-st span{ display:block; font-size:10px; color:var(--text-faint); } .eth-st b{ font-size:13.5px; font-variant-numeric:tabular-nums; }
+  .eth-form{ margin-top:6px; padding:12px; border-radius:14px; border:1px solid var(--line); background:var(--bg-card-2); } .eth-fh{ font-weight:700; font-size:13.5px; margin-bottom:8px; }
+  .eth-btns{ display:flex; gap:8px; margin-top:6px; } .eth-btns button{ flex:1; }
+  /* collapsible cards */
+  .cp-card{ padding:0 !important; }
+  .cp-head{ width:100%; display:flex; align-items:center; gap:10px; padding:17px 18px; background:none; border:0; color:var(--text); font-family:inherit; cursor:pointer; text-align:left; }
+  .cp-t{ font-family:var(--serif, var(--display)); font-size:20px; font-weight:600; } .cp-s{ flex:1; font-size:12px; color:var(--text-faint); text-align:right; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cp-ch{ font-style:normal; color:var(--gold); transition:transform .25s; } .cp-card.open .cp-ch{ transform:rotate(180deg); }
+  .cp-body{ padding:0 18px 18px; } .cp-body[hidden]{ display:none; }
+  /* hide amounts */
+  .gd-btns .term-btn{ white-space:nowrap; }
+  body.hide-amt #view-money :is(.wh-total, .wh-chips, .acc-v, .acc-d, .donut-c, .eth-p, .eth-pl, .eth-grid b, .eth-sub b, .eth-st b, .goal-sub, .g-chart, .eth-chart, .eth-bl, .eth-r24 span, .worth-total-num){ filter:blur(10px); }
+  body.hide-amt #view-money .eth-hd .eth-ch{ filter:blur(5px); }
 </style>
 </head>
 <body>
@@ -1593,7 +1631,7 @@
       </div>
       <div class="card wh-card" data-seg-card="worth">
         <div class="wh-glow"></div>
-        <button class="term-btn" onclick="window.__openVault && window.__openVault()">🏦 Seiful 3D</button>
+        <div class="gd-btns"><button class="term-btn" id="amtEye" aria-pressed="false">👁 Ascunde sumele</button><button class="term-btn" onclick="window.__openVault && window.__openVault()">🏦 Seiful 3D</button></div>
         <div class="wh-l">Avere netă totală</div>
         <div class="wh-total" id="worthTotal">€0</div>
         <div class="wh-chips" id="worthDelta"></div>
@@ -1602,7 +1640,6 @@
       </div>
 
       <div class="card eth-card" data-seg-card="worth" id="ethCard">
-        <div class="card-title">⟠ Ethereum</div>
         <div id="ethBody"><div class="hint" style="margin-top:0;">Se încarcă prețul Ethereum…</div></div>
       </div>
 
@@ -1625,17 +1662,19 @@
         <div class="goal-marks" id="goalMarks"></div>
       </div>
 
-      <div class="card" data-seg-card="worth" id="accMgrCard">
-        <div class="card-title">⚙️ Conturile mele</div>
-        <div id="accMgr"></div>
+      <div class="card cp-card" data-seg-card="worth" id="accUpdCard">
+        <button class="cp-head" data-cp="upd" aria-expanded="false"><span class="cp-t">✏️ Actualizează soldurile</span><span class="cp-s" id="accUpdSub"></span><i class="cp-ch">▾</i></button>
+        <div class="cp-body" hidden>
+          <div id="accFields"></div>
+          <div class="acc-live" id="accLive"></div>
+          <button class="primary-btn" id="accSaveBtn">Salvează soldurile de azi</button>
+          <div class="hint">Treci valoarea în euro, nu cantitatea. Salvează o dată pe săptămână sau după fiecare schimbare mare, ca graficul să arate evoluția reală.</div>
+        </div>
       </div>
 
-      <div class="card" data-seg-card="worth">
-        <div class="card-title">Actualizează soldurile</div>
-        <div id="accFields"></div>
-        <div class="acc-live" id="accLive"></div>
-        <button class="primary-btn" id="accSaveBtn">Salvează soldurile de azi</button>
-        <div class="hint">Treci valoarea în euro, nu cantitatea. Salvează o dată pe săptămână sau după fiecare schimbare mare, ca graficul să arate evoluția reală.</div>
+      <div class="card cp-card" data-seg-card="worth" id="accMgrCard">
+        <button class="cp-head" data-cp="mgr" aria-expanded="false"><span class="cp-t">⚙️ Conturile mele</span><span class="cp-s" id="accMgrSub"></span><i class="cp-ch">▾</i></button>
+        <div class="cp-body" hidden><div id="accMgr"></div></div>
       </div>
 
       <div class="card" data-seg-card="worth">
@@ -2921,6 +2960,7 @@ document.addEventListener('click', function(e){
   }
   function renderAccMgr(){
     var el = document.getElementById('accMgr'); if(!el) return;
+    var ms = document.getElementById('accMgrSub'); if(ms) ms.textContent = ACC.length + (ACC.length === 1 ? ' cont' : ' conturi');
     var have = ACC.map(function(x){ return x.n.toLowerCase(); });
     var h = '<div class="hint" style="margin-top:0;">Alege ce conturi vrei să urmărești. Ce ștergi dispare din avere, grafic și istoric.</div>' +
       ACC.map(function(x){ return '<div class="am-row"><span class="am-ic" style="background:color-mix(in srgb, ' + x.c + ' 16%, var(--bg-card-2));">' + accEsc(x.ic) + '</span><b>' + accEsc(x.n) + '</b>' +
@@ -2940,6 +2980,7 @@ document.addEventListener('click', function(e){
   function accInputs(){ return Array.prototype.slice.call(document.querySelectorAll('#accFields input[data-k]')); }
   function renderAccForm(last){
     var box = document.getElementById('accFields'); if(!box) return;
+    var us = document.getElementById('accUpdSub'); if(us){ if(last){ var ld = new Date(last.date + 'T00:00:00'); us.textContent = 'ultima: ' + ld.getDate() + ' ' + monthShort[ld.getMonth()] + ' · €' + Math.round(accTotal(last)).toLocaleString('ro-RO'); } else us.textContent = 'încă nesalvat'; }
     if(box.contains(document.activeElement) && document.activeElement.tagName === 'INPUT' && box.querySelectorAll('input[data-k]').length === ACC.length) return;     // do not disturb typing
     box.innerHTML = ACC.map(function(x){ var v = accTyped[x.k] !== undefined ? accTyped[x.k] : ((last && last[x.k]) || '');
       return '<div class="field-row acc-f"><label><i style="background:' + x.c + '"></i>' + accEsc(x.ic) + ' ' + accEsc(x.n) + ' (€)</label><input type="number" data-k="' + x.k + '" inputmode="decimal" placeholder="0" value="' + accEsc(v) + '"></div>' +
@@ -3965,15 +4006,15 @@ document.addEventListener('click', function(e){
   }
   window.__openPhoto = function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); setTimeout(function(){ var b = document.querySelector('#goldSeg [data-gs="photo"]'); if(b) b.click(); }, 80); };
 
-  /* ===== ⟠ Ethereum: live price (Binance → CoinGecko fallback), chart, and how much YOUR money grew ===== */
-  var eth = { pos:null, live:null, ch24:null, range:'1L', pts:[], err:null, edit:false, tLive:0, tChart:0, busy:false };
+  /* ===== ⟠ Ethereum: live per second (Binance stream), smooth chart, and how much YOUR money grew ===== */
+  var eth = { pos:null, live:null, ch24:null, open24:null, hi24:null, lo24:null, range:'1L', pts:[], err:null, edit:false, tLive:0, tChart:0, busy:false, ws:null, wsAt:0, wsPaint:0, wsRetry:0, wsTimer:null, shown:null };
   var ETH_R = { '1Z':{ iv:'15m', n:96, cg:1, l:'1 zi' }, '7Z':{ iv:'1h', n:168, cg:7, l:'7 zile' }, '1L':{ iv:'4h', n:180, cg:30, l:'1 lună' }, '3L':{ iv:'1d', n:90, cg:90, l:'3 luni' }, '1A':{ iv:'1d', n:365, cg:365, l:'1 an' } };
   try{ var _rg = safeGet('reset_eth_range_v1'); if(_rg && ETH_R[_rg]) eth.range = _rg; }catch(e){}
   function ethJson(url){ return fetch(url, { cache:'no-store' }).then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
   function ethEur(v, d){ if(v == null || isNaN(v)) return '–'; return '€' + Number(v).toLocaleString('ro-RO', { minimumFractionDigits: d == null ? 2 : d, maximumFractionDigits: d == null ? 2 : d }); }
   function ethSgn(v, d){ return (v >= 0 ? '+' : '−') + ethEur(Math.abs(v), d); }
   function ethLive(){
-    return ethJson('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHEUR').then(function(j){ return { p:+j.lastPrice, ch:+j.priceChangePercent }; })
+    return ethJson('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHEUR').then(function(j){ return { p:+j.lastPrice, ch:+j.priceChangePercent, open:+j.openPrice, hi:+j.highPrice, lo:+j.lowPrice }; })
       .catch(function(){ return ethJson('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur&include_24hr_change=true').then(function(j){ return { p:+j.ethereum.eur, ch:+j.ethereum.eur_24h_change }; }); });
   }
   function ethSeries(rk){ var R = ETH_R[rk];
@@ -3990,60 +4031,94 @@ document.addEventListener('click', function(e){
     var now = Date.now(); if(eth.busy && !force) return;
     var needLive = force || now - eth.tLive > 15000, needChart = force || !eth.pts.length || now - eth.tChart > 60000; if(!needLive && !needChart) return;
     eth.busy = true; var rk = eth.range;
-    var pl = needLive ? ethLive().then(function(x){ eth.live = x.p; eth.ch24 = x.ch; eth.tLive = Date.now(); }) : Promise.resolve();
+    var pl = needLive ? ethLive().then(function(x){ eth.live = x.p; eth.ch24 = x.ch; if(x.open > 0){ eth.open24 = x.open; eth.hi24 = x.hi; eth.lo24 = x.lo; } eth.tLive = Date.now(); }) : Promise.resolve();
     var pc = needChart ? ethSeries(rk).then(function(pts){ if(rk === eth.range){ eth.pts = pts; eth.tChart = Date.now(); } }) : Promise.resolve();
     Promise.all([pl.catch(function(e){ return { e:e }; }), pc.catch(function(e){ return { e:e }; })]).then(function(r){
       eth.busy = false; var bad = r.filter(function(x){ return x && x.e; });
       eth.err = (!eth.live && bad.length) ? 'Nu pot lua prețul Ethereum acum (Binance și CoinGecko nu răspund). Verifică internetul.' : null; renderEth(); });
   }
-  function ethChart(pts, entry){
-    var W = 320, H = 170, pl = 6, pr = 52, pt = 10, pb = 20; if(pts.length < 2) return '<div class="hint">Se încarcă graficul…</div>';
+  function ethLogo(sz){ return '<svg viewBox="0 0 32 32" width="' + sz + '" height="' + sz + '" aria-hidden="true"><polygon points="16,2 6.5,16.3 16,12.2" fill="#D7DDFF"/><polygon points="16,2 25.5,16.3 16,12.2" fill="#9AA9FF"/><polygon points="16,12.2 6.5,16.3 16,20.6 25.5,16.3" fill="#6677E8"/><polygon points="6.5,18.1 16,30 16,22.4" fill="#D7DDFF"/><polygon points="25.5,18.1 16,30 16,22.4" fill="#9AA9FF"/></svg>'; }
+  function ethSmooth(P){          // monotone cubic curve through the points (smooth, never overshoots)
+    var n = P.length, i; if(n < 3) return P.map(function(q, k){ return (k ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' ');
+    var dx = [], m = [], t = [];
+    for(i = 0; i < n - 1; i++){ dx[i] = P[i + 1][0] - P[i][0]; m[i] = dx[i] ? (P[i + 1][1] - P[i][1]) / dx[i] : 0; }
+    t[0] = m[0]; t[n - 1] = m[n - 2]; for(i = 1; i < n - 1; i++) t[i] = (m[i - 1] * m[i] <= 0) ? 0 : (m[i - 1] + m[i]) / 2;
+    for(i = 0; i < n - 1; i++){ if(m[i] === 0){ t[i] = 0; t[i + 1] = 0; continue; } var a = t[i] / m[i], b = t[i + 1] / m[i], h = a * a + b * b; if(h > 9){ var k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; } }
+    var d = 'M' + P[0][0].toFixed(1) + ' ' + P[0][1].toFixed(1);
+    for(i = 0; i < n - 1; i++) d += ' C' + (P[i][0] + dx[i] / 3).toFixed(1) + ' ' + (P[i][1] + t[i] * dx[i] / 3).toFixed(1) + ',' + (P[i + 1][0] - dx[i] / 3).toFixed(1) + ' ' + (P[i + 1][1] - t[i + 1] * dx[i] / 3).toFixed(1) + ',' + P[i + 1][0].toFixed(1) + ' ' + P[i + 1][1].toFixed(1);
+    return d;
+  }
+  var ETHG = { W:320, H:196, pl:6, pr:50, pt:16, pb:22 };
+  function ethBounds(pts, entry){
     var vals = pts.map(function(x){ return x[1]; }), lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
-    if(entry != null){ lo = Math.min(lo, entry); hi = Math.max(hi, entry); } var m = (hi - lo) * 0.08 || 1; lo -= m; hi += m;
-    var t0 = pts[0][0], t1 = pts[pts.length - 1][0];
-    var X = function(t){ return pl + (t - t0) / (t1 - t0 || 1) * (W - pl - pr); }, Y = function(v){ return pt + (hi - v) / (hi - lo) * (H - pt - pb); };
-    var up = vals[vals.length - 1] >= vals[0], col = up ? 'var(--accent)' : 'var(--danger)';
-    var d = pts.map(function(x, i){ return (i ? 'L' : 'M') + X(x[0]).toFixed(1) + ' ' + Y(x[1]).toFixed(1); }).join(' ');
+    if(entry != null){ lo = Math.min(lo, entry); hi = Math.max(hi, entry); } var m = (hi - lo) * 0.1 || 1; return { lo:lo - m, hi:hi + m, t0:pts[0][0], t1:pts[pts.length - 1][0], raw:{ lo:Math.min.apply(null, vals), hi:Math.max.apply(null, vals) } };
+  }
+  function ethChart(pts, entry){
+    var G = ETHG; if(pts.length < 2) return '<div class="hint" style="padding:30px 0;text-align:center;">Se încarcă graficul…</div>';
+    var B = ethBounds(pts, entry), X = function(t){ return G.pl + (t - B.t0) / (B.t1 - B.t0 || 1) * (G.W - G.pl - G.pr); }, Y = function(v){ return G.pt + (B.hi - v) / (B.hi - B.lo) * (G.H - G.pt - G.pb); };
+    var step = Math.max(1, Math.ceil(pts.length / 110)), th = pts.filter(function(q, i){ return i % step === 0 || i === pts.length - 1; });
+    var P = th.map(function(q){ return [X(q[0]), Y(q[1])]; }), line = ethSmooth(P), first = pts[0][1], last = pts[pts.length - 1][1], up = last >= first;
+    var col = up ? '#5FBF8F' : '#E0685C', iMax = 0, iMin = 0; pts.forEach(function(q, i){ if(q[1] > pts[iMax][1]) iMax = i; if(q[1] < pts[iMin][1]) iMin = i; });
     var fmt = function(t){ var q = new Date(t); return eth.range === '1Z' ? hhmm(q) : q.getDate() + ' ' + monthShort[q.getMonth()]; };
-    var last = vals[vals.length - 1], svg = '<svg id="ethSvg" viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="ethg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (up ? '#5FBF8F' : '#E0685C') + '" stop-opacity=".28"/><stop offset="1" stop-color="' + (up ? '#5FBF8F' : '#E0685C') + '" stop-opacity="0"/></linearGradient></defs>';
-    [lo + m, hi - m].forEach(function(v){ svg += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="var(--line)" stroke-width="0.6"/><text x="' + (W - pr + 4) + '" y="' + (Y(v) + 3).toFixed(1) + '" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + Math.round(v).toLocaleString('ro-RO') + '</text>'; });
-    svg += '<path d="' + d + ' L' + X(t1).toFixed(1) + ' ' + (H - pb) + ' L' + X(t0).toFixed(1) + ' ' + (H - pb) + ' Z" fill="url(#ethg)"/><path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="1.8" stroke-linejoin="round"/>';
-    if(entry != null) svg += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(entry).toFixed(1) + '" y2="' + Y(entry).toFixed(1) + '" stroke="var(--gold)" stroke-width="1.1" stroke-dasharray="4 3"/><rect x="' + (W - pr + 1) + '" y="' + (Y(entry) - 7).toFixed(1) + '" width="' + (pr - 2) + '" height="14" rx="3" fill="var(--gold)"/><text x="' + (W - pr / 2).toFixed(1) + '" y="' + (Y(entry) + 3).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="700" fill="#1A1307" font-family="sans-serif">intrare</text>';
-    svg += '<circle cx="' + X(t1).toFixed(1) + '" cy="' + Y(last).toFixed(1) + '" r="3.4" fill="' + col + '"/><rect x="' + (W - pr + 1) + '" y="' + (Y(last) - 7).toFixed(1) + '" width="' + (pr - 2) + '" height="14" rx="3" fill="' + (up ? '#5FBF8F' : '#E0685C') + '"/><text x="' + (W - pr / 2).toFixed(1) + '" y="' + (Y(last) + 3).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="800" fill="#101010" font-family="sans-serif">' + Math.round(last).toLocaleString('ro-RO') + '</text>';
-    svg += '<text x="' + pl + '" y="' + (H - 5) + '" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + fmt(t0) + '</text><text x="' + (W - pr) + '" y="' + (H - 5) + '" text-anchor="end" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + fmt(t1) + '</text>';
-    svg += '<line id="ethCh" x1="0" x2="0" y1="' + pt + '" y2="' + (H - pb) + '" stroke="var(--text-dim)" stroke-width="0.7" style="display:none"/><circle id="ethDot" r="3.6" fill="var(--bg)" stroke="' + col + '" stroke-width="1.6" style="display:none"/></svg>';
+    var svg = '<svg id="ethSvg" viewBox="0 0 ' + G.W + ' ' + G.H + '"><defs><linearGradient id="ethg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".34"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient>' +
+      '<filter id="ethGl" x="-5%" y="-30%" width="110%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+    for(var gi = 1; gi <= 3; gi++){ var gv = B.lo + (B.hi - B.lo) * gi / 4; svg += '<line x1="' + G.pl + '" x2="' + (G.W - G.pr) + '" y1="' + Y(gv).toFixed(1) + '" y2="' + Y(gv).toFixed(1) + '" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="2 4"/><text x="' + (G.W - G.pr + 5) + '" y="' + (Y(gv) + 3).toFixed(1) + '" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + Math.round(gv).toLocaleString('ro-RO') + '</text>'; }
+    svg += '<path d="' + line + ' L' + X(B.t1).toFixed(1) + ' ' + (G.H - G.pb) + ' L' + X(B.t0).toFixed(1) + ' ' + (G.H - G.pb) + ' Z" fill="url(#ethg)"/><path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#ethGl)"/>';
+    var yLast = Y(last);
+    if(entry != null){ var ye = Y(entry), yt = ye; if(Math.abs(ye - yLast) < 17) yt = ye <= yLast ? yLast - 17 : yLast + 17; svg += '<line x1="' + G.pl + '" x2="' + (G.W - G.pr) + '" y1="' + ye.toFixed(1) + '" y2="' + ye.toFixed(1) + '" stroke="#D6B26E" stroke-width="1.1" stroke-dasharray="5 3"/><rect x="' + (G.W - G.pr + 2) + '" y="' + (yt - 7.5).toFixed(1) + '" width="' + (G.pr - 3) + '" height="15" rx="4" fill="#D6B26E"/><text x="' + (G.W - G.pr / 2 + 0.5).toFixed(1) + '" y="' + (yt + 3).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="800" fill="#1A1307" font-family="sans-serif">intrare</text>'; }
+    [[iMax, -7], [iMin, 13]].forEach(function(a){ var q = pts[a[0]], x = X(q[0]), y = Y(q[1]); if(a[0] === pts.length - 1) return; var anc = x > G.W - G.pr - 46 ? 'end' : (x < 40 ? 'start' : 'middle');
+      svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.3" fill="var(--bg)" stroke="' + col + '" stroke-width="1.2"/><text x="' + x.toFixed(1) + '" y="' + (y + a[1]).toFixed(1) + '" text-anchor="' + anc + '" font-size="8.5" font-weight="700" fill="var(--text-dim)" font-family="sans-serif">' + Math.round(q[1]).toLocaleString('ro-RO') + '</text>'; });
+    var xl = X(B.t1), yl = Y(last);
+    svg += '<circle cx="' + xl.toFixed(1) + '" cy="' + yl.toFixed(1) + '" r="3.6" fill="' + col + '"><animate attributeName="r" values="3.6;6.5;3.6" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;.35;1" dur="2s" repeatCount="indefinite"/></circle><circle cx="' + xl.toFixed(1) + '" cy="' + yl.toFixed(1) + '" r="3.6" fill="' + col + '"/>' +
+      '<rect x="' + (G.W - G.pr + 2) + '" y="' + (yl - 7.5).toFixed(1) + '" width="' + (G.pr - 3) + '" height="15" rx="4" fill="' + col + '"/><text x="' + (G.W - G.pr / 2 + 0.5).toFixed(1) + '" y="' + (yl + 3).toFixed(1) + '" text-anchor="middle" font-size="8.8" font-weight="800" fill="#0B0B0B" font-family="sans-serif">' + Math.round(last).toLocaleString('ro-RO') + '</text>';
+    svg += '<text x="' + G.pl + '" y="' + (G.H - 6) + '" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + fmt(B.t0) + '</text><text x="' + ((G.pl + G.W - G.pr) / 2).toFixed(1) + '" y="' + (G.H - 6) + '" text-anchor="middle" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + fmt((B.t0 + B.t1) / 2) + '</text><text x="' + (G.W - G.pr) + '" y="' + (G.H - 6) + '" text-anchor="end" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + fmt(B.t1) + '</text>';
+    svg += '<line id="ethCh" x1="0" x2="0" y1="' + G.pt + '" y2="' + (G.H - G.pb) + '" stroke="var(--text-dim)" stroke-width="0.7" stroke-dasharray="2 2" style="display:none"/><circle id="ethDot" r="4" fill="var(--bg)" stroke="' + col + '" stroke-width="2" style="display:none"/></svg>';
     return svg;
   }
   function ethHover(){
-    var svg = document.getElementById('ethSvg'), tip = document.getElementById('ethTip'); if(!svg || !eth.pts.length) return;
-    var pts = eth.pts, t0 = pts[0][0], t1 = pts[pts.length - 1][0], W = 320, pl = 6, pr = 52, H = 170, pt = 10, pb = 20;
-    var vals = pts.map(function(x){ return x[1]; }), lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), en = eth.pos ? eth.pos.entry : null;
-    if(en != null){ lo = Math.min(lo, en); hi = Math.max(hi, en); } var mm = (hi - lo) * 0.08 || 1; lo -= mm; hi += mm;
-    function move(ev){ var r = svg.getBoundingClientRect(), cx = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) / r.width * W;
-      var f = Math.max(0, Math.min(1, (cx - pl) / (W - pl - pr))), i = Math.round(f * (pts.length - 1)), p = pts[i];
-      var x = pl + (p[0] - t0) / (t1 - t0 || 1) * (W - pl - pr), y = pt + (hi - p[1]) / (hi - lo) * (H - pt - pb);
+    var svg = document.getElementById('ethSvg'), bub = document.getElementById('ethBub'); if(!svg || !bub || eth.pts.length < 2) return;
+    var G = ETHG, pts = eth.pts, en = eth.pos ? eth.pos.entry : null, B = ethBounds(pts, en), wrap = svg.parentNode;
+    function hide(){ document.getElementById('ethCh').style.display = 'none'; document.getElementById('ethDot').style.display = 'none'; bub.style.opacity = 0; }
+    function move(ev){ var r = svg.getBoundingClientRect(), cx = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) / r.width * G.W;
+      var f = Math.max(0, Math.min(1, (cx - G.pl) / (G.W - G.pl - G.pr))), p = pts[Math.round(f * (pts.length - 1))];
+      var x = G.pl + (p[0] - B.t0) / (B.t1 - B.t0 || 1) * (G.W - G.pl - G.pr), y = G.pt + (B.hi - p[1]) / (B.hi - B.lo) * (G.H - G.pt - G.pb);
       var ln = document.getElementById('ethCh'), dt = document.getElementById('ethDot'); ln.setAttribute('x1', x); ln.setAttribute('x2', x); ln.style.display = ''; dt.setAttribute('cx', x); dt.setAttribute('cy', y); dt.style.display = '';
-      var q = new Date(p[0]); tip.innerHTML = '<b>' + ethEur(p[1]) + '</b> · ' + q.getDate() + ' ' + monthShort[q.getMonth()] + (eth.range === '3L' || eth.range === '1A' ? '' : ' ' + hhmm(q)) +
-        (eth.pos ? ' · poziția ta atunci: <b>' + ethEur(eth.pos.qty * p[1]) + '</b>' : ''); }
-    svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.style.touchAction = 'pan-y';
+      var q = new Date(p[0]); bub.innerHTML = '<b>' + ethEur(p[1]) + '</b><span>' + q.getDate() + ' ' + monthShort[q.getMonth()] + (eth.range === '3L' || eth.range === '1A' ? '' : ' · ' + hhmm(q)) + '</span>' + (eth.pos ? '<em>poziția ta: ' + ethEur(eth.pos.qty * p[1]) + '</em>' : '');
+      var px = x / G.W * r.width, bw = bub.offsetWidth || 120; bub.style.left = Math.max(4, Math.min(r.width - bw - 4, px - bw / 2)) + 'px'; bub.style.opacity = 1; }
+    svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move); svg.addEventListener('pointerleave', hide); svg.style.touchAction = 'pan-y';
+  }
+  function ethCalc(){ var L = eth.live, p = eth.pos; if(!p || L == null) return null; var val = p.qty * L, pl = val - p.invested; return { val:val, pl:pl, pc: p.invested ? pl / p.invested * 100 : 0, up: pl >= 0 }; }
+  function ethChg(){ if(eth.open24 > 0 && eth.live != null) return (eth.live / eth.open24 - 1) * 100; return eth.ch24; }
+  function ethBarHtml(){
+    var p = eth.pos, L = eth.live; if(!p || L == null) return '';
+    var lo = Math.min(p.entry, L) * 0.985, hi = Math.max(p.entry, L) * 1.015, f = function(v){ return ((v - lo) / (hi - lo) * 100).toFixed(1); }, a = Math.min(+f(p.entry), +f(L)), b = Math.max(+f(p.entry), +f(L));
+    return '<div class="eth-bar"><i class="eth-bf" style="left:' + a + '%;width:' + (b - a).toFixed(1) + '%"></i><i class="eth-be" style="left:' + f(p.entry) + '%"></i><i class="eth-bn" style="left:' + f(L) + '%"></i></div><div class="eth-bl"><span>intrare ' + ethEur(p.entry, 0) + '</span><span>acum ' + ethEur(L, 0) + '</span></div>';
+  }
+  function ethR24Html(){
+    if(!(eth.hi24 > eth.lo24) || eth.live == null) return '';
+    var f = Math.max(0, Math.min(100, (eth.live - eth.lo24) / (eth.hi24 - eth.lo24) * 100));
+    return '<div class="eth-r24"><span>' + ethEur(eth.lo24, 0) + '</span><div class="eth-r24b"><i id="ethR24m" style="left:' + f.toFixed(1) + '%"></i></div><span>' + ethEur(eth.hi24, 0) + '</span></div><div class="eth-r24l">Interval ultimele 24 de ore</div>';
   }
   function renderEth(){
     var el = document.getElementById('ethBody'); if(!el) return;
-    if(useLocal && !eth._ll){ eth._ll = 1; try{ var lp = JSON.parse(safeGet('reset_eth_v1') || 'null'); if(lp && lp.qty > 0) eth.pos = lp; }catch(e){} }   // offline mode: position kept on the phone
+    if(useLocal && !eth._ll){ eth._ll = 1; try{ var lp = JSON.parse(safeGet('reset_eth_v1') || 'null'); if(lp && lp.qty > 0) eth.pos = lp; }catch(e){} }
     var h = '', L = eth.live, pos = eth.pos;
     if(eth.err && L == null){ el.innerHTML = '<div class="td-risk warn">⚠️ ' + eth.err + '</div><button class="ghost-btn" id="ethRetry" style="margin-top:8px;">↻ Reîncearcă</button>'; document.getElementById('ethRetry').addEventListener('click', function(){ ethRefresh(true); }); return; }
-    var ch = eth.ch24;
-    h += '<div class="eth-top"><div><div class="eth-l"><span class="lv-dot"></span>ETH / EUR · live</div><div class="eth-p">' + (L != null ? ethEur(L) : '…') + '</div></div>' +
-      (ch != null && !isNaN(ch) ? '<div class="eth-ch ' + (ch >= 0 ? 'hs-win' : 'hs-loss') + '">' + (ch >= 0 ? '▲ +' : '▼ ') + ch.toFixed(2) + '%<span>24 ore</span></div>' : '') + '</div>';
-    if(pos && L != null){
-      var val = pos.qty * L, pl2 = val - pos.invested, pc = pos.invested ? pl2 / pos.invested * 100 : 0, d = new Date(pos.date + 'T00:00:00');
-      h += '<div class="eth-pos ' + (pl2 >= 0 ? 'up' : 'dn') + '"><div class="eth-pl">' + ethSgn(pl2) + ' <span>(' + (pc >= 0 ? '+' : '−') + Math.abs(pc).toFixed(2) + '%)</span></div>' +
-        '<div class="eth-sub">' + (pl2 >= 0 ? 'Ai câștigat' : 'Ai pierdut') + ' de când ai pus <b>' + ethEur(pos.invested, 0) + '</b> pe ' + d.getDate() + ' ' + monthShort[d.getMonth()] + '</div>' +
-        '<div class="eth-grid"><div><span>Valoare acum</span><b>' + ethEur(val) + '</b></div><div><span>Ai investit</span><b>' + ethEur(pos.invested) + '</b></div><div><span>Preț intrare</span><b>' + ethEur(pos.entry) + '</b></div><div><span>Cantitate</span><b>' + pos.qty.toFixed(5) + ' ETH</b></div></div></div>';
+    var ch = ethChg(), C = ethCalc();
+    h += '<div class="eth-hd"><div class="eth-logo">' + ethLogo(26) + '</div><div class="eth-hn"><b>Ethereum</b><span><i class="lv-dot"></i>ETH / EUR · <u id="ethAgo">live</u></span></div>' +
+      (ch != null && !isNaN(ch) ? '<div class="eth-ch ' + (ch >= 0 ? 'hs-win' : 'hs-loss') + '" id="ethChg">' + (ch >= 0 ? '▲ +' : '▼ ') + ch.toFixed(2) + '%<span>24 ore</span></div>' : '') + '</div>';
+    h += '<div class="eth-p" id="ethPrice">' + (L != null ? ethEur(L) : '…') + '</div>' + ethR24Html();
+    if(C){
+      var d = new Date(pos.date + 'T00:00:00');
+      h += '<div class="eth-pos ' + (C.up ? 'up' : 'dn') + '" id="ethPos"><div class="eth-ph"><span>Poziția ta</span><em>din ' + d.getDate() + ' ' + monthShort[d.getMonth()] + '</em></div>' +
+        '<div class="eth-pl"><b id="ethPL">' + ethSgn(C.pl) + '</b><span id="ethPC">' + (C.up ? '▲ +' : '▼ −') + Math.abs(C.pc).toFixed(2) + '%</span></div>' +
+        '<div class="eth-sub" id="ethPS">' + (C.up ? 'Ai câștigat' : 'Ai pierdut') + ' de când ai pus <b>' + ethEur(pos.invested, 0) + '</b></div>' + ethBarHtml() +
+        '<div class="eth-grid"><div><span>Valoare acum</span><b id="ethVal">' + ethEur(C.val) + '</b></div><div><span>Ai investit</span><b>' + ethEur(pos.invested) + '</b></div><div><span>Preț intrare</span><b>' + ethEur(pos.entry) + '</b></div><div><span>Cantitate</span><b>' + pos.qty.toFixed(5) + ' ETH</b></div></div></div>';
     }
     h += '<div class="eth-rg">' + Object.keys(ETH_R).map(function(k){ return '<button data-r="' + k + '" class="' + (k === eth.range ? 'on' : '') + '">' + k + '</button>'; }).join('') + '</div>';
     var ps = eth.pts, rc = ps.length > 1 ? (ps[ps.length - 1][1] / ps[0][1] - 1) * 100 : null;
-    h += '<div class="eth-chart">' + ethChart(ps, pos ? pos.entry : null) + '</div><div class="eth-tip" id="ethTip">' + (rc != null ? 'În ' + ETH_R[eth.range].l + ': <b class="' + (rc >= 0 ? 'hs-win' : 'hs-loss') + '">' + (rc >= 0 ? '+' : '') + rc.toFixed(2) + '%</b> · atinge graficul ca să vezi prețul' : '') + '</div>';
+    h += '<div class="eth-chart">' + ethChart(ps, pos ? pos.entry : null) + '<div class="eth-bub" id="ethBub"></div></div>';
+    if(ps.length > 1){ var vv = ps.map(function(x){ return x[1]; }); h += '<div class="eth-st"><div><span>Minim</span><b>' + ethEur(Math.min.apply(null, vv), 0) + '</b></div><div><span>Maxim</span><b>' + ethEur(Math.max.apply(null, vv), 0) + '</b></div><div><span>În ' + ETH_R[eth.range].l + '</span><b class="' + (rc >= 0 ? 'hs-win' : 'hs-loss') + '">' + (rc >= 0 ? '+' : '') + rc.toFixed(2) + '%</b></div></div>'; }
     if(!pos || eth.edit){
       h += '<div class="eth-form"><div class="eth-fh">' + (pos ? 'Modifică poziția' : 'Pune suma pe care ai investit-o în ETH') + '</div>' +
         '<div class="field-row"><label>Suma investită (€)</label><input type="number" id="ethAmt" inputmode="decimal" placeholder="ex. 500"></div>' +
@@ -4052,8 +4127,8 @@ document.addEventListener('click', function(e){
         '<div class="hint" id="ethMsg" style="margin:4px 0 8px;">Azi = prețul live de acum. Pentru o dată din trecut iau prețul real al zilei.</div>' +
         '<div class="eth-btns"><button class="primary-btn" id="ethSet">' + (pos ? 'Înlocuiește poziția' : 'Salvează') + '</button>' + (pos ? '<button class="ghost-btn" id="ethAdd">➕ Adaugă la poziție</button>' : '') + '</div></div>';
     } else h += '<div class="eth-btns"><button class="ghost-btn" id="ethEdit">✏️ Modifică / adaugă sumă</button><button class="ghost-btn" id="ethDel" style="color:var(--danger);">🗑️ Șterge</button></div>';
-    h += '<div class="hint">Prețul vine de la Binance (rezerva: CoinGecko). Câștigul se calculează după prețul real al ETH în euro, fără comisioane sau taxe de rețea.</div>';
-    el.innerHTML = h;
+    h += '<div class="hint">Prețul vine de la Binance (rezerva: CoinGecko) și se mișcă la secundă cât ai cardul deschis. Câștigul se calculează după prețul real al ETH în euro, fără comisioane sau taxe de rețea.</div>';
+    el.innerHTML = h; eth.shown = L;
     el.querySelectorAll('.eth-rg button').forEach(function(b){ b.addEventListener('click', function(){ eth.range = b.getAttribute('data-r'); safeSet('reset_eth_range_v1', eth.range); eth.pts = []; renderEth(); ethRefresh(true); }); });
     ethHover();
     var set = document.getElementById('ethSet'), add = document.getElementById('ethAdd'), ed = document.getElementById('ethEdit'), dl = document.getElementById('ethDel');
@@ -4070,7 +4145,35 @@ document.addEventListener('click', function(e){
         eth.edit = false; ethSave(np); }).catch(function(){ msg.style.color = 'var(--gold)'; msg.textContent = 'Nu am găsit prețul pentru data aleasă. Scrie tu prețul de cumpărare sau încearcă altă dată.'; if(set) set.disabled = false; if(add) add.disabled = false; });
     }
     if(set) set.addEventListener('click', function(){ go('set'); }); if(add) add.addEventListener('click', function(){ go('add'); });
+    paintEthHint();
   }
+  // per-second update: only the numbers change (no flicker, the chart keeps its touch state)
+  function ethPaintLive(){
+    var L = eth.live; if(L == null) return; var pe = document.getElementById('ethPrice'); if(!pe){ renderEth(); return; }
+    var txt = ethEur(L); if(pe.textContent !== txt){ var dir = (eth.shown != null && L < eth.shown) ? 'dn' : 'up'; pe.textContent = txt; if(eth.shown != null){ pe.classList.remove('up', 'dn'); void pe.offsetWidth; pe.classList.add(dir); } eth.shown = L; }
+    var ch = ethChg(), ce = document.getElementById('ethChg'); if(ce && ch != null && !isNaN(ch)){ ce.className = 'eth-ch ' + (ch >= 0 ? 'hs-win' : 'hs-loss'); ce.innerHTML = (ch >= 0 ? '▲ +' : '▼ ') + ch.toFixed(2) + '%<span>24 ore</span>'; }
+    var C = ethCalc(), box = document.getElementById('ethPos');
+    if(C && box){ box.className = 'eth-pos ' + (C.up ? 'up' : 'dn'); var s1 = document.getElementById('ethPL'), s2 = document.getElementById('ethPC'), s3 = document.getElementById('ethPS'), s4 = document.getElementById('ethVal');
+      if(s1) s1.textContent = ethSgn(C.pl); if(s2) s2.textContent = (C.up ? '▲ +' : '▼ −') + Math.abs(C.pc).toFixed(2) + '%'; if(s4) s4.textContent = ethEur(C.val);
+      if(s3) s3.innerHTML = (C.up ? 'Ai câștigat' : 'Ai pierdut') + ' de când ai pus <b>' + ethEur(eth.pos.invested, 0) + '</b>';
+      var bar = box.querySelector('.eth-bar'); if(bar){ var tmp = document.createElement('div'); tmp.innerHTML = ethBarHtml(); var nb = tmp.firstChild, nl = tmp.lastChild; bar.parentNode.replaceChild(nb, bar); var ol = box.querySelector('.eth-bl'); if(ol) ol.parentNode.replaceChild(nl, ol); } }
+    var m = document.getElementById('ethR24m'); if(m && eth.hi24 > eth.lo24) m.style.left = Math.max(0, Math.min(100, (L - eth.lo24) / (eth.hi24 - eth.lo24) * 100)).toFixed(1) + '%';
+    paintEthHint(); ethAgo();
+  }
+  function ethAgo(){ var a = document.getElementById('ethAgo'); if(!a) return; a.textContent = (Date.now() - eth.wsAt < 4000) ? '⚡ la secundă' : 'actualizat acum ' + Math.max(0, Math.round((Date.now() - eth.tLive) / 1000)) + ' s'; }
+  function ethWsStart(){
+    try{
+      if(eth.ws && eth.ws.readyState <= 1) return;
+      eth.ws = new WebSocket('wss://stream.binance.com:9443/ws/etheur@bookTicker');
+      eth.ws.onopen = function(){ eth.wsRetry = 0; };
+      eth.ws.onmessage = function(ev){ try{ var d = JSON.parse(ev.data), b = +d.b, a = +d.a; if(!(b > 0 && a > 0)) return; eth.live = (b + a) / 2; eth.wsAt = eth.tLive = Date.now();
+        if(Date.now() - eth.wsPaint >= 900){ eth.wsPaint = Date.now(); ethPaintLive(); } }catch(e){} };
+      eth.ws.onerror = function(){ try{ eth.ws.close(); }catch(e){} };
+      eth.ws.onclose = function(){ eth.ws = null; clearTimeout(eth.wsTimer); eth.wsTimer = setTimeout(ethWsSync, Math.min(30000, 1500 * (++eth.wsRetry))); };
+    }catch(e){}
+  }
+  function ethWsStop(){ clearTimeout(eth.wsTimer); try{ if(eth.ws){ var w = eth.ws; eth.ws = null; w.onclose = null; w.close(); } }catch(e){} }
+  function ethWsSync(){ var c = document.getElementById('ethCard'); (c && c.offsetParent !== null && !document.hidden) ? ethWsStart() : ethWsStop(); }
   function ethSave(np){
     eth.pos = np; renderEth();
     if(useLocal){ safeSet('reset_eth_v1', np ? JSON.stringify(np) : ''); }
@@ -4082,10 +4185,25 @@ document.addEventListener('click', function(e){
     var v = eth.pos.qty * eth.live; hnt.style.display = 'block'; hnt.innerHTML = '⟠ Valoarea live a pozițiilor tale ETH: <b>' + ethEur(v) + '</b> · <a href="#" id="accEthUse" style="color:var(--gold);font-weight:700;">Folosește-o</a>';
     var a = document.getElementById('accEthUse'); if(a) a.addEventListener('click', function(e){ e.preventDefault(); var inp = document.querySelector('#accFields input[data-k="eth"]'); if(inp){ inp.value = v.toFixed(2); inp.dispatchEvent(new Event('input')); } });
   }
-  var _ethRender = renderEth; renderEth = function(){ _ethRender(); paintEthHint(); };
-  document.querySelectorAll('.tab[data-view="money"], [data-seg="worth"]').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(function(){ ethRefresh(true); }, 60); }); });
-  setInterval(function(){ var c = document.getElementById('ethCard'); if(c && c.offsetParent !== null && !document.hidden) ethRefresh(false); }, 20000);
+  document.querySelectorAll('.tab, [data-seg]').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(function(){ ethWsSync(); if(b.getAttribute('data-view') === 'money' || b.getAttribute('data-seg') === 'worth') ethRefresh(true); }, 80); }); });
+  document.addEventListener('visibilitychange', function(){ setTimeout(ethWsSync, 50); });
+  setInterval(function(){ ethWsSync(); var c = document.getElementById('ethCard'); if(c && c.offsetParent !== null && !document.hidden){ ethRefresh(false); ethAgo(); } }, 3000);
+  setInterval(ethAgo, 1000);
   setTimeout(function(){ renderEth(); }, 0);
+
+  /* ===== collapsible cards (closed until you need them) + hide amounts ===== */
+  (function(){
+    document.querySelectorAll('.cp-head').forEach(function(h){
+      var key = 'reset_cp_' + h.getAttribute('data-cp') + '_v1', body = h.parentNode.querySelector('.cp-body');
+      function set(open){ h.setAttribute('aria-expanded', open ? 'true' : 'false'); h.parentNode.classList.toggle('open', open); if(body) body.hidden = !open; safeSet(key, open ? '1' : '0'); }
+      set(safeGet(key) === '1' ? true : false);
+      h.addEventListener('click', function(){ set(h.getAttribute('aria-expanded') !== 'true'); });
+    });
+    var eye = document.getElementById('amtEye');
+    function hide(on){ document.body.classList.toggle('hide-amt', on); if(eye){ eye.textContent = on ? '🙈 Arată sumele' : '👁 Ascunde sumele'; eye.setAttribute('aria-pressed', on ? 'true' : 'false'); } safeSet('reset_hide_amt_v1', on ? '1' : '0'); }
+    hide(safeGet('reset_hide_amt_v1') === '1');
+    if(eye) eye.addEventListener('click', function(){ hide(!document.body.classList.contains('hide-amt')); });
+  })();
   function renderGoldMini(){
     var m = document.getElementById('goldMini'); if(!m || !gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
