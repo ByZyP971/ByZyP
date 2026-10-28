@@ -1438,7 +1438,7 @@
         <div class="card-title">Jurnalul zilei</div>
         <div class="field-row">
           <label>⚖️ Greutate azi (kg)</label>
-          <input type="number" id="weightInput" inputmode="decimal" placeholder="0.0" step="0.1">
+          <input type="text" id="weightInput" inputmode="decimal" autocomplete="off" maxlength="7" placeholder="0.0">
         </div>
         <div class="photo-row">
           <div id="photoThumbWrap"><div class="photo-placeholder">📷</div></div>
@@ -2277,6 +2277,8 @@ document.addEventListener('click', function(e){
   ];
   var prevDone = -1;
 
+  function parseKg(str){ var t = String(str == null ? '' : str).replace(',', '.').replace(/[^0-9.]/g, ''), i = t.indexOf('.'); if(i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, ''); var v = parseFloat(t); return (v >= 20 && v <= 400) ? Math.round(v * 1000) / 1000 : null; }
+  function fmtKg(v){ var r = Math.round(v * 100); return (r / 100).toFixed(r % 10 === 0 ? 1 : 2); }
   function getEntry(key){
     var e = data[key];
     if(!e) return { habits:{}, note:'', weight:null, photo:null };
@@ -2313,7 +2315,7 @@ document.addEventListener('click', function(e){
       todayHabitsEl.appendChild(row);
     });
     todayNoteEl.value = entry.note || '';
-    weightInput.value = entry.weight != null ? entry.weight : '';
+    if(document.activeElement !== weightInput) weightInput.value = entry.weight != null ? entry.weight : '';      // never rewrite the field while it is being typed in
     if(entry.photo){
       photoThumbWrap.innerHTML = '<img class="photo-thumb" src="' + entry.photo + '">';
     } else {
@@ -2326,7 +2328,8 @@ document.addEventListener('click', function(e){
   });
   weightInput.addEventListener('input', function(){
     var entry = getEntry(todayKey);
-    entry.weight = weightInput.value ? parseFloat(weightInput.value) : null;
+    var kgv = parseKg(weightInput.value); if(kgv == null && weightInput.value.replace(/[^0-9]/g, '').length > 0 && weightInput.value.replace(/[^0-9]/g, '').length < 2) return;   /* too early to be a weight (e.g. the first digit): keep typing */
+    entry.weight = kgv;
     writeDay(todayKey, entry);
     renderWeightPanel();
     renderProtein();
@@ -2853,10 +2856,10 @@ document.addEventListener('click', function(e){
     }
     var last = list[list.length-1];
     var first = list[0];
-    nowEl.textContent = last.w.toFixed(1) + ' kg';
+    nowEl.textContent = fmtKg(last.w) + ' kg';
     var diff = last.w - first.w;
     if(list.length > 1){
-      deltaEl.textContent = (diff>=0?'+':'') + diff.toFixed(1) + ' kg față de prima măsurătoare';
+      deltaEl.textContent = (diff>=0?'+':'') + fmtKg(diff) + ' kg față de prima măsurătoare';
     } else { deltaEl.textContent = 'Prima măsurătoare'; }
 
     var recent = list.slice(-14);
@@ -2875,7 +2878,7 @@ document.addEventListener('click', function(e){
 
     histEl.innerHTML = recent.slice().reverse().slice(0,6).map(function(p){
       var d = new Date(p.date + 'T00:00:00');
-      return '<div class="trade-item"><span class="trade-item-date">' + d.getDate() + ' ' + monthShort[d.getMonth()] + '</span><span style="font-family:var(--mono)">' + p.w.toFixed(1) + ' kg</span></div>';
+      return '<div class="trade-item"><span class="trade-item-date">' + d.getDate() + ' ' + monthShort[d.getMonth()] + '</span><span style="font-family:var(--mono)">' + fmtKg(p.w) + ' kg</span></div>';
     }).join('');
   }
 
@@ -2913,7 +2916,7 @@ document.addEventListener('click', function(e){
     var imc = (w && h) ? (w / Math.pow(h/100, 2)) : null;
     var chip = function(v,l){ return '<div class="prof-chip"><b>' + v + '</b><span>' + l + '</span></div>'; };
     document.getElementById('profChips').innerHTML =
-      chip(profile.age || '–', 'ani') + chip(h ? h : '–', 'cm') + chip(w ? w.toFixed(1) : '–', 'kg') + chip(imc ? imc.toFixed(1) : '–', 'IMC');
+      chip(profile.age || '–', 'ani') + chip(h ? h : '–', 'cm') + chip(w ? fmtKg(w) : '–', 'kg') + chip(imc ? imc.toFixed(1) : '–', 'IMC');
 
     var cnt = function(key){ return keys.filter(function(k){ return data[k] && data[k].habits && data[k].habits[key]; }).length; };
     var perfect = keys.filter(function(k){ return allDone(data[k]); }).length;
@@ -3367,7 +3370,7 @@ document.addEventListener('click', function(e){
     var w = data[keys[keys.length-1]].weight;
     var lo = Math.round(w*1.4), hi = Math.round(w*2.0), per = Math.round((lo+hi)/2/4);
     box.innerHTML = '<div class="prot-big">' + lo + '–' + hi + ' g</div>' +
-      '<div class="prot-sub">proteină pe zi, pentru ' + w.toFixed(1) + ' kg</div>' +
+      '<div class="prot-sub">proteină pe zi, pentru ' + fmtKg(w) + ' kg</div>' +
       '<div class="prot-meals">' +
         ['Dimineața','Prânz','Gustare','Seara'].map(function(m){ return '<div class="prot-meal"><b>~' + per + 'g</b><span>' + m + '</span></div>'; }).join('') +
       '</div>';
@@ -4330,9 +4333,10 @@ document.addEventListener('click', function(e){
     return { c:c, meals:meals };
   }
   var nu = { sex:'m', act:1.55, goal:'maintain', v:{ b:0, l:0, d:0 }, log:{}, D:null, W:null, open:false, _t:null };
-  function nuKgNow(){ var keys = Object.keys(data).sort(); for(var i = keys.length - 1; i >= 0; i--){ var e = data[keys[i]]; if(e && e.weight != null && +e.weight > 0 && keys[i] <= todayKey) return { kg:+e.weight, date:keys[i] }; } return null; }
+  function nuKgNow(){ var keys = Object.keys(data).sort(); for(var i = keys.length - 1; i >= 0; i--){ var e = data[keys[i]]; if(e && e.weight != null && +e.weight >= 20 && +e.weight <= 400 && keys[i] <= todayKey) return { kg:+e.weight, date:keys[i] };   /* ignore impossible values (e.g. left by the old typing bug) */ } return null; }
   function nuProf(){ var pr = (typeof profile !== 'undefined' && profile) || {}; return { cm: parseFloat(pr.height) || 172, age: parseInt(pr.age, 10) || 26 }; }
   function nuCompute(){ var W = nuKgNow(); if(!W) return null; var P = nuProf(); var D = nuDay(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal, nu.v); D.W = W; D.P = P; return D; }
+  function nuKgTxt(v){ var r = Math.round(v * 100); return Number(r / 100).toLocaleString('ro-RO', { minimumFractionDigits: r % 10 === 0 ? 1 : 2, maximumFractionDigits: 2 }); }
   function nuN(v, d){ return Number(v).toLocaleString('ro-RO', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
   function nuSaveCfg(){ var cfg = { sex:nu.sex, act:nu.act, goal:nu.goal, v:nu.v };
     if(useLocal) safeSet('reset_nutri_v1', JSON.stringify(cfg)); else chainWrite('settings/nutri', function(){ return db.doc('settings/nutri').set(cfg); }); }
@@ -4350,9 +4354,9 @@ document.addEventListener('click', function(e){
     if(useLocal && !nu._ll){ nu._ll = 1; try{ var c = JSON.parse(safeGet('reset_nutri_v1') || 'null'); if(c){ nu.sex = c.sex === 'f' ? 'f' : 'm'; if([1.375, 1.55, 1.725].indexOf(+c.act) >= 0) nu.act = +c.act; if(['lose', 'maintain', 'gain'].indexOf(c.goal) >= 0) nu.goal = c.goal; nu.v = Object.assign({ b:0, l:0, d:0 }, c.v || {}); } var l = JSON.parse(safeGet('reset_meals_v1') || 'null'); if(l) nu.log = l; }catch(e){} }
     var W = nuKgNow(), P = nuProf(); nu.W = W;
     if(!document.getElementById('nuKg')){
-      top.innerHTML = '<div class="nu-w"><div class="nu-wl"><span>Greutatea ta azi</span><div class="nu-kg"><input id="nuKg" type="number" step="0.1" min="30" max="250" inputmode="decimal" placeholder="0.0" aria-label="Greutate în kg"><em>kg</em></div><small id="nuKgNote"></small></div><div class="nu-bmi"><b id="nuBmi">–</b><span>IMC</span></div></div>';
+      top.innerHTML = '<div class="nu-w"><div class="nu-wl"><span>Greutatea ta azi</span><div class="nu-kg"><input id="nuKg" type="text" maxlength="7" inputmode="decimal" autocomplete="off" placeholder="0.0" aria-label="Greutate în kg"><em>kg</em></div><small id="nuKgNote"></small></div><div class="nu-bmi"><b id="nuBmi">–</b><span>IMC</span></div></div>';
       var inp = document.getElementById('nuKg');
-      function push(){ var v = parseFloat(String(inp.value).replace(',', '.')); if(!(v >= 30 && v <= 250)) return; var cur = nuKgNow(); if(cur && cur.date === todayKey && cur.kg === v) return;      /* unchanged: do not re-render (it would swallow the next tap) */
+      function push(){ var v = parseKg(inp.value); if(!(v >= 30 && v <= 250)) return; var cur = nuKgNow(); if(cur && cur.date === todayKey && cur.kg === v) return;      /* unchanged: do not re-render (it would swallow the next tap) */
         var wi = document.getElementById('weightInput'); if(wi){ wi.value = String(v); wi.dispatchEvent(new Event('input', { bubbles:true })); } }
       inp.addEventListener('input', function(){ clearTimeout(nu._t); nu._t = setTimeout(push, 700); }); inp.addEventListener('change', function(){ clearTimeout(nu._t); push(); });
     }
@@ -4382,7 +4386,7 @@ document.addEventListener('click', function(e){
       h += '<div class="nu-set"><div class="nu-sl">Sex</div><div class="nu-pills">' + pill('sex', 'm', 'Bărbat', nu.sex === 'm') + pill('sex', 'f', 'Femeie', nu.sex === 'f') + '</div>' +
         '<div class="nu-sl">Cât te miști</div><div class="nu-pills">' + pill('act', '1.375', 'Ușor · 1–3 antrenamente', nu.act === 1.375) + pill('act', '1.55', 'Mediu · 3–5', nu.act === 1.55) + pill('act', '1.725', 'Mult · 6–7', nu.act === 1.725) + '</div>' +
         '<div class="nu-sl">Obiectiv</div><div class="nu-pills">' + pill('goal', 'lose', 'Slăbesc', nu.goal === 'lose') + pill('goal', 'maintain', 'Mențin', nu.goal === 'maintain') + pill('goal', 'gain', 'Cresc masa', nu.goal === 'gain') + '</div>' +
-        '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuN(W.kg, 1) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (nu.goal === 'lose' ? 'Slăbești încet: −15%.' : nu.goal === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (nu.goal === 'lose' ? '2,0' : nu.goal === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
+        '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuKgTxt(W.kg) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (nu.goal === 'lose' ? 'Slăbești încet: −15%.' : nu.goal === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (nu.goal === 'lose' ? '2,0' : nu.goal === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
     }
     h += '<div class="hint">Estimare orientativă, nu sfat medical. Dacă ai probleme de sănătate sau ești însărcinată, vorbește cu medicul sau cu un dietetician. Fără zahăr adăugat și fără produse procesate, cum ți-ai propus.</div>';
     main.innerHTML = h;
@@ -4396,7 +4400,7 @@ document.addEventListener('click', function(e){
     var c = D.c, pick = /dimineata|mic dejun/.test(t) ? 0 : /pranz/.test(t) ? 1 : /seara|cina/.test(t) ? 2 : -1;
     if(pick >= 0){ var m = D.meals[pick]; return 'ZyP, ' + m.m.n.toLowerCase() + ' mănânci ' + m.name.toLowerCase() + ': ' + m.items.map(function(it){ return NU_F[it.k].n.split(' (')[0].toLowerCase().replace(' / ', ' sau ') + ' ' + nuQty(it.k, it.g).replace(/ \(.*\)/, '').replace(' g', ' de grame'); }).join(', ') + '. Asta înseamnă aproximativ ' + nuN(m.tot.kcal) + ' calorii și ' + nuN(m.tot.p) + ' grame de proteină.'; }
     var e = nuEaten(D);
-    return 'ZyP, la ' + nuN(D.W.kg, 1) + ' kilograme ai nevoie azi de aproximativ ' + nuN(Math.round(c.kcal / 10) * 10) + ' calorii și ' + nuN(c.P) + ' grame de proteină, adică ' + nuN(D.meals[0].target.p) + ' dimineața, ' + nuN(D.meals[1].target.p) + ' la prânz și ' + nuN(D.meals[2].target.p) + ' seara. Plus ' + nuN(c.water, 1) + ' litri de apă. ' + (e.kcal ? 'Ai mâncat deja ' + nuN(e.kcal) + ' calorii și ' + nuN(e.p) + ' grame de proteină.' : '');
+    return 'ZyP, la ' + nuKgTxt(D.W.kg) + ' kilograme ai nevoie azi de aproximativ ' + nuN(Math.round(c.kcal / 10) * 10) + ' calorii și ' + nuN(c.P) + ' grame de proteină, adică ' + nuN(D.meals[0].target.p) + ' dimineața, ' + nuN(D.meals[1].target.p) + ' la prânz și ' + nuN(D.meals[2].target.p) + ' seara. Plus ' + nuN(c.water, 1) + ' litri de apă. ' + (e.kcal ? 'Ai mâncat deja ' + nuN(e.kcal) + ' calorii și ' + nuN(e.p) + ' grame de proteină.' : '');
   }
   setTimeout(function(){ var b = document.querySelector('[data-fseg="calc"]'); if(b) b.click(); nuRender(); }, 0);
   function renderGoldMini(){
@@ -4927,8 +4931,8 @@ document.addEventListener('click', function(e){
       (W.photos ? '<div class="rp-row"><span>Poze de progres</span><b>' + W.photos + '</b></div>' : '') + '</div>';
     // body
     var wd = (W.wEnd != null && (W.prevW != null || W.wStart != null)) ? W.wEnd - (W.prevW != null ? W.prevW : W.wStart) : null;
-    h += '<div class="rp-sec"><h4>⚖️ Corp</h4><div class="rp-row"><span>Greutate la final</span><b>' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg' : 'nenotată') + '</b></div>' +
-      '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null ? '' : wd <= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(wd, 1, '', ' kg') + '</b></div>' +
+    h += '<div class="rp-sec"><h4>⚖️ Corp</h4><div class="rp-row"><span>Greutate la final</span><b>' + (W.wEnd != null ? fmtKg(W.wEnd) + ' kg' : 'nenotată') + '</b></div>' +
+      '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null ? '' : wd <= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(wd, 2, '', ' kg') + '</b></div>' +
       '<div class="rp-row"><span>Antrenamente bifate</span><b>' + W.hab.training + ' / ' + W.n + '</b></div></div>';
     if(W.fit){
       var pf = P.fit;
@@ -4964,7 +4968,7 @@ document.addEventListener('click', function(e){
       var t = 'By ZyP · Raport ' + fmt(W.ws) + ' – ' + fmt(W.we) + '\nScor: ' + sc + '% (' + msg[0] + ')\n' +
         HABITS.map(function(x){ return x.ic + ' ' + x.label + ': ' + W.hab[x.key] + '/' + W.n; }).join('\n') +
         '\nZile perfecte: ' + W.perfect + ' · fără țigări la rând: ' + W.streak +
-        '\nGreutate: ' + (W.wEnd != null ? W.wEnd.toFixed(1) + ' kg (' + sgn(wd, 1, '', ' kg') + ')' : '–') +
+        '\nGreutate: ' + (W.wEnd != null ? fmtKg(W.wEnd) + ' kg (' + sgn(wd, 2, '', ' kg') + ')' : '–') +
         '\nAvere: ' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd) + ' (' + sgn(dw, 0, '€') + ')' : '–') +
         (W.fit ? '\nFitness: ' + Math.round(W.fit.steps) + ' pași/zi, ' + Math.round(W.fit.kcal) + ' kcal, ' + Math.round(W.fit.exMin) + ' min exercițiu' : '') +
         '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '€') +
@@ -5115,7 +5119,7 @@ document.addEventListener('click', function(e){
       var ws = Object.keys(data).sort().filter(function(k){ return data[k] && data[k].weight != null; });
       if(!ws.length) return 'ZyP, n-ai notat încă greutatea. O poți scrie pe fila Azi, la jurnalul zilei.';
       var wl = +data[ws[ws.length - 1]].weight, wf = +data[ws[0]].weight;
-      return 'ZyP, ultima greutate notată e ' + jNum(wl, 1) + ' kilograme.' + (ws.length > 1 ? ' De la început ' + (wl <= wf ? 'ai slăbit ' : 'ai pus ') + jNum(Math.abs(wl - wf), 1) + ' kilograme.' : '');
+      return 'ZyP, ultima greutate notată e ' + jNum(wl, Math.round(wl * 100) % 10 === 0 ? 1 : 2) + ' kilograme.' + (ws.length > 1 ? ' De la început ' + (wl <= wf ? 'ai slăbit ' : 'ai pus ') + jNum(Math.abs(wl - wf), 2) + ' kilograme.' : '');
     }
     // --- day plan ---
     if(jHas(t, ['sala','sport','antrenament azi','ce am azi','planul','azi ce'])){
@@ -5520,10 +5524,10 @@ document.addEventListener('click', function(e){
     var wDeltaEl = document.getElementById('dashWeightDelta');
     if(weights.length){
       var lastW = data[weights[weights.length-1]].weight;
-      wEl.textContent = lastW.toFixed(1) + ' kg';
+      wEl.textContent = fmtKg(lastW) + ' kg';
       if(weights.length > 1){
         var diff = lastW - data[weights[0]].weight;
-        wDeltaEl.textContent = (diff>=0?'+':'') + diff.toFixed(1) + ' kg total';
+        wDeltaEl.textContent = (diff>=0?'+':'') + fmtKg(diff) + ' kg total';
       } else { wDeltaEl.textContent = 'greutate'; }
     } else { wEl.textContent = '–'; wDeltaEl.textContent = 'greutate'; }
 
@@ -5571,7 +5575,7 @@ document.addEventListener('click', function(e){
     return { pts:pts2 };
   }
   function gFmt(v){
-    if(gMode === 'weight') return v.toFixed(1) + ' kg';
+    if(gMode === 'weight') return fmtKg(v) + ' kg';
     if(gMode === 'worth') return '€' + Math.round(v).toLocaleString('ro-RO');
     if(gMode === 'trading') return (v<0?'-':'') + '€' + Math.abs(v).toFixed(2);
     return v + '/5';
@@ -5622,7 +5626,7 @@ document.addEventListener('click', function(e){
     var pct = first ? (diff/Math.abs(first)*100) : 0;
     var good = gMode === 'weight' ? null : diff >= 0;
     var sign = diff > 0 ? '+' : diff < 0 ? '-' : '';
-    var abs = gMode === 'weight' ? Math.abs(diff).toFixed(1) + ' kg' : gMode === 'worth' ? '€' + Math.round(Math.abs(diff)) : '€' + Math.abs(diff).toFixed(2);
+    var abs = gMode === 'weight' ? fmtKg(Math.abs(diff)) + ' kg' : gMode === 'worth' ? '€' + Math.round(Math.abs(diff)) : '€' + Math.abs(diff).toFixed(2);
     dEl.textContent = sign + abs + (gMode !== 'weight' && first ? ' (' + (pct>=0?'+':'') + pct.toFixed(1) + '%)' : '');
     dEl.className = 'g-delta' + (good === null ? '' : good ? ' pos' : ' neg');
     var ys = pts.map(function(p){ return p.y; });
