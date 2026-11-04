@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://s3.tradingview.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://bskujbfaynbeqjonqydb.supabase.co wss://bskujbfaynbeqjonqydb.supabase.co wss://stream.binance.com:9443 https://api.binance.com https://data-api.binance.vision https://api.coingecko.com https://api.gold-api.com https://nfs.faireconomy.media https://min-api.cryptocompare.com https://api.rss2json.com https://ethereum-rpc.publicnode.com https://eth.llamarpc.com https://cloudflare-eth.com https://cointelegraph.com https://xaus.com https://*.tradingview.com; frame-src https://www.tradingview.com https://s.tradingview.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://s3.tradingview.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://bskujbfaynbeqjonqydb.supabase.co wss://bskujbfaynbeqjonqydb.supabase.co wss://stream.binance.com:9443 https://api.binance.com https://data-api.binance.vision https://api.coingecko.com https://api.gold-api.com https://nfs.faireconomy.media https://min-api.cryptocompare.com https://api.rss2json.com https://eth.blockscout.com https://ethereum-rpc.publicnode.com https://eth.llamarpc.com https://cloudflare-eth.com https://cointelegraph.com https://xaus.com https://*.tradingview.com; frame-src https://www.tradingview.com https://s.tradingview.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>window.zEsc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
@@ -525,6 +525,9 @@
   .ex-reopen{ background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:999px; width:34px; height:34px; cursor:pointer; flex:none; }
   .wl-in{ width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card-2); color:var(--text); font-family:var(--mono); font-size:12.5px; }
   .wl-big{ font-size:26px; font-weight:700; margin-top:6px; } .wl-sub{ font-size:12px; color:var(--text-faint); margin-top:2px; font-family:var(--mono); word-break:break-all; }
+  .wl-h{ font-size:12.5px; font-weight:700; color:var(--gold); margin:18px 0 8px; }
+  .wl-sum{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; } .wl-sum div{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:10px; } .wl-sum span{ display:block; font-size:10.5px; color:var(--text-faint); } .wl-sum b{ font-size:15px; }
+  .wl-tx{ display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-top:1px solid var(--line); font-size:13px; } .wl-tx:first-of-type{ border-top:0; } .wl-tx span{ display:block; font-size:11px; color:var(--text-faint); margin-top:2px; } .wl-r{ text-align:right; } .wl-r span.hs-win, .wl-r span.hs-loss{ font-weight:600; }
   .wl-row{ display:flex; gap:8px; margin-top:10px; } .wl-row button{ flex:1; padding:11px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card-2); color:var(--text); font-weight:600; cursor:pointer; }
   .wl-row button.pri{ background:linear-gradient(135deg,#E9D29A,#B8914A); color:#1a1305; border:0; }
   .en-it{ display:block; padding:12px 0; border-top:1px solid var(--line); text-decoration:none; color:inherit; } .en-it:first-child{ border-top:none; }
@@ -4681,7 +4684,7 @@ document.addEventListener('click', function(e){
   document.querySelectorAll('.tab[data-view="money"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ loadEthNews(false); }, 60); }); });
 
   /* ===== Portofel MetaMask: doar adresa publică, doar citire ===== */
-  var WL_KEY = 'reset_wallet_v1', wl = { addr:'', bal:null, err:'', t:0 };
+  var WL_KEY = 'reset_wallet_v1', wl = { addr:'', bal:null, err:'', t:0, h:null, hErr:'', hBusy:false };
   try{ var wls = JSON.parse(localStorage.getItem(WL_KEY) || '{}'); if(wls && /^0x[0-9a-fA-F]{40}$/.test(wls.addr || '')) wl.addr = wls.addr; }catch(e){}
   var WL_RPC = ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com', 'https://cloudflare-eth.com'];
   function wlFetch(i){
@@ -4705,7 +4708,7 @@ document.addEventListener('click', function(e){
       document.getElementById('wlSave').addEventListener('click', function(){
         var v = document.getElementById('wlIn').value.trim();
         if(!/^0x[0-9a-fA-F]{40}$/.test(v)){ document.getElementById('wlMsg').textContent = 'Adresa nu e validă. Trebuie să înceapă cu 0x și să aibă 42 de caractere.'; return; }
-        wl.addr = v; wl.bal = null; try{ localStorage.setItem(WL_KEY, JSON.stringify({ addr:v })); }catch(e){} renderWallet(); wlLoad();
+        wl.addr = v; wl.bal = null; wl.h = null; try{ localStorage.setItem(WL_KEY, JSON.stringify({ addr:v })); }catch(e){} renderWallet(); wlLoad();
       });
       return;
     }
@@ -4713,9 +4716,44 @@ document.addEventListener('click', function(e){
     el.innerHTML = (wl.bal == null && !wl.err ? '<div class="hint" style="margin:0;">Se citește soldul…</div>' : wl.bal != null ? '<div class="wl-big">' + wl.bal.toLocaleString('ro-RO', { maximumFractionDigits:4 }) + ' ETH</div><div class="wl-sub">' + (val != null ? '≈ ' + ethEur(val) : 'Prețul se încarcă…') + '</div>' : '') +
       (wl.err ? '<div class="hint" style="margin:0;">' + accEsc(wl.err) + '</div>' : '') +
       '<div class="wl-sub">' + accEsc(wlShort(wl.addr)) + ' · doar citire</div>' +
-      '<div class="wl-row"><button id="wlRef">Actualizează</button><button id="wlDel">Șterge adresa</button></div>';
-    document.getElementById('wlRef').addEventListener('click', wlLoad);
-    document.getElementById('wlDel').addEventListener('click', function(){ wl.addr = ''; wl.bal = null; try{ localStorage.removeItem(WL_KEY); }catch(e){} renderWallet(); });
+      '<div class="wl-row"><button id="wlRef">Actualizează</button><button id="wlDel">Șterge adresa</button></div><div id="walletHist"></div>';
+    renderWalletHist();
+    document.getElementById('wlRef').addEventListener('click', function(){ wlLoad(); wlHistLoad(true); });
+    document.getElementById('wlDel').addEventListener('click', function(){ wl.addr = ''; wl.bal = null; wl.h = null; try{ localStorage.removeItem(WL_KEY); }catch(e){} renderWallet(); });
+  }
+
+  var wlPx = {};
+  function wlPriceOn(d){ if(wlPx[d] != null) return Promise.resolve(wlPx[d]); return ethPriceOn(d).then(function(p){ wlPx[d] = p; return p; }).catch(function(){ return null; }); }
+  function wlHistLoad(force){
+    if(!wl.addr || wl.hBusy || (wl.h && !force)) return; wl.hBusy = true; wl.hErr = ''; var ad = wl.addr.toLowerCase();
+    fetch('https://eth.blockscout.com/api/v2/addresses/' + wl.addr + '/transactions', { headers:{ 'Accept':'application/json' } })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(j){
+        var rows = ((j && j.items) || []).filter(function(t){ return t && t.to && String(t.to.hash).toLowerCase() === ad && t.value && t.value !== '0' && (t.result === 'success' || t.status === 'ok'); })
+          .slice(0, 30).map(function(t){ return { ts: new Date(t.timestamp).getTime(), eth: Number(BigInt(t.value)) / 1e18, from: t.from && t.from.hash || '' }; })
+          .filter(function(t){ return t.ts > 0 && t.eth > 0; });
+        var days = {}; rows.forEach(function(t){ t.d = new Date(t.ts).toISOString().slice(0, 10); days[t.d] = 1; });
+        return Promise.all(Object.keys(days).slice(0, 20).map(function(d){ return wlPriceOn(d); })).then(function(){ rows.forEach(function(t){ t.px = wlPx[t.d]; }); wl.h = rows; });
+      })
+      .catch(function(){ wl.hErr = 'Nu am putut citi istoricul acum.'; })
+      .then(function(){ wl.hBusy = false; renderWalletHist(); });
+  }
+  function renderWalletHist(){
+    var el = document.getElementById('walletHist'); if(!el) return;
+    if(wl.hBusy && !wl.h){ el.innerHTML = '<div class="hint">Se citește istoricul…</div>'; return; }
+    if(wl.hErr && !wl.h){ el.innerHTML = '<div class="hint">' + accEsc(wl.hErr) + '</div>'; return; }
+    if(!wl.h){ wlHistLoad(); return; }
+    if(!wl.h.length){ el.innerHTML = '<div class="hint">Nu am găsit intrări de ETH în ultimele tranzacții.</div>'; return; }
+    var live = eth.live, totEth = 0, totEur = 0, ok = 0;
+    wl.h.forEach(function(t){ totEth += t.eth; if(t.px != null){ totEur += t.eth * t.px; ok++; } });
+    var tot = '';
+    if(ok === wl.h.length && live != null){ var gain = totEth * live - totEur; tot = '<div class="wl-sum"><div><span>Primit în total</span><b>' + totEth.toLocaleString('ro-RO', { maximumFractionDigits:4 }) + ' ETH</b></div><div><span>Valoare la primire (estimat)</span><b>' + ethEur(totEur, 0) + '</b></div><div><span>Acum</span><b>' + ethEur(totEth * live, 0) + '</b></div><div><span>Diferență</span><b class="' + (gain >= 0 ? 'hs-win' : 'hs-loss') + '">' + (gain >= 0 ? '+' : '−') + ethEur(Math.abs(gain), 0) + '</b></div></div>'; }
+    var mn = ['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
+    el.innerHTML = '<div class="wl-h">Intrări de ETH în portofel</div>' + tot + wl.h.slice(0, 8).map(function(t){
+      var d = new Date(t.ts), dt = d.getUTCDate() + ' ' + mn[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+      var then = t.px != null ? t.eth * t.px : null, g = (then != null && live != null) ? t.eth * live - then : null;
+      return '<div class="wl-tx"><div><b>+' + t.eth.toLocaleString('ro-RO', { maximumFractionDigits:4 }) + ' ETH</b><span>' + dt + ' · de la ' + accEsc(wlShort(t.from)) + '</span></div><div class="wl-r">' + (then != null ? '≈ ' + ethEur(then, 0) + ' atunci' : '–') + (g != null ? '<span class="' + (g >= 0 ? 'hs-win' : 'hs-loss') + '">' + (g >= 0 ? '+' : '−') + ethEur(Math.abs(g), 0) + ' față de acum</span>' : '') + '</div></div>';
+    }).join('') + '<div class="hint">Sumele „atunci" sunt estimate: ETH primit × prețul din ziua respectivă. Nu arată banii plătiți efectiv la bursă, pentru că blockchain-ul nu vede cumpărarea cu euro.</div>';
   }
   renderWallet(); wlLoad();
   setInterval(function(){ if(wl.addr && wl.bal != null && eth.live != null) renderWallet(); }, 20000);
