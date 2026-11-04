@@ -465,6 +465,7 @@
   .wk-d span{ font-size:15px; display:block; margin-top:4px; }
   .wk-d.today{ box-shadow:0 0 0 1.5px var(--gold) inset; }
   .wk-d.sel{ background:var(--accent); border-color:var(--accent); } .wk-d.sel b{ color:var(--accent-ink); }
+  .yt-btn{ display:block; margin-top:9px; padding:11px 12px; text-align:center; border-radius:11px; background:var(--gold); color:#1a1306; font-weight:800; font-size:13.5px; text-decoration:none; }
   .ex-how{ margin-top:8px; } .ex-how summary{ cursor:pointer; font-size:12.5px; font-weight:700; color:var(--gold); list-style:none; padding:6px 0; }
   .ex-how summary::-webkit-details-marker{ display:none; }
   .fg-row{ display:flex; gap:8px; margin-top:6px; } .fg-box{ flex:1; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:6px 4px 4px; text-align:center; }
@@ -2774,6 +2775,40 @@ document.addEventListener('click', function(e){
     return '<div class="fg-row">' + box(F.f[0], key === 'plank' ? 'POZIȚIE' : 'START') + box(F.f[1], key === 'plank' ? 'ȚINE 30–60 s' : 'SFÂRȘIT') + '</div>' +
       '<ol class="fg-steps"><li><b>Start:</b> ' + F.s[0] + '</li><li><b>Mișcarea:</b> ' + F.s[1] + '</li><li><b>Atenție:</b> ' + F.s[2] + '</li></ol>';
   }
+  // căutări video (YouTube), în engleză, ca să iasă clipuri bune — aceeași ordine ca variantele din POOL
+  var ENP = {
+    benchP:['barbell bench press form','dumbbell bench press form','machine chest press form','paused bench press form'],
+    inclP:['incline dumbbell press form','incline barbell bench press form','incline machine chest press form','neutral grip incline dumbbell press'],
+    fly:['pec deck fly form','cable chest fly form','incline dumbbell fly form','single arm machine chest fly'],
+    cross:['high to low cable crossover form','low to high cable fly form','slow tempo push up form','single arm cable chest press'],
+    pushdown:['triceps rope pushdown form','straight bar triceps pushdown form','single arm cable triceps pushdown','reverse grip triceps pushdown'],
+    overhead:['overhead dumbbell triceps extension form','cable overhead triceps extension form','overhead EZ bar triceps extension','single arm overhead dumbbell triceps extension'],
+    skull:['EZ bar skull crushers form','dumbbell skull crushers form','close grip bench press form','close grip push ups form'],
+    dips:['bench dips form','parallel bar dips form','assisted dip machine form','dumbbell triceps kickback form'],
+    lat:['wide grip lat pulldown form','neutral grip lat pulldown form','assisted pull ups form','close grip lat pulldown form'],
+    rowH:['barbell bent over row form','T bar row form','chest supported dumbbell row form','smith machine reverse grip row'],
+    rowC:['seated cable row wide grip form','seated cable row close neutral grip form','one arm dumbbell row form','incline bench chest supported row form'],
+    sarm:['straight arm pulldown form','face pull form','reverse pec deck fly form','dumbbell pullover form'],
+    bb:['barbell curl form','EZ bar curl form','cable curl form','preacher curl form'],
+    db:['dumbbell alternating curl form','incline dumbbell curl form','concentration curl form','spider curl form'],
+    ham:['dumbbell hammer curl form','cross body hammer curl form','rope hammer curl cable form','incline hammer curl form'],
+    squat:['barbell back squat form','hack squat form','goblet squat form','smith machine squat form'],
+    lpress:['leg press form','leg press high foot placement glutes','bulgarian split squat form','walking lunges dumbbell form'],
+    lext:['leg extension machine form','single leg extension form','leg extension pause form','slow tempo leg extension'],
+    lcurl:['lying leg curl form','seated leg curl form','slow negative lying leg curl','single leg curl form'],
+    rdl:['barbell romanian deadlift form','dumbbell romanian deadlift form','single leg romanian deadlift form','stiff leg deadlift form'],
+    hip:['barbell hip thrust form','glute bridge machine form','dumbbell hip thrust form','cable glute kickback form'],
+    calf:['standing calf raise machine form','seated calf raise form','calf raise on leg press form','single leg calf raise form'],
+    add:['hip adductor machine form','dumbbell sumo squat form','cable hip adduction form','slow adductor machine'],
+    press:['seated dumbbell shoulder press form','arnold press form','machine shoulder press form','seated barbell overhead press form'],
+    lat2:['dumbbell lateral raise form','cable lateral raise form','machine lateral raise form','leaning lateral raise form'],
+    front:['dumbbell front raise form','plate front raise form','cable front raise form','alternating dumbbell front raise form'],
+    rear:['bent over dumbbell reverse fly form','reverse pec deck fly form','cable reverse fly form','face pull form'],
+    shrug:['dumbbell shrug form','barbell shrug form','smith machine shrug form','cable shrug form'],
+    plank:['forearm plank form','side plank form','plank shoulder taps form','hollow body hold form'],
+    crunch:['reverse crunch form','cable crunch form','ab crunch machine form','hanging knee raise form']
+  };
+  function ytUrl(q){ return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q); }
   // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 4)
   function buildDay(plan, d, week){
     var wv = ((week - 1) % 4 + 4) % 4, ex = [];
@@ -2782,7 +2817,7 @@ document.addEventListener('click', function(e){
       var p = POOL[s[0]][vi].split('|');
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
-      ex.push([p[0], s[2], reps, String(WREST[type][wv]), tip, '', patOf(p[0])]);
+      ex.push([p[0], s[2], reps, String(WREST[type][wv]), tip, '', patOf(p[0]), ytUrl(ENP[s[0]][vi])]);
     });
     return { name: d.name, focus: d.focus, ex: ex, img: '', code: d.code };
   }
@@ -2907,7 +2942,8 @@ document.addEventListener('click', function(e){
     w.ex.forEach(function(e,ei){
       html += '<div class="ex"><div class="ex-top"><span class="ex-n">' + (ei+1) + '. ' + e[0] + '</span><span class="ex-meta">' + e[1] + ' × ' + e[2] + '</span></div>' +
         (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') +
-        '<details class="ex-how"><summary>📖 Cum se face</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
+        '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' +
+        '<details class="ex-how"><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (si+1) + '</button>'; }
       html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ ' + e[3] + 's</button></div></div>';
     });
