@@ -2469,15 +2469,15 @@ document.addEventListener('click', function(e){
   /* ===== SPORT: doar sală · programe din pozele tale · variante noi în fiecare săptămână ===== */
   // fiecare exercițiu are 4 variante; în fiecare săptămână se folosește alta, ca mușchii să nu se obișnuiască
   var POOL = {
-    benchP:['Împins la piept cu haltera (plat)|Picioarele pe podea, bara coboară la mijlocul pieptului, coatele la 45–70°, fără să sari cu bara|poze/wo-c1.jpg',
+    benchP:['Împins la piept cu haltera (plat)|Picioarele pe podea, bara coboară la mijlocul pieptului, coatele la 45–70°, fără să sari cu bara|wo-c1.jpg',
       'Împins plat cu gantere|Ganterele în linie cu pieptul, coboară lent, strânge pieptul sus',
       'Împins la piept la mașină|Spatele lipit de spătar, împinge fără să blochezi coatele',
       'Împins cu haltera, pauză 1 s pe piept|Oprește bara 1 secundă pe piept, apoi împinge puternic'],
-    inclP:['Împins înclinat cu gantere|Bancă la 30°, împinge deasupra pieptului de sus, coboară lent|poze/wo-c2.jpg',
+    inclP:['Împins înclinat cu gantere|Bancă la 30°, împinge deasupra pieptului de sus, coboară lent|wo-c2.jpg',
       'Împins înclinat cu haltera|Bancă la 30°, bara coboară spre claviculă',
       'Împins înclinat la mașină|Reglează scaunul ca mânerele să fie la nivelul pieptului de sus',
       'Împins înclinat cu gantere, priză neutră|Palmele față în față, coatele aproape de corp'],
-    fly:['Fluturări la peck deck|Coatele ușor îndoite, strânge pieptul în față 1 s|poze/wo-c3.jpg',
+    fly:['Fluturări la peck deck|Coatele ușor îndoite, strânge pieptul în față 1 s|wo-c3.jpg',
       'Fluturări la cabluri (la mijloc)|Un pas înainte, strânge mâinile în fața pieptului',
       'Fluturări înclinate cu gantere|Coboară larg până simți întinderea, urcă în arc',
       'Fluturări la mașină, o mână pe rând|Concentrează-te pe strângerea pieptului'],
@@ -2485,7 +2485,7 @@ document.addEventListener('click', function(e){
       'Cable crossover, de jos în sus|Trage de jos spre bărbie, lucrează pieptul de sus',
       'Flotări cu coborâre lentă|Coboară în 3 secunde, corp drept; pune greutate pe spate dacă e ușor',
       'Împins la scripete, o mână|Stai în pas, împinge înainte fără să rotești trunchiul'],
-    pushdown:['Extensii triceps la scripete, cu coarda|Coatele lipite de corp, desparte coarda jos|poze/wo-c6.jpg',
+    pushdown:['Extensii triceps la scripete, cu coarda|Coatele lipite de corp, desparte coarda jos|wo-c6.jpg',
       'Extensii triceps cu bara dreaptă|Coatele fixe, extinde complet',
       'Extensii triceps la scripete, o mână|Controlat, fără să te legeni',
       'Extensii la scripete, priză inversă|Palma în sus, coatele lipite'],
@@ -2561,11 +2561,11 @@ document.addEventListener('click', function(e){
       'Genuflexiuni sumo cu ganteră|Picioarele larg, genunchii în afară',
       'Adductori la scripete|Trage piciorul spre cel de sprijin',
       'Adductori la mașină, lent|Pauză 1 s când strângi'],
-    press:['Împins umeri cu gantere|Așezat, fără să arcuiești spatele, ganterele deasupra capului|poze/wo-c4.jpg',
+    press:['Împins umeri cu gantere|Așezat, fără să arcuiești spatele, ganterele deasupra capului|wo-c4.jpg',
       'Arnold press|Rotește palmele în timpul împinsului',
       'Împins umeri la mașină|Reglează scaunul, coatele sub încheieturi',
       'Împins umeri cu haltera, așezat|Bara coboară la bărbie, apoi împinge sus'],
-    lat2:['Ridicări laterale cu gantere|Coatele ușor îndoite, urcă până la nivelul umerilor|poze/wo-c5.jpg',
+    lat2:['Ridicări laterale cu gantere|Coatele ușor îndoite, urcă până la nivelul umerilor|wo-c5.jpg',
       'Ridicări laterale la scripete|Tensiune constantă, fără balans',
       'Ridicări laterale la mașină|Strânge sus 1 s',
       'Ridicări laterale, sprijinit de un stâlp|Te ții cu o mână, ridici cu cealaltă'],
@@ -2600,19 +2600,19 @@ document.addEventListener('click', function(e){
   // slot: [id, tip, serii, repetări în poză, decalaj variantă]
   var PLANS = {
     1:{ label:'5 zile · Luni–Vineri', days:[
-      { code:'m1', name:'Piept + Triceps', focus:'Piept și triceps', img:'poze/wo-a1.jpg', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['fly','i',2,'12–15',0],['cross','i',2,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['dips','i',2,'12–15',0]] },
-      { code:'m2', name:'Spate + Biceps', focus:'Spate și biceps', img:'poze/wo-a2.jpg', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['bb','i',3,'10–12',0],['db','i',2,'10–12',0],['ham','i',2,'12–15',0]] },
-      { code:'m3', name:'Picioare + Fese', focus:'Picioare și fese', img:'poze/wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['hip','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
-      { code:'m4', name:'Umeri + Abdomen', focus:'Umeri și abdomen', img:'poze/wo-a4.jpg', off:0, slots:[['press','c',2,'8–12',0],['lat2','i',3,'12–15',0],['front','i',2,'12–15',0],['rear','i',3,'12–15',0],['shrug','i',3,'12–15',0],['plank','t',3,'30–60 s',0],['crunch','i',3,'12–20',0]] },
-      { code:'m5', name:'Tot corpul', focus:'Tot corpul', img:'poze/wo-a5.jpg', off:2, slots:[['squat','c',3,'8–12',0],['benchP','c',3,'8–12',0],['lat','c',3,'8–12',0],['press','c',2,'10–12',0],['rdl','c',2,'10–12',0],['bb','i',2,'10–12',0],['pushdown','i',2,'10–12',0],['crunch','i',3,'12–20',0]] }
+      { code:'m1', name:'Piept + Triceps', focus:'Piept și triceps', img:'wo-a1.jpg', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['fly','i',2,'12–15',0],['cross','i',2,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['dips','i',2,'12–15',0]] },
+      { code:'m2', name:'Spate + Biceps', focus:'Spate și biceps', img:'wo-a2.jpg', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['bb','i',3,'10–12',0],['db','i',2,'10–12',0],['ham','i',2,'12–15',0]] },
+      { code:'m3', name:'Picioare + Fese', focus:'Picioare și fese', img:'wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['hip','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
+      { code:'m4', name:'Umeri + Abdomen', focus:'Umeri și abdomen', img:'wo-a4.jpg', off:0, slots:[['press','c',2,'8–12',0],['lat2','i',3,'12–15',0],['front','i',2,'12–15',0],['rear','i',3,'12–15',0],['shrug','i',3,'12–15',0],['plank','t',3,'30–60 s',0],['crunch','i',3,'12–20',0]] },
+      { code:'m5', name:'Tot corpul', focus:'Tot corpul', img:'wo-a5.jpg', off:2, slots:[['squat','c',3,'8–12',0],['benchP','c',3,'8–12',0],['lat','c',3,'8–12',0],['press','c',2,'10–12',0],['rdl','c',2,'10–12',0],['bb','i',2,'10–12',0],['pushdown','i',2,'10–12',0],['crunch','i',3,'12–20',0]] }
     ], rest:[5,6] },
     2:{ label:'6 zile · Luni–Sâmbătă', days:[
-      { code:'s1', name:'Ziua 1 · Piept + Triceps', focus:'Piept și triceps', img:'poze/wo-b1.jpg', slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['fly','i',3,'10–12',0],['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0]] },
-      { code:'s2', name:'Ziua 2 · Spate + Biceps', focus:'Spate și biceps', img:'poze/wo-b2.jpg', slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowC','c',3,'10–12',3],['bb','i',3,'10–12',0],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
-      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'poze/wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['add','i',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
-      { code:'s4', name:'Ziua 4 · Umeri', focus:'Umeri', img:'poze/wo-b4.jpg', slots:[['rear','i',3,'10–12',0],['front','i',3,'10–12',0],['lat2','i',3,'10–12',0],['lat2','i',3,'10–12',1],['press','c',3,'10–12',0],['press','c',3,'10–12',1]] },
-      { code:'s5', name:'Ziua 5 · Brațe', focus:'Triceps și biceps', img:'poze/wo-b5.jpg', slots:[['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0],['bb','i',3,'10–12',1],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
-      { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'poze/wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
+      { code:'s1', name:'Ziua 1 · Piept + Triceps', focus:'Piept și triceps', img:'wo-b1.jpg', slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['fly','i',3,'10–12',0],['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0]] },
+      { code:'s2', name:'Ziua 2 · Spate + Biceps', focus:'Spate și biceps', img:'wo-b2.jpg', slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowC','c',3,'10–12',3],['bb','i',3,'10–12',0],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
+      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['add','i',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
+      { code:'s4', name:'Ziua 4 · Umeri', focus:'Umeri', img:'wo-b4.jpg', slots:[['rear','i',3,'10–12',0],['front','i',3,'10–12',0],['lat2','i',3,'10–12',0],['lat2','i',3,'10–12',1],['press','c',3,'10–12',0],['press','c',3,'10–12',1]] },
+      { code:'s5', name:'Ziua 5 · Brațe', focus:'Triceps și biceps', img:'wo-b5.jpg', slots:[['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0],['bb','i',3,'10–12',1],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
+      { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
     ], rest:[6] }
   };
   // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 4)
