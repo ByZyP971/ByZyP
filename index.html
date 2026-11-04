@@ -78,6 +78,8 @@
     box-shadow:0 -1px 0 var(--line), 0 -14px 24px -16px rgba(0,0,0,.3);
     padding-bottom:env(safe-area-inset-bottom,0px); }
   .tabbar-inner{ max-width:520px; margin:0 auto; display:flex; }
+  /* fila Aur ascunsă pentru moment — o readuci cu window.SHOW_GOLD = true și scoțînd linia asta */
+  .tab[data-view="gold"]{ display:none !important; }
   .tab{ flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column;
     align-items:center; gap:3px; padding:10px 2px 8px; color:var(--text-faint); font-family:inherit; font-size:10px;
     position:relative; transition:color .15s ease; }
@@ -463,6 +465,18 @@
   .wk-d span{ font-size:15px; display:block; margin-top:4px; }
   .wk-d.today{ box-shadow:0 0 0 1.5px var(--gold) inset; }
   .wk-d.sel{ background:var(--accent); border-color:var(--accent); } .wk-d.sel b{ color:var(--accent-ink); }
+  .wo-img{ width:100%; border-radius:12px; margin-top:10px; border:1px solid var(--line); display:block; cursor:zoom-in; }
+  .ex-pic{ margin-top:6px; } .ex-pic .wo-img{ max-width:240px; margin-top:4px; }
+  .big-img{ position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; overflow:auto; }
+  .big-img.show{ display:flex; } .big-img img{ max-width:100%; max-height:100%; object-fit:contain; }
+  .big-img span{ position:fixed; top:14px; right:18px; font-size:26px; color:#fff; }
+  .wk-nav{ display:flex; align-items:center; gap:8px; margin-bottom:10px; } .wk-nav .ghost-btn{ padding:8px 10px; font-size:12px; white-space:nowrap; }
+  .wk-wave{ flex:1; text-align:center; } .wk-wave b{ display:block; color:var(--gold); font-size:13px; } .wk-wave span{ display:block; font-size:10.5px; color:var(--text-faint); line-height:1.35; }
+  .wk-dn{ margin-top:0 !important; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold) !important; }
+  .wk-ex{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--text-dim); margin-top:5px; } .wk-ex em{ font-style:normal; color:var(--text); white-space:nowrap; font-family:var(--mono); font-size:12px; }
+  .supp-row{ display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--line); cursor:pointer; } .supp-row:first-child{ border-top:none; }
+  .supp-row.done .supp-n{ text-decoration:line-through; opacity:.55; } .supp-t{ font-family:var(--mono); font-size:11px; color:var(--gold); min-width:44px; }
+  .supp-n{ font-size:13.5px; font-weight:600; } .supp-d{ font-size:11.5px; color:var(--text-faint); margin-top:2px; line-height:1.4; }
   .wk-detail{ margin-top:12px; padding:12px 14px; border-radius:12px; background:var(--bg-card-2); border:1px solid var(--line); }
   .wk-detail b{ font-size:15px; } .wk-detail div{ font-size:12.5px; color:var(--text-dim); margin-top:3px; }
   .wo-pills{ flex-wrap:wrap; }
@@ -1399,6 +1413,9 @@
       <div class="sec-h">Planul zilei</div>
       <div class="plan-tiles" id="planTiles"></div>
 
+      <div class="sec-h">💊 Suplimente</div>
+      <div class="card" id="suppCard"></div>
+
       <div class="sec-h">Cifrele tale</div>
       <div class="dash-row">
         <div class="dash-card" data-g="weight">
@@ -1465,105 +1482,37 @@
       <div class="seg" id="sportSeg">
         <button class="seg-btn active" data-sseg="plan">📅 Program</button>
         <button class="seg-btn" data-sseg="gym">🏋️ Sală</button>
-        <button class="seg-btn" data-sseg="run">🏃 Alergare</button>
-        <button class="seg-btn" data-sseg="mob">🧘 Mobilitate</button>
-        <button class="seg-btn" data-sseg="fit">❤️ Fitness</button>
       </div>
 
       <div data-sseg-card="plan">
         <div class="card sp-today" id="spToday"></div>
         <div class="card">
-          <div class="card-title">Faza ta</div>
+          <div class="card-title">Programul tău</div>
           <div class="day-pills" id="phasePills">
-            <button class="day-pill" data-phase="1">Faza 1 · Full body</button>
-            <button class="day-pill" data-phase="2">Faza 2 · Upper/Lower</button>
+            <button class="day-pill" data-phase="1">5 zile · Lu–Vi</button>
+            <button class="day-pill" data-phase="2">6 zile · Lu–Sâ</button>
           </div>
           <div class="hint" style="margin-top:0;" id="phaseHint"></div>
         </div>
         <div class="card">
           <div class="card-title" id="wkTitle">Săptămâna</div>
+          <div class="wk-nav" id="wkNav"></div>
           <div class="wk-strip" id="wkStrip"></div>
           <div id="wkDetail"></div>
         </div>
         <div class="card">
           <div class="card-title">Regulile progresului</div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Se schimbă în fiecare săptămână</b> — exercițiile și repetările variază (volum, forță, pump, mix), ca mușchii să nu se obișnuiască și să crească în continuare</div></div>
           <div class="tl-row"><span class="tl-dot"></span><div><b>Dublă progresie</b> — când faci toate seriile la capătul de sus al repetărilor, crești greutatea cu 2,5–5 kg data viitoare</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Tehnica întâi</b> — primele 2 săptămâni lucrezi ușor, înveți mișcarea</div></div>
           <div class="tl-row"><span class="tl-dot"></span><div><b>1–2 repetări în rezervă</b> — oprește seria când mai puteai face 1–2</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Somn 7–9 ore</b> — acolo se construiește mușchiul</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Durere ascuțită = stop</b>. Febra musculară e normală, durerea în articulații nu</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Pauze</b> — 2–3 min la exercițiile mari, 1–2 min la izolări</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Somn 7–9 ore și proteine</b> — acolo se construiește mușchiul</div></div>
         </div>
       </div>
 
       <div data-sseg-card="gym">
         <div class="day-pills wo-pills" id="woPills"></div>
         <div class="card" id="woCard"></div>
-      </div>
-
-      <div data-sseg-card="run">
-        <div class="card">
-          <div class="card-title">De la zero la 30 de minute</div>
-          <div class="hint" style="margin-top:0;margin-bottom:12px;">3 alergări pe săptămână. Alege săptămâna în care ești — dacă una e prea grea, o repeți.</div>
-          <div class="run-weeks" id="runWeeks"></div>
-          <div id="runDetail"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">După săptămâna 9</div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Ușor (80% din alergări)</b> — ritm în care poți vorbi în propoziții. Aici se construiește rezistența</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Tempo (1×/săpt.)</b> — 10 min ușor + 15–20 min „confortabil de greu” + 5 min ușor</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Intervale (1×/săpt.)</b> — 6–8 × 1 min rapid / 2 min ușor</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Lungă (sâmbătă)</b> — crești cu cel mult 10% pe săptămână</div></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Sfaturi</div>
-          <ul class="food-list">
-            <li>5 minute de mers alert înainte și după</li>
-            <li>Pași mici și rapizi, nu salturi lungi</li>
-            <li>Respiră pe nas și pe gură, relaxat</li>
-            <li>Pantofi de alergare potriviți — contează mult</li>
-            <li>Fără țigări, plămânii se recuperează săptămână de săptămână — o să simți diferența</li>
-          </ul>
-        </div>
-      </div>
-
-
-      <div data-sseg-card="fit">
-        <div class="card">
-          <div class="card-title">Azi · din Sănătate</div>
-          <div class="fit-today">
-            <svg class="fit-rings" id="fitRings" viewBox="0 0 120 120"></svg>
-            <div class="fit-nums" id="fitNums"></div>
-          </div>
-          <div class="hint" id="fitSync" style="margin-top:10px;"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Evoluție</div>
-          <div class="fit-pills" id="fitMetric">
-            <button data-m="steps" class="on">👣 Pași</button><button data-m="kcal">🔥 Calorii</button><button data-m="exMin">⏱️ Exercițiu</button><button data-m="distKm">📍 Distanță</button>
-          </div>
-          <div class="fit-pills small" id="fitRange"><button data-r="7" class="on">7 zile</button><button data-r="30">30 zile</button></div>
-          <div class="fit-chart" id="fitChart"></div>
-          <div class="fit-stats" id="fitStats"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Obiectivele tale zilnice</div>
-          <div class="field-row"><label>👣 Pași</label><input type="number" id="fgSteps" inputmode="numeric"></div>
-          <div class="field-row"><label>🔥 Calorii active (kcal)</label><input type="number" id="fgKcal" inputmode="numeric"></div>
-          <div class="field-row"><label>⏱️ Minute de exercițiu</label><input type="number" id="fgEx" inputmode="numeric"></div>
-          <div class="hint">Le poți pune la fel ca inelele din aplicația Fitness de pe iPhone.</div>
-        </div>
-      </div>
-
-      <div data-sseg-card="mob">
-        <div class="card">
-          <div class="card-title">Rutina de 10 minute</div>
-          <div class="hint" style="margin-top:0;margin-bottom:10px;">Joi, după alergare sau seara înainte de somn. Atinge fiecare exercițiu când îl termini.</div>
-          <div id="mobList"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Core — 3 runde</div>
-          <div id="coreList"></div>
-        </div>
       </div>
     </section>
 
@@ -2256,7 +2205,7 @@ document.addEventListener('click', function(e){
     { key:'nosmoke', label:'Fără țigări', ic:'🚭', sub:'Nicio țigară azi, nici una' },
     { key:'nosugar', label:'Fără zahăr', ic:'🍬', sub:'Fără dulciuri și sucuri' },
     { key:'water', label:'Doar apă', ic:'💧', sub:'Plată sau minerală, plus cafeaua simplă' },
-    { key:'training', label:'Antrenament', ic:'💪', sub:'Sală, alergare sau odihnă planificată' },
+    { key:'training', label:'Antrenament', ic:'💪', sub:'Sală sau odihnă planificată' },
     { key:'food', label:'Mâncare curată', ic:'🥗', sub:'Proteină + legume, fără procesate' }
   ];
   var QUOTES = [
@@ -2470,7 +2419,7 @@ document.addEventListener('click', function(e){
     el.querySelectorAll('.pt').forEach(function(t){ t.addEventListener('click', function(){
       var g = t.getAttribute('data-go');
       if(g === 'gold'){ var gt = document.querySelector('.tab[data-view="gold"]'); if(gt) gt.click(); try{ window.scrollTo(0,0); }catch(e){} return; }
-      if(g === 'sport') goTab('sport', WO[code] ? '[data-sseg="gym"]' : code === 'mob' ? '[data-sseg="mob"]' : (code === 'run' || code === 'runL') ? '[data-sseg="run"]' : '[data-sseg="plan"]');
+      if(g === 'sport') goTab('sport', WO[code] ? '[data-sseg="gym"]' : '[data-sseg="plan"]');
       else if(g === 'food') goTab('food', '[data-fseg="menu"]');
       else goTab('money', '[data-seg="trading"]');
     }); });
@@ -2478,6 +2427,7 @@ document.addEventListener('click', function(e){
 
 
   function goldTileHtml(){
+    if(!window.SHOW_GOLD) return '';
     if(typeof gold === 'undefined' || !gold) return '<div class="pt wide" data-go="gold"><div class="pt-l">🥇 Aur · XAUUSD</div><div class="pt-t">Se încarcă analiza…</div><div class="pt-a">Deschide fila Aur →</div></div>';
     var g = gold, p = (typeof liveSpot !== 'undefined' && liveSpot != null) ? liveSpot : g.price;
     var prevClose = g.price - g.change, ch = p - prevClose, up = ch >= 0;
@@ -2516,94 +2466,219 @@ document.addEventListener('click', function(e){
   });
 
   /* ===== sport tab ===== */
-  var WO = {
-    A:{ name:'Full Body A', focus:'Genuflexiuni, împins, tras', ex:[
-      ['Genuflexiuni (haltera sau goblet)',3,'8–10','90','Spatele drept, genunchii în direcția vârfurilor'],
-      ['Împins la piept cu haltera',3,'8–10','90','Omoplații strânși, bara coboară la piept'],
-      ['Ramat cu gantera, un braț',3,'10/braț','60','Trage cotul spre șold, nu spre umăr'],
-      ['Împins umeri cu gantere',3,'10','60','Fără să arcuiești spatele'],
-      ['Plank',3,'30–45 s','45','Corp drept, fese strânse']]},
-    B:{ name:'Full Body B', focus:'Șolduri, spate, piept', ex:[
-      ['Îndreptări românești (RDL)',3,'8–10','90','Împinge șoldurile în spate, bara aproape de picioare'],
-      ['Fandări mergând',3,'10/picior','60','Genunchiul din spate aproape de sol'],
-      ['Lat pulldown / tracțiuni asistate',3,'8–10','75','Pieptul sus, trage spre claviculă'],
-      ['Flotări',3,'max','60','Dacă e greu, cu mâinile pe bancă'],
-      ['Dead bug',3,'10/parte','45','Spatele lipit de sol']]},
-    C:{ name:'Full Body C', focus:'Volum și stabilitate', ex:[
-      ['Leg press',3,'10–12','75','Nu bloca genunchii sus'],
-      ['Împins înclinat cu gantere',3,'10','75','Bancă la 30°'],
-      ['Ramat la cablu așezat',3,'10–12','60','Pauză 1 s cu omoplații strânși'],
-      ['Hip thrust',3,'10','75','Bărbia în piept, strânge fesele sus'],
-      ['Ridicări laterale',3,'12–15','45','Greutate mică, controlat'],
-      ['Farmer walk',3,'30 m','60','Gantere grele, mers drept']]},
-    U1:{ name:'Upper 1', focus:'Forță — piept și spate', ex:[
-      ['Împins la piept cu haltera',4,'6–8','120','Principalul exercițiu al zilei'],
-      ['Ramat cu haltera',4,'8','90','Trunchi aplecat la ~45°'],
-      ['Împins umeri cu gantere',3,'8–10','75',''],
-      ['Lat pulldown',3,'10','60',''],
-      ['Flexii biceps',3,'12','45',''],
-      ['Extensii triceps la scripete',3,'12','45','']]},
-    L1:{ name:'Lower 1', focus:'Forță — genuflexiuni', ex:[
-      ['Genuflexiuni cu haltera',4,'6–8','120','Principalul exercițiu al zilei'],
-      ['Îndreptări românești (RDL)',3,'8','90',''],
-      ['Leg press',3,'10','75',''],
-      ['Leg curl',3,'12','60',''],
-      ['Ridicări pe vârfuri (gambe)',4,'12','45',''],
-      ['Plank',3,'45 s','45','']]},
-    U2:{ name:'Upper 2', focus:'Volum — umeri și spate', ex:[
-      ['Împins înclinat cu gantere',4,'8–10','90',''],
-      ['Tracțiuni (asistate dacă e nevoie)',4,'max','90',''],
-      ['Ramat la cablu',3,'10–12','60',''],
-      ['Ridicări laterale',3,'15','45',''],
-      ['Face pull',3,'15','45','Bun pentru umeri sănătoși'],
-      ['Flotări la paralele / pe bancă',3,'max','60','']]},
-    L2:{ name:'Lower 2', focus:'Volum — lanț posterior', ex:[
-      ['Îndreptări (deadlift)',3,'5','150','Tehnica perfectă, greutate controlată'],
-      ['Fandări bulgărești',3,'8/picior','75',''],
-      ['Hip thrust',3,'10','75',''],
-      ['Leg extension',3,'12','60',''],
-      ['Ridicări pe vârfuri (gambe)',4,'15','45',''],
-      ['Dead bug',3,'10/parte','45','']]}
+  /* ===== SPORT: doar sală · programe din pozele tale · variante noi în fiecare săptămână ===== */
+  // fiecare exercițiu are 4 variante; în fiecare săptămână se folosește alta, ca mușchii să nu se obișnuiască
+  var POOL = {
+    benchP:['Împins la piept cu haltera (plat)|Picioarele pe podea, bara coboară la mijlocul pieptului, coatele la 45–70°, fără să sari cu bara|poze/wo-c1.jpg',
+      'Împins plat cu gantere|Ganterele în linie cu pieptul, coboară lent, strânge pieptul sus',
+      'Împins la piept la mașină|Spatele lipit de spătar, împinge fără să blochezi coatele',
+      'Împins cu haltera, pauză 1 s pe piept|Oprește bara 1 secundă pe piept, apoi împinge puternic'],
+    inclP:['Împins înclinat cu gantere|Bancă la 30°, împinge deasupra pieptului de sus, coboară lent|poze/wo-c2.jpg',
+      'Împins înclinat cu haltera|Bancă la 30°, bara coboară spre claviculă',
+      'Împins înclinat la mașină|Reglează scaunul ca mânerele să fie la nivelul pieptului de sus',
+      'Împins înclinat cu gantere, priză neutră|Palmele față în față, coatele aproape de corp'],
+    fly:['Fluturări la peck deck|Coatele ușor îndoite, strânge pieptul în față 1 s|poze/wo-c3.jpg',
+      'Fluturări la cabluri (la mijloc)|Un pas înainte, strânge mâinile în fața pieptului',
+      'Fluturări înclinate cu gantere|Coboară larg până simți întinderea, urcă în arc',
+      'Fluturări la mașină, o mână pe rând|Concentrează-te pe strângerea pieptului'],
+    cross:['Cable crossover, de sus în jos|Trage mânerele în jos și împreună, pieptul strâns',
+      'Cable crossover, de jos în sus|Trage de jos spre bărbie, lucrează pieptul de sus',
+      'Flotări cu coborâre lentă|Coboară în 3 secunde, corp drept; pune greutate pe spate dacă e ușor',
+      'Împins la scripete, o mână|Stai în pas, împinge înainte fără să rotești trunchiul'],
+    pushdown:['Extensii triceps la scripete, cu coarda|Coatele lipite de corp, desparte coarda jos|poze/wo-c6.jpg',
+      'Extensii triceps cu bara dreaptă|Coatele fixe, extinde complet',
+      'Extensii triceps la scripete, o mână|Controlat, fără să te legeni',
+      'Extensii la scripete, priză inversă|Palma în sus, coatele lipite'],
+    overhead:['Extensii deasupra capului cu ganteră, două mâini|Coatele spre tavan, coboară în spatele capului',
+      'Extensii triceps peste cap la scripete|Cu coarda, coatele fixe, întinde complet',
+      'Extensii deasupra capului cu bara EZ|Coatele aproape de urechi, coboară lent',
+      'Extensii peste cap cu ganteră, o mână|Cotul sus, coboară în spatele capului'],
+    skull:['Skull crushers cu bara EZ|Coboară bara spre frunte, coatele fixe',
+      'Skull crushers cu gantere|Palmele față în față, coboară lateral de cap',
+      'Împins la bancă, priză îngustă|Mâinile la lățimea umerilor, coatele aproape',
+      'Flotări cu mâinile apropiate|Coatele lipite de corp, corpul drept'],
+    dips:['Flotări pe bancă (bench dips)|Coboară până la 90° la coate, umerii departe de urechi',
+      'Dips la paralele|Corpul ușor înclinat, coboară controlat',
+      'Dips la mașină asistată|Coboară lent, împinge complet',
+      'Kickback triceps cu ganteră|Cotul sus lângă corp, extinde spre spate'],
+    lat:['Tracțiuni la helcometru, priză largă|Trage spre claviculă, omoplații în jos, nu te legăna',
+      'Tracțiuni la helcometru, priză neutră|Coatele spre șolduri, pieptul sus',
+      'Tracțiuni la bară (asistate dacă e nevoie)|Pornești agățat complet, bărbia peste bară',
+      'Tracțiuni la helcometru, priză îngustă|Trage spre piept, strânge spatele'],
+    rowH:['Ramat cu haltera, aplecat|Spatele drept, trage bara spre buric',
+      'Ramat T-bar|Pieptul sus, trage spre abdomen, fără balans',
+      'Ramat cu gantere, pieptul pe bancă înclinată|Trage coatele în sus și în spate',
+      'Ramat la Smith, priză inversă|Trage spre talie, coatele aproape'],
+    rowC:['Ramat la cablu, așezat, priză largă|Spatele drept, strânge omoplații 1 s',
+      'Ramat la cablu, priză neutră îngustă|Coatele pe lângă corp, trage spre abdomen',
+      'Ramat cu gantera, un braț|Sprijină-te pe bancă, trage cotul spre șold',
+      'Ramat pe bancă înclinată (incline high row)|Pieptul pe bancă, trage cu coatele larg'],
+    sarm:['Pulldown cu brațele întinse|Brațe drepte, trage bara spre coapse cu spatele',
+      'Face pull|Trage coarda spre față, coatele sus, strânge spatele',
+      'Fluturări inverse la peck deck|Coatele ușor îndoite, deschide brațele',
+      'Pullover cu ganteră|Coboară în spatele capului, trage cu spatele'],
+    bb:['Flexii cu bara dreaptă|Coatele fixe lângă corp, fără balans',
+      'Flexii cu bara EZ|Priză comodă pentru încheieturi, controlat',
+      'Flexii la scripete jos|Tensiune constantă, coatele fixe',
+      'Flexii la banca Scott (preacher)|Brațele sprijinite, strict, fără balans'],
+    db:['Flexii alternative cu gantere|Rotește palma în sus, un braț pe rând',
+      'Flexii pe bancă înclinată cu gantere|Brațele atârnă, întindere mare pentru biceps',
+      'Flexii concentrate|Cotul pe interiorul coapsei, strânge sus',
+      'Spider curl|Pieptul pe bancă înclinată, brațele atârnă drept în jos'],
+    ham:['Flexii ciocan cu gantere|Palmele față în față, coatele fixe',
+      'Flexii ciocan peste corp (cross-body)|Trage ganteră spre umărul opus',
+      'Flexii ciocan la scripete, cu coarda|Tensiune constantă, coatele lângă corp',
+      'Flexii ciocan pe bancă înclinată|Întindere mare, strânge sus'],
+    squat:['Genuflexiuni libere cu haltera|Spatele drept, coboară până coapsele sunt paralele cu solul, genunchii în direcția vârfurilor',
+      'Hack squat|Spatele lipit, coboară controlat, nu bloca genunchii',
+      'Genuflexiuni goblet cu ganteră|Ține ganteră la piept, coboară adânc',
+      'Genuflexiuni la Smith|Picioarele ușor în față, coboară controlat'],
+    lpress:['Leg press 45°|Spatele lipit, nu bloca genunchii sus',
+      'Leg press, picioarele sus pe platformă|Accent pe fese și ischiogambieri',
+      'Fandări bulgărești|Piciorul din spate pe bancă, coboară drept',
+      'Fandări mergând cu gantere|Pași lungi, genunchiul din spate aproape de sol'],
+    lext:['Extensii picioare la mașină|Strânge cvadricepsul sus 1 s',
+      'Extensii pe un picior|Pe rând, controlat',
+      'Extensii cu pauză sus 2 s|Ține contracția 2 secunde',
+      'Extensii cu coborâre lentă|Coboară în 3 secunde'],
+    lcurl:['Flexii picioare, culcat|Șoldurile lipite de bancă, trage călcâiele spre fese',
+      'Flexii picioare, așezat|Reglează spătarul, mișcare controlată',
+      'Flexii culcat, coborâre lentă|Coboară în 3 secunde',
+      'Flexii picioare pe un picior|Pe rând, fără să arcuiești spatele'],
+    rdl:['Îndreptări românești cu haltera|Împinge șoldurile în spate, bara aproape de picioare',
+      'Îndreptări românești cu gantere|Spatele drept, simți întinderea în spatele coapselor',
+      'Îndreptări pe un picior|Echilibru, șoldurile drepte, ganteră aproape',
+      'Îndreptări cu picioarele drepte (stiff-leg)|Mișcare din șold, spatele neutru'],
+    hip:['Hip thrust cu haltera|Bărbia în piept, strânge fesele sus 1 s',
+      'Pod pentru fese la mașină|Împinge din călcâie, pauză sus',
+      'Hip thrust cu ganteră|Ganteră pe șolduri, strânge sus',
+      'Kickback la scripete|Piciorul în spate, strânge fesa'],
+    calf:['Ridicări pe vârfuri la mașină, în picioare|Coboară complet, urcă pe vârfuri și ține 1 s',
+      'Ridicări pe vârfuri, așezat|Genunchii la 90°, pauză sus',
+      'Ridicări pe vârfuri la leg press|Împinge doar din vârfuri',
+      'Ridicări pe vârfuri pe un picior|Pe o treaptă, ține-te de un suport'],
+    add:['Adductori la mașină|Strânge coapsele controlat',
+      'Genuflexiuni sumo cu ganteră|Picioarele larg, genunchii în afară',
+      'Adductori la scripete|Trage piciorul spre cel de sprijin',
+      'Adductori la mașină, lent|Pauză 1 s când strângi'],
+    press:['Împins umeri cu gantere|Așezat, fără să arcuiești spatele, ganterele deasupra capului|poze/wo-c4.jpg',
+      'Arnold press|Rotește palmele în timpul împinsului',
+      'Împins umeri la mașină|Reglează scaunul, coatele sub încheieturi',
+      'Împins umeri cu haltera, așezat|Bara coboară la bărbie, apoi împinge sus'],
+    lat2:['Ridicări laterale cu gantere|Coatele ușor îndoite, urcă până la nivelul umerilor|poze/wo-c5.jpg',
+      'Ridicări laterale la scripete|Tensiune constantă, fără balans',
+      'Ridicări laterale la mașină|Strânge sus 1 s',
+      'Ridicări laterale, sprijinit de un stâlp|Te ții cu o mână, ridici cu cealaltă'],
+    front:['Ridicări frontale cu gantere|Până la nivelul ochilor, fără balans',
+      'Ridicări frontale cu disc|Ține discul cu ambele mâini, urcă controlat',
+      'Ridicări frontale la scripete|Tensiune constantă',
+      'Ridicări frontale alternative|Un braț pe rând, controlat'],
+    rear:['Fluturări inverse cu gantere|Aplecat, coatele ușor îndoite, strânge omoplații',
+      'Fluturări inverse la mașină|Pieptul pe pernă, trage înapoi',
+      'Fluturări inverse la scripete|Trage mânerele încrucișate',
+      'Face pull|Trage spre față, coatele sus'],
+    shrug:['Ridicări de umeri (shrug) cu gantere|Urcă umerii spre urechi, ține 1 s',
+      'Shrug cu haltera|Fără să rotești umerii',
+      'Shrug la Smith|Controlat, pauză sus',
+      'Shrug la scripete|Tensiune constantă'],
+    plank:['Plank pe antebrațe|Corp drept, fese strânse; oprește-te înainte să pierzi poziția',
+      'Plank lateral|Șoldurile sus, corp drept, pe fiecare parte',
+      'Plank cu atingerea umerilor|Fără să balansezi șoldurile',
+      'Hollow hold|Spatele lipit de sol, picioarele și umerii ușor ridicate'],
+    crunch:['Crunch invers pe podea|Ridică șoldurile cu abdomenul, fără balans',
+      'Crunch la scripete|Rotunjește spatele, trage cu abdomenul',
+      'Crunch la mașină|Controlat, expiră jos',
+      'Ridicări de genunchi din atârnat|Fără să te legeni, urcă genunchii la piept']
   };
-  var WEEK = {
-    1:[ ['A','🏋️'],['run','🏃'],['B','🏋️'],['mob','🧘'],['C','🏋️'],['runL','🏃'],['rest','😴'] ],
-    2:[ ['U1','🏋️'],['L1','🏋️'],['run','🏃'],['U2','🏋️'],['L2','🏋️'],['runL','🏃'],['rest','😴'] ]
+  // tip: c = exercițiu mare (greu), i = izolare (ușor), t = pe timp
+  var WAVE = [['Volum','Săptămână de volum: greutate medie, 8–12 repetări. Construiești baza.'],
+              ['Forță','Săptămână de forță: greutăți mari, 6–8 repetări, pauze lungi.'],
+              ['Pump','Săptămână de pump: greutăți mai mici, 12–20 repetări, pauze scurte, simți mușchiul.'],
+              ['Mix','Săptămână mixtă: repetări de mijloc, tehnică perfectă.']];
+  var WREPS = { c:['','6–8','10–12','8–10'], i:['','10–12','15–20','10–15'], t:['','45–60 s','30–45 s','45–60 s'] };
+  var WREST = { c:[120,150,90,120], i:[75,90,60,75], t:[45,45,45,45] };
+  // slot: [id, tip, serii, repetări în poză, decalaj variantă]
+  var PLANS = {
+    1:{ label:'5 zile · Luni–Vineri', days:[
+      { code:'m1', name:'Piept + Triceps', focus:'Piept și triceps', img:'poze/wo-a1.jpg', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['fly','i',2,'12–15',0],['cross','i',2,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['dips','i',2,'12–15',0]] },
+      { code:'m2', name:'Spate + Biceps', focus:'Spate și biceps', img:'poze/wo-a2.jpg', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['bb','i',3,'10–12',0],['db','i',2,'10–12',0],['ham','i',2,'12–15',0]] },
+      { code:'m3', name:'Picioare + Fese', focus:'Picioare și fese', img:'poze/wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['hip','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
+      { code:'m4', name:'Umeri + Abdomen', focus:'Umeri și abdomen', img:'poze/wo-a4.jpg', off:0, slots:[['press','c',2,'8–12',0],['lat2','i',3,'12–15',0],['front','i',2,'12–15',0],['rear','i',3,'12–15',0],['shrug','i',3,'12–15',0],['plank','t',3,'30–60 s',0],['crunch','i',3,'12–20',0]] },
+      { code:'m5', name:'Tot corpul', focus:'Tot corpul', img:'poze/wo-a5.jpg', off:2, slots:[['squat','c',3,'8–12',0],['benchP','c',3,'8–12',0],['lat','c',3,'8–12',0],['press','c',2,'10–12',0],['rdl','c',2,'10–12',0],['bb','i',2,'10–12',0],['pushdown','i',2,'10–12',0],['crunch','i',3,'12–20',0]] }
+    ], rest:[5,6] },
+    2:{ label:'6 zile · Luni–Sâmbătă', days:[
+      { code:'s1', name:'Ziua 1 · Piept + Triceps', focus:'Piept și triceps', img:'poze/wo-b1.jpg', slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['fly','i',3,'10–12',0],['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0]] },
+      { code:'s2', name:'Ziua 2 · Spate + Biceps', focus:'Spate și biceps', img:'poze/wo-b2.jpg', slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowC','c',3,'10–12',3],['bb','i',3,'10–12',0],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
+      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'poze/wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['add','i',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
+      { code:'s4', name:'Ziua 4 · Umeri', focus:'Umeri', img:'poze/wo-b4.jpg', slots:[['rear','i',3,'10–12',0],['front','i',3,'10–12',0],['lat2','i',3,'10–12',0],['lat2','i',3,'10–12',1],['press','c',3,'10–12',0],['press','c',3,'10–12',1]] },
+      { code:'s5', name:'Ziua 5 · Brațe', focus:'Triceps și biceps', img:'poze/wo-b5.jpg', slots:[['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0],['bb','i',3,'10–12',1],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
+      { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'poze/wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
+    ], rest:[6] }
   };
-  var WEEK_INFO = { run:['Alergare','Sesiunea din săptămâna ta de la fila Alergare, ~25–30 min'], runL:['Alergare lungă','Cea mai lungă alergare a săptămânii, ritm ușor'],
-    mob:['Mobilitate + core','Rutina de 10 minute + 3 runde de core'], rest:['Odihnă','Plimbare ușoară dacă vrei. Corpul crește în zilele de pauză'] };
-  var PHASE_HINT = { 1:'Recomandat în primele 6–8 săptămâni: 3 antrenamente full body pe săptămână, cel mai bun mod de a începe.',
-    2:'Când Faza 1 devine ușoară: 4 zile, fiecare grupă de mușchi lucrată de 2 ori pe săptămână, mai mult volum.' };
+  // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 4)
+  function buildDay(plan, d, week){
+    var wv = ((week - 1) % 4 + 4) % 4, ex = [];
+    d.slots.forEach(function(s){
+      var vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 4;
+      var p = POOL[s[0]][vi].split('|');
+      var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
+      var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
+      ex.push([p[0], s[2], reps, String(WREST[type][wv]), tip, (vi === 0 && p[2]) ? p[2] : '']);
+    });
+    return { name: d.name, focus: d.focus, ex: ex, img: d.img, code: d.code };
+  }
+  function buildWO(phase, week){ var o = {}; PLANS[phase].days.forEach(function(d){ o[d.code] = buildDay(PLANS[phase], d, week); }); return o; }
+  window.__spBuild = buildWO;
+  function buildWEEK(phase){
+    var days = PLANS[phase].days, out = [];
+    for(var i=0;i<7;i++) out.push(days[i] ? [days[i].code, '💪'] : ['rest', '😴']);
+    return out;
+  }
+  var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2) };
+  var WEEK_INFO = { rest:['Odihnă','Corpul crește în zilele de pauză. Somn bun, proteine, plimbare ușoară dacă vrei.'] };
+  var PHASE_HINT = { 1:'Luni piept+triceps, Marți spate+biceps, Miercuri picioare, Joi umeri+abdomen, Vineri tot corpul. Sâmbătă și duminică odihnă.',
+    2:'Șase zile: piept+triceps, spate+biceps, picioare, umeri, brațe, tot corpul. Duminică odihnă. Alege asta doar dacă te recuperezi bine.' };
   var dayShortS = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
   var SP_KEY = 'byzyp_sport_v1';
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
   function spSave(){ try{ localStorage.setItem(SP_KEY, JSON.stringify(sp)); }catch(e){} }
-  sp.phase = sp.phase || 1; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
+  sp.phase = (sp.phase === 2 ? 2 : 1); sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
   function mondayOf(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
   function mKey(d){ return dateKey(d); }
   var thisMon = mondayOf(new Date());
   function weeksBetween(aKey, bDate){ var a = new Date(aKey + 'T00:00:00'); return Math.round((mondayOf(bDate) - mondayOf(a)) / (7*86400000)); }
   if(!sp.progStart){ sp.progStart = mKey(thisMon); }
-  if(!sp.runStart){ var rw0 = sp.runWeek || 1; var rs = new Date(thisMon); rs.setDate(rs.getDate() - 7*(rw0-1)); sp.runStart = mKey(rs); }
-  delete sp.runWeek;
+  delete sp.runWeek; delete sp.runStart;
   spSave();
-  function curRunWeek(){ return Math.min(9, Math.max(1, weeksBetween(sp.runStart, new Date()) + 1)); }
-  var viewRunWeek = curRunWeek();
-  function progWeek(){ return weeksBetween(sp.progStart, new Date()) + 1; }
+  function progWeek(){ return Math.max(1, weeksBetween(sp.progStart, new Date()) + 1); }
   function rangeLabel(mon){ var e = new Date(mon); e.setDate(e.getDate()+6);
     return mon.getMonth() === e.getMonth() ? mon.getDate() + '–' + e.getDate() + ' ' + monthShort[e.getMonth()] : mon.getDate() + ' ' + monthShort[mon.getMonth()] + ' – ' + e.getDate() + ' ' + monthShort[e.getMonth()]; }
   var wIdx = (new Date().getDay() + 6) % 7;
   var selDay = wIdx;
   var curWo = null;
+  var viewW = progWeek();
+  function refreshWO(){ WO = buildWO(sp.phase, progWeek()); }
+  refreshWO();
 
   function woOfDay(i){ return WEEK[sp.phase][i][0]; }
   function woLabel(code){ return WO[code] ? WO[code].name : WEEK_INFO[code][0]; }
   function woSub(code){ return WO[code] ? WO[code].focus + ' · ' + WO[code].ex.length + ' exerciții' : WEEK_INFO[code][1]; }
+  function woGymCodes(){ return PLANS[sp.phase].days.map(function(d){ return d.code; }); }
+  function imgBtn(src, alt){ return '<img class="wo-img" loading="lazy" src="' + src + '" alt="' + alt + '" data-big="' + src + '">'; }
+  function bindImgs(root){
+    root.querySelectorAll('[data-big]').forEach(function(im){ im.addEventListener('click', function(ev){ ev.stopPropagation(); openBig(im.getAttribute('data-big')); }); });
+  }
+  function openBig(src){
+    var o = document.getElementById('bigImg');
+    if(!o){ o = document.createElement('div'); o.id = 'bigImg'; o.className = 'big-img'; o.innerHTML = '<img alt=""><span>✕</span>'; o.addEventListener('click', function(){ o.classList.remove('show'); }); document.body.appendChild(o); }
+    o.querySelector('img').src = src; o.classList.add('show');
+  }
 
   function renderSpToday(){
     var code = woOfDay(wIdx);
     var el = document.getElementById('spToday');
     var tdy = new Date();
-    var html = '<div class="spt-l">Azi · ' + ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][wIdx] + ' ' + tdy.getDate() + ' ' + monthShort[tdy.getMonth()] + ' · săpt. ' + progWeek() + '</div>' +
+    var html = '<div class="spt-l">Azi · ' + ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][wIdx] + ' ' + tdy.getDate() + ' ' + monthShort[tdy.getMonth()] + ' · săpt. ' + progWeek() + ' · ' + WAVE[(progWeek()-1)%4][0] + '</div>' +
       '<div class="spt-t">' + woLabel(code) + '</div><div class="spt-s">' + woSub(code) + '</div>';
     if(WO[code]){
       var ex = WO[code].ex, sets = ex.reduce(function(a,e){ return a+e[1]; },0);
@@ -2611,45 +2686,52 @@ document.addEventListener('click', function(e){
       var done = Object.keys(st).filter(function(k){ return st[k]; }).length;
       html += '<div class="spt-meta"><div><b>' + ex.length + '</b><span>exerciții</span></div><div><b>' + sets + '</b><span>serii</span></div><div><b>' + done + '/' + sets + '</b><span>făcute</span></div></div>' +
         '<button class="primary-btn" id="spGo" style="margin-top:14px;">Începe antrenamentul →</button>';
-    } else if(code === 'run' || code === 'runL'){
-      html += '<button class="primary-btn" id="spGo" style="margin-top:14px;">Vezi alergarea →</button>';
-    } else if(code === 'mob'){
-      html += '<button class="primary-btn" id="spGo" style="margin-top:14px;">Începe rutina →</button>';
     }
     el.innerHTML = html;
     var go = document.getElementById('spGo');
-    if(go) go.addEventListener('click', function(){
-      if(WO[code]){ curWo = code; sshow('gym'); } else if(code === 'mob'){ sshow('mob'); } else { sshow('run'); }
-    });
+    if(go) go.addEventListener('click', function(){ if(WO[code]){ curWo = code; sshow('gym'); } });
   }
   function renderWeek(){
     var strip = document.getElementById('wkStrip');
-    document.getElementById('wkTitle').textContent = 'Săptămâna ' + progWeek() + ' · ' + rangeLabel(thisMon);
+    var nowW = progWeek(), wv = (viewW - 1) % 4;
+    var mon = new Date(thisMon); mon.setDate(mon.getDate() + 7 * (viewW - nowW));
+    document.getElementById('wkTitle').textContent = 'Săptămâna ' + viewW + ' · ' + rangeLabel(mon) + (viewW === nowW ? ' · acum' : '');
+    document.getElementById('wkNav').innerHTML = '<button class="ghost-btn" id="wkPrev"' + (viewW <= 1 ? ' disabled' : '') + '>‹ înapoi</button><div class="wk-wave"><b>' + WAVE[wv][0] + '</b><span>' + WAVE[wv][1] + '</span></div><button class="ghost-btn" id="wkNext">înainte ›</button>';
+    document.getElementById('wkPrev').addEventListener('click', function(){ if(viewW > 1){ viewW--; renderWeek(); } });
+    document.getElementById('wkNext').addEventListener('click', function(){ viewW++; renderWeek(); });
     strip.innerHTML = WEEK[sp.phase].map(function(d,i){
-      var dd = new Date(thisMon); dd.setDate(dd.getDate()+i);
-      var past = i < wIdx;
-      return '<div class="wk-d' + (i===wIdx?' today':'') + (i===selDay?' sel':'') + (past?' past':'') + '" data-i="' + i + '"><b>' + dayShortS[i] + '</b><em>' + dd.getDate() + '</em><span>' + d[1] + '</span></div>';
+      var dd = new Date(mon); dd.setDate(dd.getDate()+i);
+      var past = viewW < nowW || (viewW === nowW && i < wIdx);
+      var today = viewW === nowW && i === wIdx;
+      return '<div class="wk-d' + (today?' today':'') + (i===selDay?' sel':'') + (past?' past':'') + '" data-i="' + i + '"><b>' + dayShortS[i] + '</b><em>' + dd.getDate() + '</em><span>' + d[1] + '</span></div>';
     }).join('');
     strip.querySelectorAll('.wk-d').forEach(function(d){ d.addEventListener('click', function(){ selDay = +d.getAttribute('data-i'); renderWeek(); }); });
-    var code = woOfDay(selDay);
-    var sd = new Date(thisMon); sd.setDate(sd.getDate()+selDay);
-    var dn = ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][selDay];
-    document.getElementById('wkDetail').innerHTML = '<div class="wk-detail"><div style="margin-top:0;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);">' + dn + ', ' + sd.getDate() + ' ' + monthFull[sd.getMonth()] + (selDay===wIdx?' · azi':'') + '</div><b>' + woLabel(code) + '</b><div>' + woSub(code) + '</div></div>';
-    var pw = progWeek();
-    var ph = PHASE_HINT[sp.phase] + ' Ești în săptămâna ' + pw + ' de antrenament.';
-    if(sp.phase === 1 && pw >= 7) ph += ' 💡 Ai ajuns la 6+ săptămâni — dacă totul merge ușor, poți trece la Faza 2.';
+    var code = woOfDay(selDay), dn = ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][selDay];
+    var det = document.getElementById('wkDetail');
+    if(code === 'rest'){
+      det.innerHTML = '<div class="wk-detail"><div class="wk-dn">' + dn + '</div><b>😴 Odihnă</b><div>' + WEEK_INFO.rest[1] + '</div></div>';
+    } else {
+      var day = buildWO(sp.phase, viewW)[code];
+      det.innerHTML = '<div class="wk-detail"><div class="wk-dn">' + dn + '</div><b>' + day.name + '</b>' +
+        day.ex.map(function(e,i){ return '<div class="wk-ex"><span>' + (i+1) + '. ' + e[0] + '</span><em>' + e[1] + ' × ' + e[2] + '</em></div>'; }).join('') +
+        (viewW === nowW ? '<button class="primary-btn" id="wkOpen" style="margin-top:12px;">Deschide antrenamentul →</button>' : '<div class="hint" style="margin-top:10px;">Așa arată săptămâna ' + viewW + '. Exercițiile se schimbă singure în fiecare luni.</div>') +
+        '<div class="wk-pic">' + imgBtn(day.img, day.name) + '<div class="hint" style="margin-top:6px;">Poza programului de bază (atinge ca s-o mărești). În săptămânile cu variante, ia exercițiile din lista de mai sus.</div></div></div>';
+      var wo = document.getElementById('wkOpen'); if(wo) wo.addEventListener('click', function(){ curWo = code; sshow('gym'); });
+      bindImgs(det);
+    }
+    var ph = PHASE_HINT[sp.phase] + ' Ești în săptămâna ' + nowW + ' de antrenament.';
     document.getElementById('phaseHint').textContent = ph;
     document.querySelectorAll('#phasePills .day-pill').forEach(function(p){ p.classList.toggle('active', +p.getAttribute('data-phase') === sp.phase); });
   }
   document.querySelectorAll('#phasePills .day-pill').forEach(function(p){
-    p.addEventListener('click', function(){ sp.phase = +p.getAttribute('data-phase'); spSave(); curWo = null; renderSport(); });
+    p.addEventListener('click', function(){ sp.phase = +p.getAttribute('data-phase'); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
   });
 
   function renderWoPills(){
-    var codes = sp.phase === 1 ? ['A','B','C'] : ['U1','L1','U2','L2'];
+    var codes = woGymCodes();
     if(!curWo || codes.indexOf(curWo) < 0){ var t = woOfDay(wIdx); curWo = codes.indexOf(t) >= 0 ? t : codes[0]; }
     var pills = document.getElementById('woPills');
-    pills.innerHTML = codes.map(function(c){ return '<button class="day-pill' + (c===curWo?' active':'') + '" data-wo="' + c + '">' + WO[c].name + '</button>'; }).join('');
+    pills.innerHTML = codes.map(function(c){ var nm = WO[c].name.replace(/^Ziua \d · /, ''); return '<button class="day-pill' + (c===curWo?' active':'') + '" data-wo="' + c + '">' + nm + '</button>'; }).join('');
     pills.querySelectorAll('.day-pill').forEach(function(b){ b.addEventListener('click', function(){ curWo = b.getAttribute('data-wo'); renderWo(); }); });
   }
   function renderWo(){
@@ -2658,19 +2740,24 @@ document.addEventListener('click', function(e){
     var st = sp.sets[key] || {};
     var total = w.ex.reduce(function(a,e){ return a+e[1]; },0);
     var done = Object.keys(st).filter(function(k){ return st[k]; }).length;
-    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">' + w.focus + '</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
+    var pw = progWeek(), wv = (pw - 1) % 4;
+    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + WAVE[wv][0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
-      '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bandă sau bicicletă ușor, 10 balansări de picioare, 10 rotiri de brațe, apoi 2 serii ușoare din primul exercițiu.</div>';
+      imgBtn(w.img, w.name) + '<div class="hint" style="margin-top:4px;">Poza zilei · atinge ca s-o mărești</div>' +
+      '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
+      '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     w.ex.forEach(function(e,ei){
-      html += '<div class="ex"><div class="ex-top"><span class="ex-n">' + e[0] + '</span><span class="ex-meta">' + e[1] + ' × ' + e[2] + '</span></div>' +
-        (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') + '<div class="ex-sets">';
+      html += '<div class="ex"><div class="ex-top"><span class="ex-n">' + (ei+1) + '. ' + e[0] + '</span><span class="ex-meta">' + e[1] + ' × ' + e[2] + '</span></div>' +
+        (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') +
+        (e[5] ? '<div class="ex-pic">' + imgBtn(e[5], e[0]) + '</div>' : '') + '<div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (si+1) + '</button>'; }
       html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ ' + e[3] + 's</button></div></div>';
     });
     if(done === total) html += '<div class="wo-done">🏆 Antrenament complet! L-am bifat și pe fila Azi.</div>';
-    html += '<div class="hint">Atinge fiecare serie după ce o termini — pornește automat pauza. Progresul se resetează în fiecare zi.</div>';
+    html += '<div class="hint">Atinge fiecare serie după ce o termini — pornește automat pauza. Progresul se resetează în fiecare zi. Luni viitoare exercițiile se schimbă.</div>';
     var card = document.getElementById('woCard');
     card.innerHTML = html;
+    bindImgs(card);
     card.querySelectorAll('.set-b').forEach(function(b){
       b.addEventListener('click', function(){
         var k = b.getAttribute('data-k');
@@ -2709,123 +2796,43 @@ document.addEventListener('click', function(e){
   document.getElementById('rtAdd').addEventListener('click', function(){ rtEnd = Math.max(rtEnd, Date.now()) + 15000; if(!rtIv){ rtEl.classList.remove('done'); rtIv = setInterval(rtTick,250); } rtTick(); });
   document.getElementById('rtStop').addEventListener('click', function(){ if(rtIv) clearInterval(rtIv); rtIv = null; rtEl.classList.remove('show'); });
 
-  /* running plan: [run,walk] seconds, reps  or text */
-  var RUN = [
-    { s:'8 × (1 min alergat + 1½ min mers)', b:[[60,90,8]] },
-    { s:'6 × (1½ min alergat + 2 min mers)', b:[[90,120,6]] },
-    { s:'2 × (1½ min alergat + 1½ min mers + 3 min alergat + 3 min mers)', b:[[90,90,1],[180,180,1],[90,90,1],[180,180,1]] },
-    { s:'3 min + 5 min alergat, cu 1½–2½ min mers între, de 2 ori', b:[[180,90,1],[300,150,1],[180,90,1],[300,0,1]] },
-    { s:'3 × (5 min alergat + 3 min mers). La a 3-a ieșire: 20 min continuu', b:[[300,180,3]] },
-    { s:'5 + 8 + 5 min alergat, 3 min mers între. La a 3-a: 25 min continuu', b:[[300,180,1],[480,180,1],[300,0,1]] },
-    { s:'25 min alergare continuă, toate 3 ieșirile', b:[[1500,0,1]] },
-    { s:'28 min alergare continuă', b:[[1680,0,1]] },
-    { s:'30 min alergare continuă 🏁', b:[[1800,0,1]] }
-  ];
-  function renderRun(){
-    var wk = document.getElementById('runWeeks');
-    var cw = curRunWeek();
-    wk.innerHTML = RUN.map(function(r,i){ return '<div class="rw' + (i+1===viewRunWeek?' sel':'') + (i+1===cw?' cur':'') + (i+1<cw?' donew':'') + '" data-w="' + (i+1) + '">' + (i+1) + '</div>'; }).join('');
-    wk.querySelectorAll('.rw').forEach(function(x){ x.addEventListener('click', function(){ viewRunWeek = +x.getAttribute('data-w'); renderRun(); }); });
-    var r = RUN[viewRunWeek-1];
-    var wMon = new Date(sp.runStart + 'T00:00:00'); wMon.setDate(wMon.getDate() + 7*(viewRunWeek-1));
-    var blocks = '';
-    r.b.forEach(function(b){ for(var i=0;i<b[2];i++){ blocks += '<i class="r" style="flex:' + b[0] + '"></i>' + (b[1] ? '<i class="w" style="flex:' + b[1] + '"></i>' : ''); } });
-    document.getElementById('runDetail').innerHTML =
-      '<div class="run-sess"><b>Săptămâna ' + viewRunWeek + ' · ' + rangeLabel(wMon) + (viewRunWeek===cw?' · acum':'') + '</b><div>3 ieșiri: 5 min mers alert → ' + r.s + ' → 5 min mers</div>' +
-      '<div class="run-blocks">' + blocks + '</div>' +
-      '<div style="font-size:11px;color:var(--text-faint);margin-top:6px;">turcoaz = alergat · gri = mers</div></div>' +
-      (viewRunWeek !== cw ? '<button class="ghost-btn" id="runSetCur">Sunt în săptămâna ' + viewRunWeek + ' acum</button>' : '<div class="hint">Trece singur la săptămâna următoare în fiecare luni. Dacă o săptămână a fost prea grea, alege-o din nou și apasă „Sunt în săptămâna…”.</div>');
-    var sc = document.getElementById('runSetCur');
-    if(sc) sc.addEventListener('click', function(){ var rs = new Date(thisMon); rs.setDate(rs.getDate() - 7*(viewRunWeek-1)); sp.runStart = mKey(rs); spSave(); renderRun(); });
-  }
-
-  var MOB = [
-    ['Cat-cow','10 repetări','Pe palme și genunchi, arcuiești și rotunjești spatele'],
-    ['World’s greatest stretch','5 / parte','Fandare adâncă, cotul spre sol, apoi rotește brațul în sus'],
-    ['Șolduri 90/90','60 s / parte','Așezat, ambele picioare la 90°, trunchiul drept'],
-    ['Genuflexiune adâncă, ținută','60 s','Călcâiele jos, coatele împing genunchii în afară'],
-    ['Rotații toracice','8 / parte','Pe o parte, genunchii sus, deschizi brațul ca o carte'],
-    ['Întindere ischiogambieri','45 s / parte','Piciorul pe o treaptă, spatele drept, aplecare din șold'],
-    ['Întindere piept în ușă','45 s','Antebrațul pe tocul ușii, pas înainte'],
-    ['Child’s pose','60 s','Respirații lente, pe burtă']
-  ];
-  var CORE = [
-    ['Dead bug','10 / parte','Spatele lipit de sol'],
-    ['Plank lateral','30 s / parte','Șoldurile sus, corp drept'],
-    ['Bird dog','8 / parte','Mâna și piciorul opus, 2 s ținut'],
-    ['Pod pentru fese','15','Strânge fesele sus 1 s']
-  ];
-  function renderMobList(elId, list, prefix){
-    var mk = todayKey;
-    var st = (sp.mob[mk] = sp.mob[mk] || {});
-    var el = document.getElementById(elId);
-    el.innerHTML = list.map(function(m,i){
-      var k = prefix + i;
-      return '<div class="mob-it' + (st[k]?' done':'') + '" data-k="' + k + '"><span class="gr-box"></span><div style="flex:1;"><div class="mob-n">' + m[0] + '</div><div class="mob-d">' + m[2] + '</div></div><span class="mob-t">' + m[1] + '</span></div>';
-    }).join('');
-    el.querySelectorAll('.mob-it').forEach(function(it){ it.addEventListener('click', function(){ st[it.getAttribute('data-k')] = !st[it.getAttribute('data-k')]; spSave(); renderMobList(elId, list, prefix); }); });
-  }
-
   var sbtns = document.querySelectorAll('#sportSeg .seg-btn');
   function sshow(seg){
     sbtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-sseg') === seg); });
     document.querySelectorAll('[data-sseg-card]').forEach(function(c){ c.classList.toggle('seg-show', c.getAttribute('data-sseg-card') === seg); });
     if(seg === 'gym') renderWo();
-    if(seg === 'fit') renderFitness();
     try{ window.scrollTo(0,0); }catch(e){}
   }
   sbtns.forEach(function(b){ b.addEventListener('click', function(){ sshow(b.getAttribute('data-sseg')); }); });
+  var healthData = {};
+  function renderFitness(){}
 
-  /* ===== Fitness (Apple Health via Shortcuts -> Supabase 'health' collection) ===== */
-  var healthData = {}, fitMetric = 'steps', fitRange = 7;
-  var FIT = { steps:{ ic:'👣', l:'Pași', u:'', col:'#3DE0C4', d:0 }, kcal:{ ic:'🔥', l:'Calorii active', u:' kcal', col:'#FF4D6D', d:0 }, exMin:{ ic:'⏱️', l:'Exercițiu', u:' min', col:'#A6FF4D', d:0 }, distKm:{ ic:'📍', l:'Distanță', u:' km', col:'#6C8CFF', d:1 } };
-  var fitGoals = { steps:10000, kcal:500, exMin:30 };
-  try{ var _fg = JSON.parse(localStorage.getItem('byzyp_fitgoals') || 'null'); if(_fg) fitGoals = _fg; }catch(e){}
-  function fitVal(k, m){ var h = healthData[k]; return h && h[m] != null && !isNaN(+h[m]) ? +h[m] : null; }
-  function fitFmt(v, m){ if(v == null) return '–'; var d = FIT[m].d; return (d ? v.toFixed(d) : Math.round(v).toLocaleString('ro-RO')) + FIT[m].u; }
-  function renderFitness(){
-    var ringsEl = document.getElementById('fitRings'); if(!ringsEl) return;
-    var tk = dateKey(new Date());
-    var st = fitVal(tk, 'steps'), kc = fitVal(tk, 'kcal'), ex = fitVal(tk, 'exMin'), di = fitVal(tk, 'distKm');
-    function ring(r, frac, col){ var C = 2 * Math.PI * r, f = Math.max(0, frac || 0);
-      return '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-opacity="0.18" stroke-width="11"/>' +
-        '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + (C * Math.min(f, 1)).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 60 60)"/>' +
-        (f > 1 ? '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + (C * Math.min(f - 1, 1)).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 60 60)" opacity="0.6"/>' : ''); }
-    ringsEl.innerHTML = ring(52, kc != null ? kc / fitGoals.kcal : 0, FIT.kcal.col) + ring(39, ex != null ? ex / fitGoals.exMin : 0, FIT.exMin.col) + ring(26, st != null ? st / fitGoals.steps : 0, FIT.steps.col);
-    var row = function(m, v, g){ return '<div class="fit-n"><span><i style="background:' + FIT[m].col + '"></i>' + FIT[m].ic + ' ' + FIT[m].l + '</span><span><b>' + fitFmt(v, m) + '</b>' + (g ? ' <em>/ ' + fitFmt(g, m) + '</em>' : '') + '</span></div>'; };
-    document.getElementById('fitNums').innerHTML = row('kcal', kc, fitGoals.kcal) + row('exMin', ex, fitGoals.exMin) + row('steps', st, fitGoals.steps) + row('distKm', di, null);
-    var keys = Object.keys(healthData).sort(), lastK = keys[keys.length - 1];
-    var sync = document.getElementById('fitSync');
-    if(!keys.length) sync.innerHTML = '⚙️ Încă nu au venit date din Sănătate. După ce configurezi scurtătura de pe iPhone, apar aici automat.';
-    else { var up = healthData[lastK] && healthData[lastK]._at ? new Date(healthData[lastK]._at) : null;
-      sync.innerHTML = '🔄 Ultima sincronizare: ' + (up ? up.getDate() + ' ' + monthShort[up.getMonth()] + ' la ' + hhmm(up) : lastK) + (lastK !== tk ? ' · azi încă nu s-a sincronizat' : ''); }
-    // chart
-    var days = []; for(var i = fitRange - 1; i >= 0; i--){ var d = new Date(); d.setDate(d.getDate() - i); days.push(dateKey(d)); }
-    var vals = days.map(function(k){ return fitVal(k, fitMetric); });
-    var goal = fitGoals[fitMetric] || null, mx = Math.max.apply(null, vals.map(function(v){ return v || 0; }).concat([goal || 0, 1]));
-    var W = 320, H = 150, pad = 18, bw = (W - 8) / days.length;
-    var bars = days.map(function(k, i){ var v = vals[i], hgt = v ? (H - pad - 10) * v / mx : 0, x = 4 + i * bw;
-      var hit = goal && v >= goal;
-      return '<rect x="' + (x + bw * 0.15).toFixed(1) + '" y="' + (H - pad - hgt).toFixed(1) + '" width="' + (bw * 0.7).toFixed(1) + '" height="' + Math.max(v ? 2 : 0, hgt).toFixed(1) + '" rx="3" fill="' + FIT[fitMetric].col + '" opacity="' + (hit ? 1 : 0.55) + '"' + (k === tk ? ' stroke="var(--gold)" stroke-width="1.2"' : '') + '/>' +
-        ((fitRange === 7 || i % 5 === 0 || i === days.length - 1) ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="8" fill="var(--text-faint)" font-family="monospace">' + (fitRange === 7 ? ['Du','Lu','Ma','Mi','Jo','Vi','Sâ'][new Date(k + 'T00:00:00').getDay()] : k.slice(8)) + '</text>' : '') +
-        (fitRange === 7 && v != null ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - pad - hgt - 3).toFixed(1) + '" text-anchor="middle" font-size="7.5" fill="var(--text-dim)" font-family="monospace">' + (fitMetric === 'steps' ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v)) : fitFmt(v, fitMetric).replace(FIT[fitMetric].u, '')) + '</text>' : ''); }).join('');
-    var gl = goal ? '<line x1="4" x2="' + (W - 4) + '" y1="' + (H - pad - (H - pad - 10) * goal / mx).toFixed(1) + '" y2="' + (H - pad - (H - pad - 10) * goal / mx).toFixed(1) + '" stroke="var(--gold)" stroke-dasharray="4 3" stroke-width="0.8"/>' : '';
-    document.getElementById('fitChart').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '">' + gl + bars + '</svg>';
-    var have = vals.filter(function(v){ return v != null; }), tot = have.reduce(function(a, b){ return a + b; }, 0);
-    var bestI = -1; vals.forEach(function(v, i){ if(v != null && (bestI < 0 || v > vals[bestI])) bestI = i; });
-    var hits = goal ? have.filter(function(v){ return v >= goal; }).length : null;
-    document.getElementById('fitStats').innerHTML = '<div><b>' + (have.length ? fitFmt(tot / have.length, fitMetric) : '–') + '</b><span>medie/zi</span></div>' +
-      '<div><b>' + (bestI >= 0 ? fitFmt(vals[bestI], fitMetric) : '–') + '</b><span>' + (bestI >= 0 ? 'max · ' + days[bestI].slice(8) + '.' + days[bestI].slice(5, 7) : 'maxim') + '</span></div>' +
-      '<div><b>' + (hits != null ? hits + '/' + have.length : fitFmt(tot, fitMetric)) + '</b><span>' + (hits != null ? 'obiectiv atins' : 'total') + '</span></div>';
-    var gs = document.getElementById('fgSteps'), gk = document.getElementById('fgKcal'), ge = document.getElementById('fgEx');
-    if(document.activeElement !== gs) gs.value = fitGoals.steps; if(document.activeElement !== gk) gk.value = fitGoals.kcal; if(document.activeElement !== ge) ge.value = fitGoals.exMin;
+  /* ===== Suplimente: lista de azi + notificările vin din push-bot (09:00, 20:00, 22:00) ===== */
+  var SUPPS = [
+    { id:'d3k2', t:'09:00', n:'Vitamina D3 + K2', d:'Cu masa de dimineață — au nevoie de grăsime ca să se absoarbă.' },
+    { id:'om3', t:'09:00', n:'Omega 3', d:'Tot cu masa de dimineață.' },
+    { id:'cre', t:'09:00', n:'Creatină 5 g', d:'În fiecare zi, cu un pahar de apă, și în zilele fără sală.' },
+    { id:'zn', t:'20:00', n:'Zinc', d:'Cu cina, ca să nu te supere la stomac.' },
+    { id:'mg', t:'22:00', n:'Magneziu', d:'Seara, înainte de somn.' }
+  ];
+  var SUPP_KEY = 'byzyp_supp_v1';
+  function suppLoad(){ try{ return JSON.parse(localStorage.getItem(SUPP_KEY) || '{}') || {}; }catch(e){ return {}; } }
+  function renderSupp(){
+    var el = document.getElementById('suppCard'); if(!el) return;
+    var all = suppLoad(), day = all[todayKey] || {};
+    var left = SUPPS.filter(function(s){ return !day[s.id]; }).length;
+    el.innerHTML = SUPPS.map(function(s){
+      return '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><span class="gr-box"></span><span class="supp-t">' + s.t + '</span><div style="flex:1;"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div></div>';
+    }).join('') + '<div class="hint" style="margin-bottom:0;">' + (left ? 'Mai ai ' + left + ' de luat azi.' : '✅ Toate suplimentele de azi sunt luate.') + ' Primești notificare la 09:00, 20:00 și 22:00. Dozele după ambalaj sau după medic.</div>';
+    el.querySelectorAll('.supp-row').forEach(function(r){ r.addEventListener('click', function(){
+      var a = suppLoad(), d = a[todayKey] || {}; d[r.getAttribute('data-id')] = !d[r.getAttribute('data-id')]; a[todayKey] = d;
+      Object.keys(a).sort().slice(0, -30).forEach(function(k){ delete a[k]; });
+      try{ localStorage.setItem(SUPP_KEY, JSON.stringify(a)); }catch(e){}
+      renderSupp();
+    }); });
   }
-  document.querySelectorAll('#fitMetric button').forEach(function(b){ b.addEventListener('click', function(){ fitMetric = b.getAttribute('data-m'); document.querySelectorAll('#fitMetric button').forEach(function(x){ x.classList.toggle('on', x === b); }); renderFitness(); }); });
-  document.querySelectorAll('#fitRange button').forEach(function(b){ b.addEventListener('click', function(){ fitRange = +b.getAttribute('data-r'); document.querySelectorAll('#fitRange button').forEach(function(x){ x.classList.toggle('on', x === b); }); renderFitness(); }); });
-  [['fgSteps','steps'],['fgKcal','kcal'],['fgEx','exMin']].forEach(function(p){ document.getElementById(p[0]).addEventListener('input', function(){ var v = parseFloat(this.value); if(v > 0){ fitGoals[p[1]] = v; try{ localStorage.setItem('byzyp_fitgoals', JSON.stringify(fitGoals)); }catch(e){} renderFitness(); } }); });
-  renderFitness();
-
-  function renderSport(){ renderSpToday(); renderWeek(); renderRun(); renderMobList('mobList', MOB, 'm'); renderMobList('coreList', CORE, 'c'); if(document.querySelector('[data-sseg-card="gym"].seg-show')) renderWo(); }
+  renderSupp();
+  function renderSport(){ renderSpToday(); renderWeek(); if(document.querySelector('[data-sseg-card="gym"].seg-show')) renderWo(); }
   renderSport();
   sshow('plan');
   renderPlanTiles();
@@ -4041,7 +4048,7 @@ document.addEventListener('click', function(e){
     el.querySelectorAll('.ph-row').forEach(function(r){ r.addEventListener('click', function(){ var x = shotHist.filter(function(s){ return s.id === r.getAttribute('data-sid'); })[0]; if(!x) return;
       st.res = x.res; st.fromHist = x; st.img = null; renderPhotoPane(); }); });
   }
-  window.__openPhoto = function(){ var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); setTimeout(function(){ var b = document.querySelector('#goldSeg [data-gs="photo"]'); if(b) b.click(); }, 80); };
+  window.__openPhoto = function(){ if(!window.SHOW_GOLD) return; var t = document.querySelector('.tab[data-view="gold"]'); if(t) t.click(); setTimeout(function(){ var b = document.querySelector('#goldSeg [data-gs="photo"]'); if(b) b.click(); }, 80); };
 
   /* ===== ⟠ Ethereum: live per second (Binance stream), smooth chart, and how much YOUR money grew ===== */
   var eth = { pos:null, live:null, ch24:null, open24:null, hi24:null, lo24:null, range:'1L', pts:[], err:null, edit:false, tLive:0, tChart:0, busy:false, ws:null, wsAt:0, wsPaint:0, wsRetry:0, wsTimer:null, shown:null };
@@ -4404,7 +4411,7 @@ document.addEventListener('click', function(e){
   }
   setTimeout(function(){ var b = document.querySelector('[data-fseg="calc"]'); if(b) b.click(); nuRender(); }, 0);
   function renderGoldMini(){
-    var m = document.getElementById('goldMini'); if(!m || !gold) return;
+    var m = document.getElementById('goldMini'); if(!m) return; if(!window.SHOW_GOLD){ m.style.display = 'none'; return; } if(!gold) return;
     var g = gold, up = g.change >= 0, c = g.confluence || { verdict: g.bias };
     m.innerHTML = '<div class="card-title">XAUUSD · Aur</div><div class="gm-row"><div><div class="gm-p" id="gmPrice">' + f2(liveSpot != null ? liveSpot : g.price) + '</div>' +
       '<div class="gd-chg ' + (up?'pos':'neg') + '">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%)</div></div>' +
@@ -5057,6 +5064,7 @@ document.addEventListener('click', function(e){
       var list = op.slice(-4).map(function(x){ var mv = x.side === 'BUY' ? p - x.entry : x.entry - p; return x.strat.split(' (')[0] + ' pe ' + (x.side === 'BUY' ? 'cumpărare' : 'vânzare') + ' de la ' + jNum(x.entry) + ', acum ' + (mv >= 0 ? 'pe plus ' : 'pe minus ') + jNum(Math.abs(mv), 1) + ' dolari'; });
       return 'ZyP, ai ' + op.length + ' intrări deschise' + (act.length > op.length ? ' și ' + (act.length - op.length) + ' ordine în așteptare' : '') + '. ' + (list.length ? 'Ultimele: ' + list.join('; ') + '.' : '');
     }
+    if(!window.SHOW_GOLD && jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga','aur','aurul','gold','xau','strategii','strategiile','verdict'])) return 'ZyP, fila de aur e ascunsă pentru moment. O pornim când vrei.';
     if(jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga'])){
       var ps = gold && gold.pstats ? Object.keys(gold.pstats).map(function(k){ return gold.pstats[k]; }).filter(function(v){ return v.n; }).sort(function(a,b){ return b.r - a.r; }) : [];
       if(!ps.length) return 'ZyP, încă nu sunt tranzacții închise ca să fac un clasament. Mai așteaptă câteva zile.';

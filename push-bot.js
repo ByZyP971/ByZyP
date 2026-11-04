@@ -1,5 +1,5 @@
 // By ZyP — push bot, run by GitHub Actions every ~5 minutes.
-// Sends: motivation at 08:30 / 14:30 / 21:30 (local time) and a warning before every red (High) news.
+// Sends: motivation at 08:30 / 14:30 / 21:30, supplements at 09:00 / 20:00 / 22:00 (local time) and a warning before every red (High) news.
 import webpush from 'web-push';
 import fs from 'fs';
 
@@ -68,7 +68,7 @@ const MOT = {
   Wed: ['💪 Azi e zi de sală. Omul care ai hotărât să devii nu sare peste.', '💶 Banii pe care nu-i mai dai pe țigări construiesc libertatea ta financiară.', '⚖️ Notează greutatea și bifează ziua. Ce se măsoară, se îmbunătățește.'],
   Thu: ['☕ Cafea, apă, fără zahăr. Ești mai puternic decât pofta.', '🍎 Fără dulce, ZyP. Un fruct, nuci sau apă — corpul îți mulțumește.', '📚 10 minute de citit despre bani înainte de somn. Investește în tine.'],
   Fri: ['🚀 Vineri, ZyP. Încă o săptămână de viață nouă aproape bifată.', '📈 Disciplina de azi e profitul de mâine. Exact ca în trading.', '🏆 Fiecare zi bifată te apropie de o medalie nouă în Profil.'],
-  Sat: ['🏃 Azi e alergarea lungă. Fiecare minut e dovada că te-ai schimbat.', '🫁 Cu fiecare săptămână fără fum respiri mai ușor la efort.', '💤 Somn devreme, ZyP. Mușchii și voința se refac noaptea.'],
+  Sat: ['💪 Sâmbătă. Antrenament sau odihnă planificată — oricare ar fi, rămâi pe drum.', '🫁 Cu fiecare săptămână fără fum respiri mai ușor la efort.', '💤 Somn devreme, ZyP. Mușchii și voința se refac noaptea.'],
   Sun: ['🌿 Duminică liniștită. Odihnă, nu scuze. Fără țigări și azi.', '🔥 Nu da tot înapoi pentru o singură țigară. Ai ajuns prea departe.', '🗓️ Pregătește săptămâna: antrenamente, mâncare, obiective.']
 };
 const SLOTS = [8 * 60 + 30, 14 * 60 + 30, 21 * 60 + 30];
@@ -76,6 +76,20 @@ for (let i = 0; i < SLOTS.length; i++) {
   const key = `m-${L.date}-${i}`;
   if (L.hm >= SLOTS[i] && L.hm < SLOTS[i] + 40 && !sent[key]) {
     if (await send('By ZyP', MOT[L.wd][i], 'motivatie')) { sent[key] = Date.now(); changed = true; }
+  }
+}
+
+
+// ---------- supplements: 09:00 / 20:00 / 22:00 (local time) ----------
+const SUPP = [
+  { h: 9 * 60, k: 'am', title: '💊 Suplimentele de dimineață', body: 'Vitamina D3 + K2, Omega 3 și creatină 5 g. Ia-le cu masa de dimineață (D3, K2 și Omega 3 au nevoie de grăsime) și un pahar de apă.' },
+  { h: 20 * 60, k: 'zn', title: '💊 Zincul de seară', body: 'Ia zincul acum, cu cina, ca să nu te supere la stomac.' },
+  { h: 22 * 60, k: 'mg', title: '💊 Magneziul', body: 'Magneziul înainte de somn — te ajută să te relaxezi și să te refaci.' }
+];
+for (const s of SUPP) {
+  const key = `s-${L.date}-${s.k}`;
+  if (L.hm >= s.h && L.hm < s.h + 50 && !sent[key]) {
+    if (await send(s.title, s.body, 'supl-' + s.k)) { sent[key] = Date.now(); changed = true; }
   }
 }
 
