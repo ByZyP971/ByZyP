@@ -2575,12 +2575,12 @@ document.addEventListener('click', function(e){
       'Tracțiuni la helcometru, priză îngustă|Trage spre piept, strânge spatele'],
     rowH:['Ramat cu haltera, aplecat|Spatele drept, trage bara spre buric',
       'Ramat T-bar|Pieptul sus, trage spre abdomen, fără balans',
-      'Ramat cu gantere, pieptul pe bancă înclinată|Trage coatele în sus și în spate',
+      'Ramat cu gantere, pieptul pe bancă înclinată|Ambele gantere odată, trage coatele în sus și în spate',
       'Ramat la Smith, priză inversă|Trage spre talie, coatele aproape'],
     rowC:['Ramat la cablu, așezat, priză largă|Spatele drept, strânge omoplații 1 s',
       'Ramat la cablu, priză neutră îngustă|Coatele pe lângă corp, trage spre abdomen',
-      'Ramat cu gantera, un braț|Sprijină-te pe bancă, trage cotul spre șold',
-      'Ramat pe bancă înclinată (incline high row)|Pieptul pe bancă, trage cu coatele larg'],
+      'Ramat pe bancă înclinată (incline high row)|Pieptul pe bancă, trage cu coatele larg',
+      'Ramat la mașină, priză largă|Piept sprijinit, trage cu coatele'],
     sarm:['Pulldown cu brațele întinse|Brațe drepte, trage bara spre coapse cu spatele',
       'Face pull|Trage coarda spre față, coatele sus, strânge spatele',
       'Fluturări inverse la peck deck|Coatele ușor îndoite, deschide brațele',
@@ -2664,7 +2664,11 @@ document.addEventListener('click', function(e){
     crunch:['Crunch invers pe podea|Ridică șoldurile cu abdomenul, fără balans',
       'Crunch la scripete|Rotunjește spatele, trage cu abdomenul',
       'Crunch la mașină|Controlat, expiră jos',
-      'Ridicări de genunchi din atârnat|Fără să te legeni, urcă genunchii la piept']
+      'Ridicări de genunchi din atârnat|Fără să te legeni, urcă genunchii la piept'],
+    lowb:['Hiperextensii pe bancă romană|Spatele drept, urcă controlat, fără să arcuiești',
+      'Good morning cu bara ușoară|Șoldurile în spate, spatele drept, greutate mică',
+      'Hiperextensii la mașină|Urcă controlat, strânge fesele sus',
+      'Îndreptări cu bara hexagonală, ușor|Spatele drept, împinge din picioare'],
   };
   // tip: c = exercițiu mare (greu), i = izolare (ușor), t = pe timp
   var WAVE = [['Volum','Săptămână de volum: greutate medie, 8–12 repetări. Construiești baza.'],
@@ -2676,19 +2680,19 @@ document.addEventListener('click', function(e){
   // slot: [id, tip, serii, repetări în poză, decalaj variantă]
   var PLANS = {
     1:{ label:'5 zile · Luni–Vineri', days:[
-      { code:'m1', name:'Piept + Triceps', focus:'Piept și triceps', img:'wo-a1.jpg', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['fly','i',2,'12–15',0],['cross','i',2,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['dips','i',2,'12–15',0]] },
-      { code:'m2', name:'Spate + Biceps', focus:'Spate și biceps', img:'wo-a2.jpg', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['bb','i',3,'10–12',0],['db','i',2,'10–12',0],['ham','i',2,'12–15',0]] },
-      { code:'m3', name:'Picioare', focus:'Picioare', img:'wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
-      { code:'m4', name:'Umeri + Abdomen', focus:'Umeri și abdomen', img:'wo-a4.jpg', off:0, slots:[['press','c',2,'8–12',0],['lat2','i',3,'12–15',0],['front','i',2,'12–15',0],['rear','i',3,'12–15',0],['shrug','i',3,'12–15',0],['plank','t',3,'30–60 s',0],['crunch','i',3,'12–20',0]] },
-      { code:'m5', name:'Tot corpul', focus:'Tot corpul', img:'wo-a5.jpg', off:2, slots:[['squat','c',3,'8–12',0],['benchP','c',3,'8–12',0],['lat','c',3,'8–12',0],['press','c',2,'10–12',0],['rdl','c',2,'10–12',0],['bb','i',2,'10–12',0],['pushdown','i',2,'10–12',0],['crunch','i',3,'12–20',0]] }
+      { code:'m1', name:'Push · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
+      { code:'m2', name:'Pull · Spate, Biceps', focus:'Spate, spate-umeri și biceps', img:'', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
+      { code:'m3', name:'Legs · Picioare', focus:'Picioare', img:'', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
+      { code:'m4', name:'Upper · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'8–12',2],['lat','c',3,'8–12',2],['press','c',2,'10–12',2],['rowC','c',3,'10–12',2],['pushdown','i',2,'12–15',2],['bb','i',2,'12–15',2],['rear','i',2,'12–15',2]] },
+      { code:'m5', name:'Lower · Picioare + Lombar', focus:'Picioare și lombar', img:'', off:0, slots:[['rdl','c',3,'8–12',2],['quad2','c',3,'10–12',2],['lcurl','i',3,'10–15',2],['lext','i',2,'12–15',2],['calf','i',4,'12–20',2],['lowb','i',2,'12–15',0],['crunch','i',3,'12–20',2]] }
     ], rest:[5,6] },
-    2:{ label:'6 zile · Luni–Sâmbătă', days:[
-      { code:'s1', name:'Ziua 1 · Piept + Triceps', focus:'Piept și triceps', img:'wo-b1.jpg', slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['fly','i',3,'10–12',0],['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0]] },
-      { code:'s2', name:'Ziua 2 · Spate + Biceps', focus:'Spate și biceps', img:'wo-b2.jpg', slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowC','c',3,'10–12',3],['bb','i',3,'10–12',0],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
-      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['quad2','c',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
-      { code:'s4', name:'Ziua 4 · Umeri', focus:'Umeri', img:'wo-b4.jpg', slots:[['rear','i',3,'10–12',0],['front','i',3,'10–12',0],['lat2','i',3,'10–12',0],['lat2','i',3,'10–12',1],['press','c',3,'10–12',0],['press','c',3,'10–12',1]] },
-      { code:'s5', name:'Ziua 5 · Brațe', focus:'Triceps și biceps', img:'wo-b5.jpg', slots:[['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0],['bb','i',3,'10–12',1],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
-      { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
+    2:{ label:'6 zile · Push / Pull / Legs ×2', days:[
+      { code:'s1', name:'Push A · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
+      { code:'s2', name:'Pull A · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
+      { code:'s3', name:'Legs A · Picioare', focus:'Picioare', img:'', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
+      { code:'s4', name:'Push B · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:3, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
+      { code:'s5', name:'Pull B · Spate, Biceps', focus:'Spate și biceps', img:'', off:3, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
+      { code:'s6', name:'Legs B · Picioare', focus:'Picioare', img:'', off:3, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] }
     ], rest:[6] }
   };
   /* ===== desene: cum se face fiecare exercițiu (start / sfârșit) ===== */
@@ -2852,10 +2856,22 @@ document.addEventListener('click', function(e){
     overhead:['overhead dumbbell triceps extension form','cable overhead triceps extension form','overhead EZ bar triceps extension','single arm overhead dumbbell triceps extension'],
     skull:['EZ bar skull crushers form','dumbbell skull crushers form','close grip bench press form','close grip push ups form'],
     dips:['bench dips form','parallel bar dips form','assisted dip machine form','dumbbell triceps kickback form'],
-    lat:['wide grip lat pulldown form','neutral grip lat pulldown form','assisted pull ups form','close grip lat pulldown form'],
-    rowH:['barbell bent over row form','T bar row form','chest supported dumbbell row form','smith machine reverse grip row'],
-    rowC:['seated cable row wide grip form','seated cable row close neutral grip form','one arm dumbbell row form','incline bench chest supported row form'],
-    sarm:['straight arm pulldown form','face pull form','reverse pec deck fly form','dumbbell pullover form'],
+    lat:['wide grip lat pulldown form',
+      'neutral grip lat pulldown form',
+      'assisted pull ups form',
+      'close grip lat pulldown form'],
+    rowH:['barbell bent over row form',
+      'T bar row form',
+      'chest supported dumbbell row form',
+      'smith machine reverse grip row'],
+    rowC:['seated cable row wide grip form',
+      'seated cable row close neutral grip form',
+      'incline bench chest supported row form',
+      'wide grip machine row form'],
+    sarm:['straight arm pulldown form',
+      'face pull form',
+      'reverse pec deck fly form',
+      'dumbbell pullover form'],
     bb:['barbell curl form','EZ bar curl form','cable curl form','preacher curl form'],
     db:['dumbbell alternating curl form','incline dumbbell curl form','concentration curl form','spider curl form'],
     ham:['dumbbell hammer curl form','cross body hammer curl form','rope hammer curl cable form','incline hammer curl form'],
@@ -2874,7 +2890,11 @@ document.addEventListener('click', function(e){
     rear:['bent over dumbbell reverse fly form','reverse pec deck fly form','cable reverse fly form','face pull form'],
     shrug:['dumbbell shrug form','barbell shrug form','smith machine shrug form','cable shrug form'],
     plank:['forearm plank form','side plank form','plank shoulder taps form','hollow body hold form'],
-    crunch:['reverse crunch form','cable crunch form','ab crunch machine form','hanging knee raise form']
+    crunch:['reverse crunch form','cable crunch form','ab crunch machine form','hanging knee raise form'],
+    lowb:['45 degree back extension form',
+      'good morning exercise form',
+      'machine back extension form',
+      'trap bar deadlift form'],
   };
   function ytUrl(q){ return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q); }
   // încă 4 variante la fiecare exercițiu → ciclu de 8 săptămâni fără repetări
@@ -2887,10 +2907,22 @@ document.addEventListener('click', function(e){
     overhead:['Extensii peste cap cu coarda, la scripete jos|Coatele sus, fixe','Extensii deasupra capului, așezat, cu ganteră|Spătar drept, coboară adânc','Extensii triceps peste cap cu bara EZ, așezat|Coatele aproape de cap','Extensii peste cap, o mână, la scripete|Pe rând, întinde complet'],
     skull:['Skull crushers pe bancă înclinată|Bancă ușor înclinată, coatele fixe','Skull crushers la scripete|Tensiune constantă pe triceps','Skull crushers cu gantere, o mână|Pe rând, controlat','Skull crushers, pauză jos|Ține 1 secundă jos'],
     dips:['Dips la paralele, înclinat în față|Accent pe piept și triceps','Dips pe bancă, picioarele ridicate|Mai greu: picioarele pe altă bancă','Kickback triceps la scripete|Cotul sus, extinde spre spate','Dips la mașină, cu greutate ușoară|Coboară lent'],
-    lat:['Tracțiuni la helcometru, o mână|Pe rând, trage cotul spre șold','Tracțiuni la helcometru, priză inversă|Palmele spre tine, trage la piept','Tracțiuni la bară, priză neutră|Palmele față în față','Tracțiuni la helcometru, coborâre lentă|Urcă în 3 secunde'],
-    rowH:['Ramat cu haltera, priză inversă|Palmele în sus, trage spre buric','Ramat cu gantere, aplecat, două mâini|Spatele drept, trage coatele sus','Ramat la mașină, piept sprijinit|Piept pe pernă, strânge spatele','Ramat Pendlay (din sol)|Fiecare repetare pornește din sol'],
-    rowC:['Ramat la cablu, o mână|Pe rând, strânge omoplatul','Ramat la mașină, priză largă|Piept sprijinit, trage cu coatele','Ramat la cablu, priză inversă|Palmele în sus, coatele aproape','Ramat cu gantera, pe bancă, pauză sus|Ține 1 secundă sus'],
-    sarm:['Pulldown cu brațele întinse, la coardă|Coarda se desparte jos','Pulldown cu brațele întinse, o mână|Pe rând, brațul drept','Pullover la scripete|Brațe drepte, trage cu spatele','Pullover la mașină|Coatele sprijinite, trage în jos'],
+    lat:['Tracțiuni la helcometru, priză inversă|Palmele spre tine, trage la piept',
+      'Tracțiuni la bară, priză neutră|Palmele față în față, coboară controlat',
+      'Tracțiuni la mașină, ambele brațe|Trage coatele în jos, pieptul sus',
+      'Tracțiuni la helcometru, coborâre lentă|Urcă în 3 secunde, fără balans'],
+    rowH:['Ramat cu haltera, priză inversă|Palmele în sus, trage spre buric',
+      'Ramat cu gantere, aplecat, două mâini|Spatele drept, trage coatele sus',
+      'Ramat la mașină, piept sprijinit|Piept pe pernă, strânge spatele',
+      'Ramat Pendlay (din sol)|Fiecare repetare pornește din sol'],
+    rowC:['Ramat la cablu, priză inversă|Palmele în sus, coatele aproape',
+      'Ramat la mașină, priză neutră|Piept sprijinit, trage coatele pe lângă corp',
+      'Ramat la cablu, cu pauză sus|Ține 1 secundă sus, apoi coboară lent',
+      'Ramat la mașină, spate de sus|Trage spre piept cu coatele larg'],
+    sarm:['Pulldown cu brațele întinse, la coardă|Coarda se desparte jos',
+      'Pullover la scripete|Brațe drepte, trage cu spatele',
+      'Pullover la mașină|Coatele sprijinite, trage în jos',
+      'Face pull, priză largă|Trage spre frunte, coatele sus'],
     bb:['Flexii cu bara EZ, priză îngustă|Coatele fixe, accent pe interior','Flexii la scripete, cu bara|Tensiune constantă','Flexii 21 (7+7+7) cu bara|7 jos, 7 sus, 7 complete','Flexii cu bara, coborâre lentă|Coboară în 3 secunde'],
     db:['Flexii cu gantere, în picioare, simultan|Ambele brațe odată','Flexii cu gantere, priză supinată la bancă|Brațele pe bancă înclinată','Flexii la scripete, o mână|Pe rând, strânge sus','Flexii cu gantere, coborâre lentă|Coboară în 3 secunde'],
     ham:['Flexii ciocan, alternative|Un braț pe rând','Flexii ciocan, priză inversă|Palmele în jos, pentru antebraț','Flexii ciocan la scripete, o mână|Pe rând, controlat','Flexii ciocan, coborâre lentă|Coboară în 3 secunde'],
@@ -2908,7 +2940,11 @@ document.addEventListener('click', function(e){
     rear:['Fluturări inverse pe bancă înclinată|Pieptul pe bancă, trage înapoi','Fluturări inverse, o mână, la scripete|Pe rând, strânge omoplatul','Fluturări inverse cu elastic|Trage elasticul larg','Face pull la coardă, priză largă|Trage spre frunte'],
     shrug:['Shrug cu gantere, pauză sus|Ține 2 secunde sus','Shrug cu bara la spate|Bara în spatele corpului','Shrug la mașină|Controlat, fără rotire','Ridicări de umeri, aplecat|Ușor aplecat, pentru trapezul din mijloc'],
     plank:['Plank cu ridicarea unui picior|Alternezi picioarele, șoldurile fixe','Plank cu picioarele ridicate|Picioarele pe bancă','Plank dinamic (sus–jos pe mâini)|Treci de pe antebrațe pe mâini','Plank lateral cu rotație|Rotește trunchiul sub corp'],
-    crunch:['Crunch cu picioarele ridicate|Picioarele în aer, urcă cu abdomenul','Crunch la scripete, în genunchi|Rotunjește spatele, trage cu abdomenul','Crunch invers, pe bancă înclinată|Ridică șoldurile încet','Ridicări de genunchi din atârnat, pe antebrațe|Fără balans, genunchii la piept']
+    crunch:['Crunch cu picioarele ridicate|Picioarele în aer, urcă cu abdomenul','Crunch la scripete, în genunchi|Rotunjește spatele, trage cu abdomenul','Crunch invers, pe bancă înclinată|Ridică șoldurile încet','Ridicări de genunchi din atârnat, pe antebrațe|Fără balans, genunchii la piept'],
+    lowb:['Hiperextensii cu pauză sus|Ține 1 secundă sus, fără arcuire',
+      'Good morning la Smith|Bara pe ghidaj, șoldurile în spate',
+      'Hiperextensii cu disc la piept|Disc ușor la piept, mișcare lentă',
+      'Hiperextensii culcat (superman)|Ridică brațele și picioarele, ține 2 secunde'],
   };
   Object.keys(POOL2).forEach(function(k){ POOL[k] = POOL[k].concat(POOL2[k]); });
   var ENP2 = {
@@ -2920,10 +2956,22 @@ document.addEventListener('click', function(e){
     overhead:['low cable overhead rope triceps extension','seated overhead dumbbell triceps extension','seated overhead EZ bar triceps extension','single arm cable overhead triceps extension'],
     skull:['incline skull crushers form','cable skull crushers form','single arm dumbbell skull crushers','paused skull crushers form'],
     dips:['chest dips lean forward form','bench dips feet elevated form','cable triceps kickback form','assisted dips machine slow'],
-    lat:['single arm lat pulldown form','reverse grip lat pulldown form','neutral grip pull ups form','slow negative lat pulldown'],
-    rowH:['reverse grip barbell row form','bent over dumbbell row both arms form','chest supported machine row form','pendlay row form'],
-    rowC:['single arm cable row form','wide grip machine row form','reverse grip cable row form','paused one arm dumbbell row'],
-    sarm:['rope straight arm pulldown form','single arm straight arm pulldown','cable pullover form','machine pullover form'],
+    lat:['reverse grip lat pulldown form',
+      'neutral grip pull ups form',
+      'machine lat pulldown form',
+      'slow negative lat pulldown'],
+    rowH:['reverse grip barbell row form',
+      'bent over dumbbell row both arms form',
+      'chest supported machine row form',
+      'pendlay row form'],
+    rowC:['reverse grip cable row form',
+      'hammer strength iso row form',
+      'paused seated cable row form',
+      'high row machine upper back form'],
+    sarm:['rope straight arm pulldown form',
+      'cable pullover form',
+      'machine pullover form',
+      'wide face pull rope form'],
     bb:['close grip EZ bar curl form','cable bar curl form','21s barbell curl form','slow negative barbell curl'],
     db:['standing dumbbell curl both arms form','supinated incline dumbbell curl form','single arm cable curl form','slow negative dumbbell curl'],
     ham:['alternating hammer curl form','reverse grip hammer curl form','single arm cable hammer curl form','slow negative hammer curl'],
@@ -2941,7 +2989,11 @@ document.addEventListener('click', function(e){
     rear:['incline bench reverse fly form','single arm cable reverse fly form','band reverse fly form','wide grip rope face pull form'],
     shrug:['paused dumbbell shrug form','behind the back barbell shrug form','machine shrug form','bent over shrug form'],
     plank:['plank with leg lift form','feet elevated plank form','plank up down form','side plank with rotation form'],
-    crunch:['crunch legs raised form','kneeling cable crunch form','decline reverse crunch form','hanging knee raise on captain chair form']
+    crunch:['crunch legs raised form','kneeling cable crunch form','decline reverse crunch form','hanging knee raise on captain chair form'],
+    lowb:['back extension pause form',
+      'smith machine good morning form',
+      'weighted back extension plate form',
+      'superman back extension form'],
   };
   Object.keys(ENP2).forEach(function(k){ ENP[k] = ENP[k].concat(ENP2[k]); });
   // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 8)
@@ -2949,6 +3001,7 @@ document.addEventListener('click', function(e){
     var wv = ((week - 1) % 4 + 4) % 4, ex = [];
     d.slots.forEach(function(s){
       var vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8;
+      for(var tr = 0; tr < 8 && /o mână|un braț|pe rând/.test(POOL[s[0]][vi].split('|')[0] + ' ' + POOL[s[0]][vi].split('|')[1]) && !/două mâini|ambele/.test(POOL[s[0]][vi]); tr++) vi = (vi + 1) % 8;
       var p = POOL[s[0]][vi].split('|');
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
@@ -2965,8 +3018,8 @@ document.addEventListener('click', function(e){
   }
   var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2) };
   var WEEK_INFO = { rest:['Odihnă','Corpul crește în zilele de pauză. Somn bun, proteine, plimbare ușoară dacă vrei.'] };
-  var PHASE_HINT = { 1:'Luni piept+triceps, Marți spate+biceps, Miercuri picioare, Joi umeri+abdomen, Vineri tot corpul. Sâmbătă și duminică odihnă.',
-    2:'Șase zile: piept+triceps, spate+biceps, picioare, umeri, brațe, tot corpul. Duminică odihnă. Alege asta doar dacă te recuperezi bine.' };
+  var PHASE_HINT = { 1:'Program clasic Push / Pull / Legs: Luni Push (piept, umeri, triceps), Marți Pull (spate, biceps), Miercuri Picioare, Joi Upper (sus), Vineri Lower (jos + lombar). Weekend odihnă.',
+    2:'Push / Pull / Legs de două ori pe săptămână, cel mai cunoscut program din culturism: Luni Push, Marți Pull, Miercuri Picioare, Joi Push, Vineri Pull, Sâmbătă Picioare. Duminică odihnă.' };
   var dayShortS = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
   var SP_KEY = 'byzyp_sport_v1';
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
