@@ -79,7 +79,10 @@
     padding-bottom:env(safe-area-inset-bottom,0px); }
   .tabbar-inner{ max-width:520px; margin:0 auto; display:flex; }
   /* fila Aur ascunsă pentru moment — o readuci cu window.SHOW_GOLD = true și scoțînd linia asta */
-  .tab[data-view="gold"]{ display:none !important; }
+  .tab[data-view="gold"], .gold-only{ display:none !important; }
+  /* Bani: doar Ethereum (restul e ascuns, nu șters) */
+  #moneySeg, #view-money .card:not(#ethCard){ display:none !important; }
+  .dash-card[data-g="worth"], .dash-card[data-g="trading"], .day-pill[data-g="worth"], .day-pill[data-g="trading"]{ display:none !important; }
   .tab{ flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column;
     align-items:center; gap:3px; padding:10px 2px 8px; color:var(--text-faint); font-family:inherit; font-size:10px;
     position:relative; transition:color .15s ease; }
@@ -486,6 +489,46 @@
   .supp-row{ display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--line); cursor:pointer; } .supp-row:first-child{ border-top:none; }
   .supp-row.done .supp-n{ text-decoration:line-through; opacity:.55; } .supp-t{ font-family:var(--mono); font-size:11px; color:var(--gold); min-width:44px; }
   .supp-n{ font-size:13.5px; font-weight:600; } .supp-d{ font-size:11.5px; color:var(--text-faint); margin-top:2px; line-height:1.4; }
+
+  /* ===== design nou: antrenament + suplimente ===== */
+  .wo-head{ padding:2px 0 4px; } .wo-name{ font-size:24px !important; }
+  .wo-prog{ background:rgba(212,175,90,.12); border:1px solid rgba(212,175,90,.35); color:var(--gold) !important; padding:5px 10px; border-radius:999px; font-weight:700; }
+  .wo-bar{ height:7px !important; border-radius:6px !important; }
+  .wo-warm{ border-style:solid !important; border-color:rgba(212,175,90,.22) !important; background:linear-gradient(135deg, rgba(212,175,90,.09), transparent) !important; border-radius:14px !important; }
+  .ex{ background:var(--bg-card-2); border:1px solid var(--line) !important; border-radius:18px; padding:14px !important; margin-top:12px; }
+  .ex.ex-done{ border-color:rgba(93,224,166,.45) !important; background:linear-gradient(135deg, rgba(93,224,166,.08), var(--bg-card-2)); }
+  .ex-top{ display:flex !important; justify-content:flex-start !important; align-items:center !important; gap:12px !important; }
+  .ex-bn{ width:34px; height:34px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:#1a1306; background:linear-gradient(135deg,#f1d98f,#c79a3c); }
+  .ex-done .ex-bn{ background:linear-gradient(135deg,#7df0c0,#2fb585); }
+  .ex-tt{ flex:1; min-width:0; } .ex-n{ display:block; font-size:15.5px !important; font-weight:700; line-height:1.3; }
+  .ex-pills{ display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .ex-pills b{ font-family:var(--mono); font-size:11.5px; color:var(--gold); background:rgba(212,175,90,.12); border:1px solid rgba(212,175,90,.3); border-radius:999px; padding:3px 9px; }
+  .ex-pills i{ font-style:normal; font-size:11px; color:var(--text-dim); background:var(--bg-card); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
+  .ex-tip{ font-size:12.5px !important; margin-top:10px !important; color:var(--text-dim) !important; line-height:1.5 !important; }
+  .yt-btn{ background:rgba(212,175,90,.12) !important; color:var(--gold) !important; border:1px solid rgba(212,175,90,.45); padding:10px 12px !important; font-size:13px !important; }
+  .ex-how summary{ background:var(--bg-card); border:1px solid var(--line); border-radius:11px; padding:9px 12px !important; text-align:center; color:var(--text-dim) !important; }
+  .ex-sets{ display:flex; gap:8px !important; align-items:center; margin-top:12px; }
+  .set-b{ width:44px !important; height:44px !important; border-radius:50% !important; font-size:15px; font-weight:700; }
+  .set-b.on{ background:linear-gradient(135deg,#7df0c0,#2fb585) !important; border-color:transparent !important; color:#06251a !important; }
+  .rest-b{ border-radius:999px !important; padding:10px 14px !important; }
+  .sp-head{ display:flex; justify-content:space-between; align-items:center; }
+  .sp-big{ font-size:38px; font-weight:800; letter-spacing:-.03em; line-height:1; } .sp-big span{ font-size:18px; color:var(--text-faint); font-weight:600; }
+  .sp-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
+  .sp-ring{ --p:0; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:conic-gradient(var(--gold) calc(var(--p) * 1%), var(--line) 0); position:relative; }
+  .sp-ring::before{ content:''; position:absolute; inset:6px; border-radius:50%; background:var(--bg-card); }
+  .sp-ring b{ position:relative; font-size:13px; }
+  .sp-bar{ height:6px; border-radius:6px; background:var(--line); margin:14px 0 4px; overflow:hidden; } .sp-bar i{ display:block; height:100%; background:linear-gradient(90deg,#f1d98f,#c79a3c); transition:width .3s ease; }
+  .sp-g{ display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px; font-size:12.5px; font-weight:700; color:var(--gold); }
+  .sp-g em{ font-style:normal; font-family:var(--mono); font-size:11px; color:var(--text-faint); background:var(--bg-card-2); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
+  .supp-row{ display:flex !important; align-items:center !important; gap:12px !important; padding:11px !important; margin-top:8px; border:1px solid var(--line) !important; border-radius:16px; background:var(--bg-card-2); transition:all .2s ease; }
+  .supp-row:first-child{ border-top:1px solid var(--line) !important; }
+  .supp-row.done{ border-color:rgba(93,224,166,.45) !important; background:linear-gradient(135deg, rgba(93,224,166,.09), var(--bg-card-2)); }
+  .supp-row.done .supp-n{ text-decoration:none !important; opacity:1 !important; }
+  .sp-ic{ width:42px; height:42px; flex:none; border-radius:13px; background:var(--bg-card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:21px; }
+  .sp-tx{ flex:1; min-width:0; } .supp-n{ font-size:14.5px !important; font-weight:700 !important; } .supp-d{ font-size:11.5px; }
+  .sp-ck{ width:28px; height:28px; flex:none; border-radius:50%; border:2px solid var(--text-faint); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:#06251a; }
+  .supp-row.done .sp-ck{ background:linear-gradient(135deg,#7df0c0,#2fb585); border-color:transparent; }
   .wk-detail{ margin-top:12px; padding:12px 14px; border-radius:12px; background:var(--bg-card-2); border:1px solid var(--line); }
   .wk-detail b{ font-size:15px; } .wk-detail div{ font-size:12.5px; color:var(--text-dim); margin-top:3px; }
   .wo-pills{ flex-wrap:wrap; }
@@ -1673,7 +1716,7 @@
         <button class="past-toggle hx-btn" data-hx="worth" data-label="istoricul soldurilor">Arată istoricul soldurilor ▾</button><div class="hx-body" data-hxb="worth" style="display:none;margin-top:10px;"><div id="worthHistory"></div></div>
       </div>
 
-      <div class="card" data-seg-card="trading">
+      <div class="card gold-only" data-seg-card="trading">
         <div class="card-title">Știri economice</div>
         <div class="nx" id="newsNext"></div>
         <div class="day-pills" style="margin-top:12px;">
@@ -1692,7 +1735,7 @@
         <div id="mt5Body"><div class="hint" style="margin-top:0;">Se încarcă…</div></div>
       </div>
 
-      <div class="card gold-card" data-seg-card="trading" id="tradingGoldCard">
+      <div class="card gold-card gold-only" data-seg-card="trading" id="tradingGoldCard">
         <div class="card-title">🥇 Intrările pe aur acum</div>
         <div id="tradingGoldActive"><div class="hint" style="margin-top:0;">Se încarcă…</div></div>
       </div>
@@ -2415,7 +2458,8 @@ document.addEventListener('click', function(e){
     if(md){ var foods = md.querySelectorAll('.mm-food'); lunch = foods[1] ? foods[1].textContent : ''; dinner = foods[3] ? foods[3].textContent : ''; }
     var nt = (typeof newsTarget !== 'undefined') ? newsTarget : null;
     var newsHtml;
-    if(nt){
+    if(!window.SHOW_GOLD){ newsHtml = ''; }
+    else if(nt){
       var hot = nt.i === 'High' && (nt.t.getTime() - Date.now()) < 2*3600000;
       newsHtml = '<div class="pt wide' + (hot?' hot':'') + '" data-go="news"><div class="pt-l">📰 Următoarea știre ' + (nt.i==='High'?'roșie':'importantă') + '</div><div class="pt-t">' + nt.c + ' — ' + nt.title + '</div><div class="pt-s">' + ['Du','Lu','Ma','Mi','Jo','Vi','Sâ'][nt.t.getDay()] + ' ' + nt.t.getDate() + ' ' + monthShort[nt.t.getMonth()] + ' la ' + hhmm(nt.t) + '</div><div class="pt-a">Vezi toate știrile →</div></div>';
     } else {
@@ -3007,12 +3051,14 @@ document.addEventListener('click', function(e){
       '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     w.ex.forEach(function(e,ei){
-      html += '<div class="ex"><div class="ex-top"><span class="ex-n">' + (ei+1) + '. ' + e[0] + '</span><span class="ex-meta">' + e[1] + ' × ' + e[2] + '</span></div>' +
+      var dn = 0; for(var q=0;q<e[1];q++){ if(st[ei + '-' + q]) dn++; }
+      html += '<div class="ex' + (dn === e[1] ? ' ex-done' : '') + '"><div class="ex-top"><span class="ex-bn">' + (dn === e[1] ? '✓' : (ei+1)) + '</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span>' +
+        '<div class="ex-pills"><b>' + e[1] + ' × ' + e[2] + '</b><i>⏱ pauză ' + e[3] + ' s</i></div></div></div>' +
         (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') +
         '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' +
         '<details class="ex-how"><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
-      for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (si+1) + '</button>'; }
-      html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ ' + e[3] + 's</button></div></div>';
+      for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (st[k] ? '✓' : (si+1)) + '</button>'; }
+      html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ pauză</button></div></div>';
     });
     if(done === total) html += '<div class="wo-done">🏆 Antrenament complet! L-am bifat și pe fila Azi.</div>';
     html += '<div class="hint">Atinge fiecare serie după ce o termini — pornește automat pauza. Progresul se resetează în fiecare zi. Luni viitoare exercițiile se schimbă.</div>';
@@ -3070,21 +3116,30 @@ document.addEventListener('click', function(e){
 
   /* ===== Suplimente: lista de azi + notificările vin din push-bot (09:00, 20:00, 22:00) ===== */
   var SUPPS = [
-    { id:'d3k2', t:'09:00', n:'Vitamina D3 + K2', d:'Cu masa de dimineață — au nevoie de grăsime ca să se absoarbă.' },
-    { id:'om3', t:'09:00', n:'Omega 3', d:'Tot cu masa de dimineață.' },
-    { id:'cre', t:'09:00', n:'Creatină 5 g', d:'În fiecare zi, cu un pahar de apă, și în zilele fără sală.' },
-    { id:'zn', t:'20:00', n:'Zinc', d:'Cu cina, ca să nu te supere la stomac.' },
-    { id:'mg', t:'22:00', n:'Magneziu', d:'Seara, înainte de somn.' }
+    { id:'d3k2', g:0, ic:'☀️', n:'Vitamina D3 + K2', d:'Cu masa de dimineață — au nevoie de grăsime ca să se absoarbă.' },
+    { id:'om3', g:0, ic:'🐟', n:'Omega 3', d:'Tot cu masa de dimineață.' },
+    { id:'cre', g:0, ic:'⚡', n:'Creatină 5 g', d:'În fiecare zi, cu un pahar de apă, și în zilele fără sală.' },
+    { id:'zn', g:1, ic:'🛡️', n:'Zinc', d:'Cu cina, ca să nu te supere la stomac.' },
+    { id:'mg', g:2, ic:'🌙', n:'Magneziu', d:'Seara, înainte de somn — te ajută să te relaxezi.' }
   ];
+  var SUPP_G = [ { t:'09:00', l:'Dimineața', ic:'🌅' }, { t:'20:00', l:'La cină', ic:'🍽️' }, { t:'22:00', l:'Înainte de somn', ic:'🌙' } ];
   var SUPP_KEY = 'byzyp_supp_v1';
   function suppLoad(){ try{ return JSON.parse(localStorage.getItem(SUPP_KEY) || '{}') || {}; }catch(e){ return {}; } }
   function renderSupp(){
     var el = document.getElementById('suppCard'); if(!el) return;
     var all = suppLoad(), day = all[todayKey] || {};
-    var left = SUPPS.filter(function(s){ return !day[s.id]; }).length;
-    el.innerHTML = SUPPS.map(function(s){
-      return '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><span class="gr-box"></span><span class="supp-t">' + s.t + '</span><div style="flex:1;"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div></div>';
-    }).join('') + '<div class="hint" style="margin-bottom:0;">' + (left ? 'Mai ai ' + left + ' de luat azi.' : '✅ Toate suplimentele de azi sunt luate.') + ' Primești notificare la 09:00, 20:00 și 22:00. Dozele după ambalaj sau după medic.</div>';
+    var got = SUPPS.filter(function(s){ return day[s.id]; }).length, pct = Math.round(got / SUPPS.length * 100);
+    var h = '<div class="sp-head"><div><div class="sp-big">' + got + '<span>/' + SUPPS.length + '</span></div><div class="sp-sub">' + (got === SUPPS.length ? 'Toate luate azi ✅' : 'luate azi') + '</div></div>' +
+      '<div class="sp-ring" style="--p:' + pct + '"><b>' + pct + '%</b></div></div><div class="sp-bar"><i style="width:' + pct + '%"></i></div>';
+    SUPP_G.forEach(function(g, gi){
+      var items = SUPPS.filter(function(s){ return s.g === gi; });
+      h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + g.t + '</em></div>';
+      items.forEach(function(s){
+        h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
+      });
+    });
+    h += '<div class="hint" style="margin:12px 0 0;">🔔 Notificare la 09:00, 20:00 și 22:00. Dozele după ambalaj sau după medic.</div>';
+    el.innerHTML = h;
     el.querySelectorAll('.supp-row').forEach(function(r){ r.addEventListener('click', function(){
       var a = suppLoad(), d = a[todayKey] || {}; d[r.getAttribute('data-id')] = !d[r.getAttribute('data-id')]; a[todayKey] = d;
       Object.keys(a).sort().slice(0, -30).forEach(function(k){ delete a[k]; });
@@ -5211,16 +5266,16 @@ document.addEventListener('click', function(e){
     }
     // money
     var dw = (W.worthEnd != null && W.worthStart != null) ? W.worthEnd - W.worthStart : null;
-    h += '<div class="rp-sec"><h4>💼 Bani</h4><div class="rp-row"><span>Avere totală</span><b>' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd).toLocaleString('ro-RO') : '–') + '</b></div>' +
+    if(window.SHOW_MONEY) h += '<div class="rp-sec"><h4>💼 Bani</h4><div class="rp-row"><span>Avere totală</span><b>' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd).toLocaleString('ro-RO') : '–') + '</b></div>' +
       '<div class="rp-row"><span>Schimbare</span><b class="' + (dw == null ? '' : dw >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(dw, 0, '€') + '</b></div>' +
       '<div class="rp-row"><span>Investit luna asta</span><b>€' + Math.round(W.inv) + '</b></div></div>';
     // trading
-    h += '<div class="rp-sec"><h4>📈 Trading (jurnalul tău)</h4>' + (W.tw ? '<div class="rp-row"><span>Tranzacții</span><b>' + W.tw + ' · ' + Math.round(W.wins / W.tw * 100) + '% pe plus</b></div>' +
+    if(window.SHOW_MONEY) h += '<div class="rp-sec"><h4>📈 Trading (jurnalul tău)</h4>' + (W.tw ? '<div class="rp-row"><span>Tranzacții</span><b>' + W.tw + ' · ' + Math.round(W.wins / W.tw * 100) + '% pe plus</b></div>' +
       '<div class="rp-row"><span>Rezultat</span><b class="' + (W.pnl >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.pnl, 2, '€') + '</b></div>' +
       '<div class="rp-row"><span>Cea mai bună / cea mai slabă</span><b>' + sgn(W.best, 2, '€') + ' / ' + sgn(W.worst, 2, '€') + '</b></div>' : '<div class="rp-row"><span>Nicio tranzacție notată</span><b>–</b></div>') + '</div>';
     // gold
     var gch = (W.goldFrom && W.goldTo) ? W.goldTo - W.goldFrom : null;
-    h += '<div class="rp-sec"><h4>🥇 Aur &amp; strategii (test)</h4><div class="rp-row"><span>Aurul în săptămână</span><b class="' + (gch == null ? '' : gch >= 0 ? 'rp-good' : 'rp-bad') + '">' + (gch == null ? '–' : sgn(gch, 2, '$') + ' (' + sgn(gch / W.goldFrom * 100, 2, '', '%') + ')') + '</b></div>' +
+    if(window.SHOW_GOLD) h += '<div class="rp-sec"><h4>🥇 Aur &amp; strategii (test)</h4><div class="rp-row"><span>Aurul în săptămână</span><b class="' + (gch == null ? '' : gch >= 0 ? 'rp-good' : 'rp-bad') + '">' + (gch == null ? '–' : sgn(gch, 2, '$') + ' (' + sgn(gch / W.goldFrom * 100, 2, '', '%') + ')') + '</b></div>' +
       '<div class="rp-row"><span>Tranzacții de test deschise</span><b>' + W.gOpened + '</b></div>' +
       '<div class="rp-row"><span>Închise · câștigate</span><b>' + W.gClosed + ' · ' + (W.gClosed ? Math.round(W.gW / W.gClosed * 100) + '%' : '–') + '</b></div>' +
       '<div class="rp-row"><span>Rezultat total</span><b class="' + (W.gR >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(W.gR, 2, '', 'R') + '</b></div>' +
@@ -5241,6 +5296,7 @@ document.addEventListener('click', function(e){
         (W.fit ? '\nFitness: ' + Math.round(W.fit.steps) + ' pași/zi, ' + Math.round(W.fit.kcal) + ' kcal, ' + Math.round(W.fit.exMin) + ' min exercițiu' : '') +
         '\nTrading: ' + W.tw + ' tranzacții, ' + sgn(W.pnl, 2, '€') +
         '\nStrategii aur (test): ' + W.gClosed + ' închise, ' + sgn(W.gR, 2, '', 'R') + (W.bestS ? ', cea mai bună: ' + W.bestS : '');
+      t = t.split('\n').filter(function(l){ return !/^(Avere|Trading|Fitness|Strategii aur)/.test(l); }).join('\n');
       var btn = this;
       var ok = function(){ btn.textContent = '✓ Copiat'; setTimeout(function(){ btn.textContent = '📋 Copiază raportul (ca text)'; }, 2000); };
       if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, ok); else ok();

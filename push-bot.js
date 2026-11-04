@@ -10,6 +10,7 @@ const TZ = process.env.APP_TZ || 'Atlantic/Canary';
 const TEST = process.env.TEST_PUSH === 'true';
 const STATE = 'sent.json';
 let sent = {}; try { sent = JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) {}
+const GOLD_PUSH = false; // alertele și știrile pe aur sunt oprite pentru moment (pune true ca să revină)
 const status = Array.isArray(sent._status) ? sent._status : [];
 let changed = false;
 // a wrong secret must NOT crash the run (red X + e-mails every 5 min): log it, show it in the app (Profil → Notificări) and stop quietly
@@ -103,7 +104,7 @@ for (const s of SUPP) {
 
 // ---------- red news, ~10 min before ----------
 let news = []; try { news = JSON.parse(fs.readFileSync('news.json', 'utf8')); } catch (e) {}
-const soon = news.filter(e => e.impact === 'High' || (e.impact === 'Medium' && e.country === 'USD')).map(e => ({ ...e, t: new Date(e.date) }))
+const soon = !GOLD_PUSH ? [] : news.filter(e => e.impact === 'High' || (e.impact === 'Medium' && e.country === 'USD')).map(e => ({ ...e, t: new Date(e.date) }))
   .filter(e => { const m = (e.t - now) / 60000; return m >= -1 && m <= 13; });
 const groups = {};
 soon.forEach(e => { const k = e.date; (groups[k] = groups[k] || []).push(e); });
@@ -119,7 +120,7 @@ for (const k of Object.keys(groups)) {
 
 // ---------- strategy paper-trade events (written by analyze.py) ----------
 let gold = {}; try { gold = JSON.parse(fs.readFileSync('xauusd.json', 'utf8')); } catch (e) {}
-const evs = (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
+const evs = !GOLD_PUSH ? [] : (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
 const MAXN = 5;
 // every alert says WHEN the price was read and from where (the analysis time), and how late it reaches you if the queue was slow
 const stamp = (iso) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(iso));
