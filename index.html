@@ -2680,19 +2680,19 @@ document.addEventListener('click', function(e){
   // slot: [id, tip, serii, repetări în poză, decalaj variantă]
   var PLANS = {
     1:{ label:'5 zile · Luni–Vineri', days:[
-      { code:'m1', name:'Push · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
-      { code:'m2', name:'Pull · Spate, Biceps', focus:'Spate, spate-umeri și biceps', img:'', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
-      { code:'m3', name:'Legs · Picioare', focus:'Picioare', img:'', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
-      { code:'m4', name:'Upper · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'8–12',2],['lat','c',3,'8–12',2],['press','c',2,'10–12',2],['rowC','c',3,'10–12',2],['pushdown','i',2,'12–15',2],['bb','i',2,'12–15',2],['rear','i',2,'12–15',2]] },
-      { code:'m5', name:'Lower · Picioare + Lombar', focus:'Picioare și lombar', img:'', off:0, slots:[['rdl','c',3,'8–12',2],['quad2','c',3,'10–12',2],['lcurl','i',3,'10–15',2],['lext','i',2,'12–15',2],['calf','i',4,'12–20',2],['lowb','i',2,'12–15',0],['crunch','i',3,'12–20',2]] }
+      { code:'m1', name:'Push · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
+      { code:'m2', name:'Pull · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
+      { code:'m3', name:'Legs · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
+      { code:'m4', name:'Upper · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'10–12',2],['lat','c',3,'10–12',2],['press','c',3,'10–12',2],['rowC','c',3,'10–12',2],['pushdown','i',2,'12–15',2],['bb','i',2,'12–15',2]] },
+      { code:'m5', name:'Lower · Picioare', focus:'Picioare și abdomen', img:'', off:0, slots:[['lpress','c',3,'10–12',2],['quad2','c',3,'10–12',2],['lcurl','i',3,'12–15',2],['lext','i',3,'12–15',2],['calf','i',3,'15–20',2],['crunch','i',3,'12–20',2]] }
     ], rest:[5,6] },
     2:{ label:'6 zile · Push / Pull / Legs ×2', days:[
-      { code:'s1', name:'Push A · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
-      { code:'s2', name:'Pull A · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
-      { code:'s3', name:'Legs A · Picioare', focus:'Picioare', img:'', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
-      { code:'s4', name:'Push B · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:3, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['press','c',3,'8–12',0],['fly','i',2,'12–15',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['crunch','i',3,'12–20',0]] },
-      { code:'s5', name:'Pull B · Spate, Biceps', focus:'Spate și biceps', img:'', off:3, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['rear','i',3,'12–15',0],['bb','i',3,'10–12',0],['ham','i',2,'12–15',0],['plank','t',3,'30–60 s',0]] },
-      { code:'s6', name:'Legs B · Picioare', focus:'Picioare', img:'', off:3, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['rdl','c',3,'8–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] }
+      { code:'s1', name:'Push A · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
+      { code:'s2', name:'Pull A · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
+      { code:'s3', name:'Legs A · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
+      { code:'s4', name:'Push B · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:3, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
+      { code:'s5', name:'Pull B · Spate, Biceps', focus:'Spate și biceps', img:'', off:3, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
+      { code:'s6', name:'Legs B · Picioare', focus:'Picioare', img:'', off:3, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] }
     ], rest:[6] }
   };
   /* ===== desene: cum se face fiecare exercițiu (start / sfârșit) ===== */
@@ -3001,7 +3001,9 @@ document.addEventListener('click', function(e){
     var wv = ((week - 1) % 4 + 4) % 4, ex = [];
     d.slots.forEach(function(s){
       var vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8;
-      for(var tr = 0; tr < 8 && /o mână|un braț|pe rând/.test(POOL[s[0]][vi].split('|')[0] + ' ' + POOL[s[0]][vi].split('|')[1]) && !/două mâini|ambele/.test(POOL[s[0]][vi]); tr++) vi = (vi + 1) % 8;
+      var HARD = /haltera|T-bar|Pendlay|Arnold|21 \(|Good morning|Deadlift|hexagonală|un picior|bulgăr|mergând|laterale, sprijinit|elastic|cross-body|dinamic|rotație|atârnat|frontale|goblet|split|stiff|între glezne|disc|la bară|alternative|o mână|un braț|pe rând|aplecat|pauză|coborâre lentă|serie lungă|parțiale|stâlp|înclinată \(|Hollow|superman|Plank cu|priză inversă|vârfurile|Pullover cu|cu picioarele ridicate/i;
+      for(var tr = 0; tr < 8 && HARD.test(POOL[s[0]][vi].split('|')[0]); tr++) vi = (vi + 1) % 8;
+      if(HARD.test(POOL[s[0]][vi].split('|')[0])) vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8;
       var p = POOL[s[0]][vi].split('|');
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
