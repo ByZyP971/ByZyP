@@ -465,6 +465,14 @@
   .wk-d span{ font-size:15px; display:block; margin-top:4px; }
   .wk-d.today{ box-shadow:0 0 0 1.5px var(--gold) inset; }
   .wk-d.sel{ background:var(--accent); border-color:var(--accent); } .wk-d.sel b{ color:var(--accent-ink); }
+  .ex-how{ margin-top:8px; } .ex-how summary{ cursor:pointer; font-size:12.5px; font-weight:700; color:var(--gold); list-style:none; padding:6px 0; }
+  .ex-how summary::-webkit-details-marker{ display:none; }
+  .fg-row{ display:flex; gap:8px; margin-top:6px; } .fg-box{ flex:1; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:6px 4px 4px; text-align:center; }
+  .fg-box span{ display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:var(--text-faint); margin-top:2px; }
+  .fg{ width:100%; height:auto; display:block; } .fg .b,.fg .a,.fg .e{ fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .fg .b{ stroke:var(--text); stroke-width:2.6; } .fg .a{ stroke:var(--gold); stroke-width:3; } .fg .e{ stroke:var(--text-faint); stroke-width:2; }
+  .fg circle.b{ fill:var(--bg-card-2); } .fg circle.e{ fill:var(--bg-card-2); stroke:var(--gold); }
+  .fg-steps{ margin:8px 0 2px 18px; padding:0; font-size:12.5px; color:var(--text-dim); line-height:1.5; } .fg-steps li{ margin-top:5px; } .fg-steps b{ color:var(--text); }
   .wo-img{ width:100%; border-radius:12px; margin-top:10px; border:1px solid var(--line); display:block; cursor:zoom-in; }
   .ex-pic{ margin-top:6px; } .ex-pic .wo-img{ max-width:240px; margin-top:4px; }
   .big-img{ position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; overflow:auto; }
@@ -2615,6 +2623,157 @@ document.addEventListener('click', function(e){
       { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
     ], rest:[6] }
   };
+  /* ===== desene: cum se face fiecare exercițiu (start / sfârșit) ===== */
+  function Lp(pts, c){ return '<polyline class="' + c + '" points="' + pts.map(function(p){ return p[0] + ',' + p[1]; }).join(' ') + '"/>'; }
+  function Cp(x, y, r, c){ return '<circle class="' + c + '" cx="' + x + '" cy="' + y + '" r="' + r + '"/>'; }
+  function DB(p){ return Cp(p[0], p[1], 4, 'e'); }
+  function BAR(p){ return Cp(p[0], p[1], 6, 'e') + Cp(p[0], p[1], 1.5, 'e'); }
+  // figură din lateral: S umăr, P șold, K genunchi, A gleznă, H cap, arm [cot, mână]
+  function fg(o){
+    var s = Lp([o.S, o.P], 'b') + Lp([o.P, o.K, o.A], 'b') + Lp([o.A, [o.A[0] + 9, o.A[1] + (o.fy || 0)]], 'b') + Cp(o.H[0], o.H[1], 5, 'b');
+    if(o.K2) s += Lp([o.P, o.K2, o.A2], 'b') + Lp([o.A2, [o.A2[0] - 9, o.A2[1]]], 'b');
+    if(o.arm) s += Lp([o.S, o.arm[0], o.arm[1]], 'a');
+    return s + (o.eq || '');
+  }
+  // figură din față: arm = [cot, mână] pentru stânga, se oglindește pentru dreapta
+  function mir(p){ return [120 - p[0], p[1]]; }
+  function fr(o){
+    var sy = o.sy || 0, s = Cp(60, 14 + sy, 5, 'b') + Lp([[60, 20 + sy], [60, 46]], 'b') + Lp([[48, 24 + sy], [72, 24 + sy]], 'b');
+    if(o.seat){ s += Lp([[54, 46], [54, 50], [o.kn[0], o.kn[1]], [o.ft[0], o.ft[1]]], 'b') + Lp([[66, 46], [66, 50], mir(o.kn), mir(o.ft)], 'b') + Lp([[44, 52], [76, 52]], 'e'); }
+    else s += Lp([[54, 46], [52, 70]], 'b') + Lp([[66, 46], [68, 70]], 'b') + Lp([[54, 46], [66, 46]], 'b');
+    if(o.arm){ s += Lp([[48, 24 + sy], o.arm[0], o.arm[1]], 'a') + Lp([[72, 24 + sy], mir(o.arm[0]), mir(o.arm[1])], 'a'); }
+    return s + (o.eq || '');
+  }
+  function lyingBody(S, P, K, A, H){ return Lp([S, P], 'b') + Lp([P, K, A], 'b') + Cp(H[0], H[1], 5, 'b'); }
+  var BENCHLINE = Lp([[8, 46], [76, 46]], 'e') + Lp([[14, 46], [14, 66]], 'e') + Lp([[70, 46], [70, 66]], 'e');
+  var FIGS = {
+    bench:{ t:'Împins culcat', f:[
+      BENCHLINE + lyingBody([24,41],[52,41],[66,46],[66,62],[15,39]) + Lp([[24,41],[24,31],[24,21]], 'a') + BAR([24,21]),
+      BENCHLINE + lyingBody([24,41],[52,41],[66,46],[66,62],[15,39]) + Lp([[24,41],[32,38],[24,33]], 'a') + BAR([24,33])],
+      s:['Culcat pe bancă, picioarele pe podea, omoplații strânși. Ține bara sau ganterele deasupra pieptului, brațele întinse.','Coboară încet (2 secunde) până la mijlocul pieptului, coatele la ~45–70° de corp. Apoi împinge sus.','Nu săltă bara de pe piept. Fundul rămâne pe bancă. Nu bloca tare coatele sus.'] },
+    incline:{ t:'Împins înclinat', f:[
+      Lp([[20,38],[54,52]], 'e') + Lp([[54,52],[54,66]], 'e') + Lp([[28,34],[52,46]], 'b') + Lp([[52,46],[68,50],[68,66]], 'b') + Cp(23,30,5,'b') + Lp([[28,34],[30,24],[30,14]], 'a') + DB([30,14]),
+      Lp([[20,38],[54,52]], 'e') + Lp([[54,52],[54,66]], 'e') + Lp([[28,34],[52,46]], 'b') + Lp([[52,46],[68,50],[68,66]], 'b') + Cp(23,30,5,'b') + Lp([[28,34],[38,36],[30,26]], 'a') + DB([30,26])],
+      s:['Bancă la ~30°. Ganterele sus, deasupra părții de sus a pieptului, brațele aproape întinse.','Coboară controlat până când ganterele sunt la nivelul pieptului, apoi împinge în sus.','Nu ridica fundul de pe bancă. Nu pune bancă mai sus de 45° (se mută efortul pe umeri).'] },
+    fly:{ t:'Fluturări / crossover', f:[
+      fr({ arm:[[36,28],[26,34]], eq:DB([26,34]) + DB([94,34]) }),
+      fr({ arm:[[44,34],[56,36]], eq:DB([56,36]) + DB([64,36]) })],
+      s:['Brațele deschise lateral, coatele ușor îndoite (ca și cum ai îmbrățișa un copac mare). Pieptul scos în față.','Adu mâinile spre mijloc, în arc, strângând pieptul. Ține 1 secundă la mijloc.','Păstrează coatele îndoite la fel tot timpul. Nu coborî greutatea mai mult decât simți întinderea în piept.'] },
+    pushdown:{ t:'Extensii triceps la scripete', f:[
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[68,30]], eq:Cp(72,4,3,'e') + Lp([[72,4],[68,30]], 'e') + DB([68,30]) }),
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[58,50]], eq:Cp(72,4,3,'e') + Lp([[72,4],[58,50]], 'e') + DB([58,50]) })],
+      s:['În picioare, aproape de scripete. Coatele lipite de corp, antebrațele ridicate (la ~90°).','Împinge în jos până când brațele sunt drepte. Strânge tricepsul 1 secundă, apoi urcă încet.','Coatele nu se mișcă din loc. Nu te apleca peste greutate și nu o balansa cu corpul.'] },
+    overhead:{ t:'Extensii triceps peste cap', f:[
+      fg({ H:[58,14], S:[58,26], P:[58,48], K:[59,58], A:[58,70], arm:[[60,12],[50,14]], eq:DB([50,14]) }),
+      fg({ H:[58,14], S:[58,26], P:[58,48], K:[59,58], A:[58,70], arm:[[58,13],[58,0]], eq:DB([58,0]) })],
+      s:['Ține ganterele sau bara deasupra capului. Coatele spre tavan, apropiate de cap. Lasă greutatea în spatele capului.','Întinde brațele în sus până sunt drepte, mișcând doar antebrațul.','Coatele nu se desfac în lateral. Nu arcui spatele; strânge abdomenul.'] },
+    skull:{ t:'Skull crushers', f:[
+      BENCHLINE + lyingBody([24,41],[52,41],[66,46],[66,62],[15,39]) + Lp([[24,41],[24,31],[24,21]], 'a') + BAR([24,21]),
+      BENCHLINE + lyingBody([24,41],[52,41],[66,46],[66,62],[15,39]) + Lp([[24,41],[24,28],[14,30]], 'a') + BAR([14,30])],
+      s:['Culcat pe bancă, bara EZ sau ganterele deasupra pieptului, brațele întinse.','Îndoaie doar coatele și coboară greutatea spre frunte (sau puțin în spatele capului). Apoi întinde.','Coatele rămân fixe, îndreptate spre tavan, nu în lateral. Coboară lent ca să nu te lovești.'] },
+    dips:{ t:'Dips pe bancă', f:[
+      Lp([[8,44],[34,44]], 'e') + Lp([[14,44],[14,66]], 'e') + Lp([[28,26],[46,38]], 'b') + Lp([[46,38],[68,52],[90,66]], 'b') + Cp(26,16,5,'b') + Lp([[28,26],[27,35],[26,44]], 'a'),
+      Lp([[8,44],[34,44]], 'e') + Lp([[14,44],[14,66]], 'e') + Lp([[28,38],[46,48]], 'b') + Lp([[46,48],[68,56],[90,66]], 'b') + Cp(26,28,5,'b') + Lp([[28,38],[38,42],[26,44]], 'a')],
+      s:['Mâinile pe marginea băncii, în spatele tău. Picioarele întinse în față, brațele drepte, corpul aproape de bancă.','Coboară îndoind coatele la ~90°, până când umerii sunt la nivelul coatelor. Apoi împinge sus.','Coatele merg înapoi, nu în lateral. Nu coborî prea jos (te forțează umerii). Umerii nu se ridică spre urechi.'] },
+    pushup:{ t:'Flotări', f:[
+      Lp([[26,40],[60,48],[96,58]], 'b') + Cp(18,34,5,'b') + Lp([[26,40],[26,50],[26,58]], 'a') + Lp([[6,60],[110,60]], 'e'),
+      Lp([[26,52],[60,56],[96,60]], 'b') + Cp(18,46,5,'b') + Lp([[26,52],[36,54],[26,60]], 'a') + Lp([[6,62],[110,62]], 'e')],
+      s:['Mâinile sub umeri, corpul drept ca o scândură de la cap la călcâie, abdomenul și fesele strânse.','Coboară pieptul aproape de sol (coatele la ~45°), apoi împinge sus.','Nu lăsa șoldurile să cadă și nu le ridica. Dacă e greu, pune mâinile pe o bancă.'] },
+    pulldown:{ t:'Tracțiuni (helcometru)', f:[
+      fr({ arm:[[36,12],[30,0]], eq:Lp([[22,0],[98,0]], 'e') + Lp([[30,0],[30,-6]], 'e') + Lp([[90,0],[90,-6]], 'e') }),
+      fr({ arm:[[38,34],[34,24]], eq:Lp([[22,24],[98,24]], 'e') + Lp([[30,24],[30,-6]], 'e') + Lp([[90,24],[90,-6]], 'e') })],
+      s:['Apucă bara mai larg decât umerii, brațele sus, pieptul ridicat, trunchiul ușor înclinat înapoi.','Trage bara spre claviculă, ducând coatele în jos și spre șolduri. Strânge spatele 1 secundă.','Nu te legăna cu corpul și nu trage bara în spatele capului. Gândește-te că trag coatele, nu mâinile.'] },
+    row:{ t:'Ramat', f:[
+      fg({ H:[78,26], S:[70,30], P:[46,46], K:[50,58], A:[48,70], arm:[[70,42],[70,54]], eq:BAR([70,54]) }),
+      fg({ H:[78,26], S:[70,30], P:[46,46], K:[50,58], A:[48,70], arm:[[56,38],[66,46]], eq:BAR([66,46]) })],
+      s:['Genunchii ușor îndoiți, spatele drept, trunchiul aplecat la ~45°. Greutatea atârnă cu brațele întinse.','Trage greutatea spre buric, ducând coatele în spate. Strânge omoplații 1 secundă, apoi coboară încet.','Spatele rămâne drept tot timpul, nu rotunji. Nu te ridica din trunchi la fiecare repetare.'] },
+    sarm:{ t:'Pulldown cu brațele întinse', f:[
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[69,18],[80,12]], eq:Cp(86,2,3,'e') + Lp([[86,2],[80,12]], 'e') + DB([80,12]) }),
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[58,50]], eq:Cp(86,2,3,'e') + Lp([[86,2],[58,50]], 'e') + DB([58,50]) })],
+      s:['În fața scripetelui de sus, brațele întinse în față și puțin în sus, ușor aplecat înainte.','Trage bara în jos spre coapse, cu brațele drepte, doar din spate. Strânge 1 secundă.','Brațele rămân întinse, nu face flexie la cot. Nu te lăsa cu tot corpul peste greutate.'] },
+    curl:{ t:'Flexii biceps', f:[
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[58,48]], eq:DB([58,48]) }),
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[66,26]], eq:DB([66,26]) })],
+      s:['În picioare, brațele întinse pe lângă corp, palmele în față (sau față în față la ciocan). Coatele lipite de corp.','Ridică greutatea spre umăr îndoind doar cotul. Strânge bicepsul sus, apoi coboară în 2–3 secunde.','Coatele nu se duc în față și nu te balansa cu spatele. Dacă trebuie să te legeni, greutatea e prea mare.'] },
+    squat:{ t:'Genuflexiuni', f:[
+      fg({ H:[58,12], S:[58,24], P:[58,46], K:[59,58], A:[58,70], eq:BAR([56,22]) + Lp([[58,24],[62,22]], 'a') }),
+      fg({ H:[72,26], S:[66,34], P:[46,54], K:[70,54], A:[58,70], eq:BAR([64,32]) })],
+      s:['Picioarele la lățimea umerilor, vârfurile ușor în afară. Bara pe spate (nu pe gât). Pieptul sus, abdomenul strâns.','Împinge șoldurile în spate și coboară până când coapsele sunt cel puțin paralele cu solul. Genunchii merg în direcția vârfurilor. Urcă împingând în podea.','Spatele rămâne drept, călcâiele pe sol, genunchii nu cad înăuntru. Respiră adânc înainte de coborâre.'] },
+    lunge:{ t:'Fandări', f:[
+      fg({ H:[58,14], S:[58,26], P:[58,46], K:[70,56], A:[70,70], K2:[48,60], A2:[38,70] }),
+      fg({ H:[58,26], S:[58,38], P:[58,56], K:[72,56], A:[72,70], K2:[50,66], A2:[40,70] })],
+      s:['Un pas lung înainte, trunchiul drept, greutatea pe ambele picioare. (La bulgărești piciorul din spate stă pe o bancă.)','Coboară drept în jos până când genunchiul din față e la ~90° și cel din spate aproape de sol. Împinge cu piciorul din față ca să urci.','Genunchiul din față nu depășește mult vârful piciorului și nu cade înăuntru. Nu te apleca înainte.'] },
+    legpress:{ t:'Leg press', f:[
+      Lp([[10,62],[40,62]], 'e') + Lp([[14,40],[28,60]], 'e') + lyingBody([22,44],[36,54],[58,38],[80,22],[14,38]) + Lp([[73,12],[87,32]], 'e'),
+      Lp([[10,62],[40,62]], 'e') + Lp([[14,40],[28,60]], 'e') + lyingBody([22,44],[36,54],[48,34],[58,46],[14,38]) + Lp([[51,38],[65,54]], 'e')],
+      s:['Spatele și fesele lipite de spătar, picioarele pe platformă la lățimea umerilor. Eliberează siguranțele.','Coboară platforma încet până când genunchii sunt la ~90°. Împinge înapoi cu toată talpa, fără să bloci genunchii sus.','Fundul nu se ridică de pe scaun. Nu lăsa genunchii să cadă spre interior. Nu bloca complet genunchii.'] },
+    lext:{ t:'Extensii picioare', f:[
+      Lp([[36,20],[36,50]], 'e') + Lp([[30,50],[66,50]], 'e') + Cp(40,12,5,'b') + Lp([[40,20],[40,46]], 'b') + Lp([[40,46],[62,46],[62,64]], 'b') + Cp(62,64,3,'e'),
+      Lp([[36,20],[36,50]], 'e') + Lp([[30,50],[66,50]], 'e') + Cp(40,12,5,'b') + Lp([[40,20],[40,46]], 'b') + Lp([[40,46],[62,46],[84,46]], 'b') + Cp(84,46,3,'e')],
+      s:['Spatele lipit de spătar, genunchii în dreptul axei mașinii, perna sprijinită pe gleznă.','Întinde picioarele până sus și strânge cvadricepsul 1 secundă. Coboară încet (2–3 secunde).','Nu balansa greutatea. Nu ridica fundul de pe scaun.'] },
+    lcurl:{ t:'Flexii picioare', f:[
+      Lp([[8,50],[104,50]], 'e') + lyingBody([22,44],[50,46],[74,46],[98,46],[14,42]) + Cp(98,46,3,'e'),
+      Lp([[8,50],[104,50]], 'e') + lyingBody([22,44],[50,46],[74,46],[72,22],[14,42]) + Cp(72,22,3,'e')],
+      s:['Culcat pe burtă (sau așezat), șoldurile lipite de bancă, perna deasupra călcâielor.','Trage călcâiele spre fese îndoind genunchii. Strânge spatele coapsei 1 secundă, apoi coboară în 3 secunde.','Șoldurile nu se ridică de pe bancă. Nu arcui spatele și nu balansa.'] },
+    hinge:{ t:'Îndreptări românești', f:[
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[60,48]], eq:BAR([60,48]) }),
+      fg({ H:[76,32], S:[70,36], P:[44,46], K:[48,58], A:[48,70], arm:[[72,48],[72,58]], eq:BAR([72,58]) })],
+      s:['În picioare, bara în fața coapselor, brațele întinse, genunchii ușor îndoiți, spatele drept.','Împinge șoldurile în spate (ca și cum ai închide o ușă cu fundul), bara alunecă pe coapse până sub genunchi. Simți întinderea în spatele coapselor. Urcă strângând fesele.','Spatele rămâne drept tot timpul, bara aproape de picioare. Nu rotunji spatele și nu coborî mai jos decât poți ține spatele drept.'] },
+    hip:{ t:'Hip thrust / pod pentru fese', f:[
+      Lp([[8,42],[32,42]], 'e') + Lp([[14,42],[14,66]], 'e') + Lp([[26,44],[48,58]], 'b') + Lp([[48,58],[68,46],[68,70]], 'b') + Cp(18,38,5,'b') + BAR([48,56]),
+      Lp([[8,42],[32,42]], 'e') + Lp([[14,42],[14,66]], 'e') + Lp([[26,44],[50,42]], 'b') + Lp([[50,42],[68,46],[68,70]], 'b') + Cp(18,38,5,'b') + BAR([50,40])],
+      s:['Spatele de sus pe marginea unei bănci, picioarele pe podea, genunchii la ~90°. Greutatea pe șolduri.','Împinge din călcâie și ridică șoldurile până când corpul e drept de la umeri la genunchi. Strânge fesele 1 secundă.','Bărbia spre piept, nu arcui spatele jos. Privirea înainte, nu în tavan.'] },
+    calf:{ t:'Ridicări pe vârfuri', f:[
+      Lp([[44,70],[72,70]], 'e') + fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,66], fy:2 }),
+      Lp([[44,70],[72,70]], 'e') + fg({ H:[58,8], S:[58,18], P:[58,40], K:[59,52], A:[58,62], fy:6 })],
+      s:['În picioare cu vârful piciorului pe marginea unui suport, călcâiele în aer. Coboară călcâiele cât poți.','Urcă pe vârfuri cât de sus poți, ține 1 secundă sus, apoi coboară lent, simțind întinderea.','Genunchii rămân aproape drepți, nu săltă. Mișcarea completă contează mai mult decât greutatea.'] },
+    crunch:{ t:'Abdomen', f:[
+      Lp([[6,66],[110,66]], 'e') + lyingBody([24,62],[52,62],[64,46],[76,60],[16,62]),
+      Lp([[6,66],[110,66]], 'e') + lyingBody([24,62],[50,54],[60,36],[70,46],[16,62])],
+      s:['Culcat pe spate, genunchii îndoiți, mâinile pe lângă corp sau sub cap.','Ridică șoldurile de pe sol trăgând genunchii spre piept cu abdomenul (nu cu avântul). Ține 1 secundă sus.','Coboară încet, fără să balansezi picioarele. Respiră expirând când urci.'] },
+    plank:{ t:'Plank', f:[
+      Lp([[6,60],[110,60]], 'e') + Lp([[26,46],[60,52],[100,58]], 'b') + Cp(18,40,5,'b') + Lp([[26,46],[26,58],[42,58]], 'a'),
+      Lp([[6,60],[110,60]], 'e') + Lp([[26,46],[60,52],[100,58]], 'b') + Cp(18,40,5,'b') + Lp([[26,46],[26,58],[42,58]], 'a')],
+      s:['Pe antebrațe, coatele sub umeri, corpul drept ca o scândură de la cap la călcâie.','Strânge abdomenul și fesele și ține poziția 30–60 de secunde, respirând normal.','Nu lăsa șoldurile să cadă și nu le ridica în sus. Oprește-te când pierzi poziția.'] },
+    lateral:{ t:'Ridicări laterale', f:[
+      fr({ arm:[[44,36],[46,48]], eq:DB([46,48]) + DB([74,48]) }),
+      fr({ arm:[[36,24],[24,24]], eq:DB([24,24]) + DB([96,24]) })],
+      s:['În picioare, ganterele pe lângă corp, coatele ușor îndoite, abdomenul strâns.','Ridică brațele în lateral până la nivelul umerilor (nu mai sus), ca și cum ai turna o cană cu apă. Coboară încet.','Nu săltă din corp. Greutate mică și controlat funcționează mai bine decât greutate mare.'] },
+    front:{ t:'Ridicări frontale', f:[
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[58,36],[60,48]], eq:DB([60,48]) }),
+      fg({ H:[58,14], S:[58,24], P:[58,46], K:[59,58], A:[58,70], arm:[[70,25],[82,24]], eq:DB([82,24]) })],
+      s:['În picioare, ganterele în fața coapselor, brațele aproape drepte.','Ridică brațul în față până la nivelul ochilor (nu mai sus). Ține 1 secundă și coboară în 2–3 secunde.','Nu te legăna cu spatele. Greutate mică, mișcare curată.'] },
+    press:{ t:'Împins umeri', f:[
+      fr({ arm:[[38,32],[40,18]], eq:DB([40,18]) + DB([80,18]) }),
+      fr({ arm:[[44,14],[50,0]], eq:DB([50,0]) + DB([70,0]) })],
+      s:['Ganterele la nivelul umerilor, coatele în afară și puțin în față, abdomenul strâns (la mașină spatele lipit de spătar).','Împinge ganterele în sus deasupra capului până când brațele sunt aproape drepte. Coboară controlat la umeri.','Nu arcui spatele. Nu bloca brusc coatele. Coboară încet.'] },
+    shrug:{ t:'Ridicări de umeri', f:[
+      fr({ arm:[[46,36],[46,48]], eq:DB([46,48]) + DB([74,48]) }),
+      fr({ sy:-5, arm:[[46,31],[46,43]], eq:DB([46,43]) + DB([74,43]) })],
+      s:['În picioare, ganterele sau bara pe lângă corp, brațele drepte, umerii relaxați.','Ridică umerii spre urechi cât poți. Ține 1 secundă sus, apoi coboară încet.','Nu rotește umerii și nu îndoi coatele. Mișcare doar în sus și în jos.'] },
+    adduct:{ t:'Adductori (interiorul coapselor)', f:[
+      fr({ seat:true, kn:[38,52], ft:[36,68] }),
+      fr({ seat:true, kn:[55,52], ft:[54,68] })],
+      s:['Așezat la mașină, picioarele larg depărtate, pernele pe interiorul coapselor, spatele lipit de spătar.','Strânge coapsele una spre alta, ține 1 secundă, apoi deschide încet.','Nu folosi avânt. Alege o greutate cu care controlezi și deschiderea.'] }
+  };
+  function patOf(name){
+    var n = name.toLowerCase();
+    var R = [[/flotări pe bancă|dips/, 'dips'],[/flotări/, 'pushup'],[/fandări/, 'lunge'],[/ridicări pe vârfuri/, 'calf'],[/leg press/, 'legpress'],
+      [/flexii picioare|flexii culcat/, 'lcurl'],[/extensii (picioare|cu coborâre|cu pauză|pe un picior)/, 'lext'],
+      [/hip thrust|pod pentru|kickback la scripete/, 'hip'],[/ridicări de umeri|shrug/, 'shrug'],[/ridicări laterale/, 'lateral'],[/ridicări frontale/, 'front'],
+      [/fluturări inverse|face pull/, 'lateral'],[/ramat/, 'row'],[/flexii|curl|spider/, 'curl'],[/împins umeri|arnold/, 'press'],[/împins.*înclinat/, 'incline'],
+      [/împins la scripete|fluturări|crossover/, 'fly'],[/împins/, 'bench'],
+      [/skull/, 'skull'],[/peste cap|deasupra capului/, 'overhead'],[/extensii|kickback/, 'pushdown'],[/tracțiuni/, 'pulldown'],[/pulldown|pullover/, 'sarm'],
+      [/adductori/, 'adduct'],[/genuflexiuni|hack/, 'squat'],[/îndreptări/, 'hinge'],[/plank|hollow/, 'plank'],[/crunch|genunchi din atârnat/, 'crunch']];
+    for(var i=0;i<R.length;i++) if(R[i][0].test(n)) return R[i][1];
+    return 'bench';
+  }
+  function figHtml(key){
+    var F = FIGS[key]; if(!F) return '';
+    function box(svg, lab){ return '<div class="fg-box"><svg viewBox="0 -8 120 84" class="fg">' + svg + '</svg><span>' + lab + '</span></div>'; }
+    return '<div class="fg-row">' + box(F.f[0], key === 'plank' ? 'POZIȚIE' : 'START') + box(F.f[1], key === 'plank' ? 'ȚINE 30–60 s' : 'SFÂRȘIT') + '</div>' +
+      '<ol class="fg-steps"><li><b>Start:</b> ' + F.s[0] + '</li><li><b>Mișcarea:</b> ' + F.s[1] + '</li><li><b>Atenție:</b> ' + F.s[2] + '</li></ol>';
+  }
   // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 4)
   function buildDay(plan, d, week){
     var wv = ((week - 1) % 4 + 4) % 4, ex = [];
@@ -2623,9 +2782,9 @@ document.addEventListener('click', function(e){
       var p = POOL[s[0]][vi].split('|');
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
-      ex.push([p[0], s[2], reps, String(WREST[type][wv]), tip, (vi === 0 && p[2]) ? p[2] : '']);
+      ex.push([p[0], s[2], reps, String(WREST[type][wv]), tip, '', patOf(p[0])]);
     });
-    return { name: d.name, focus: d.focus, ex: ex, img: d.img, code: d.code };
+    return { name: d.name, focus: d.focus, ex: ex, img: '', code: d.code };
   }
   function buildWO(phase, week){ var o = {}; PLANS[phase].days.forEach(function(d){ o[d.code] = buildDay(PLANS[phase], d, week); }); return o; }
   window.__spBuild = buildWO;
@@ -2715,7 +2874,7 @@ document.addEventListener('click', function(e){
       det.innerHTML = '<div class="wk-detail"><div class="wk-dn">' + dn + '</div><b>' + day.name + '</b>' +
         day.ex.map(function(e,i){ return '<div class="wk-ex"><span>' + (i+1) + '. ' + e[0] + '</span><em>' + e[1] + ' × ' + e[2] + '</em></div>'; }).join('') +
         (viewW === nowW ? '<button class="primary-btn" id="wkOpen" style="margin-top:12px;">Deschide antrenamentul →</button>' : '<div class="hint" style="margin-top:10px;">Așa arată săptămâna ' + viewW + '. Exercițiile se schimbă singure în fiecare luni.</div>') +
-        '<div class="wk-pic">' + imgBtn(day.img, day.name) + '<div class="hint" style="margin-top:6px;">Poza programului de bază (atinge ca s-o mărești). În săptămânile cu variante, ia exercițiile din lista de mai sus.</div></div></div>';
+        '</div>';
       var wo = document.getElementById('wkOpen'); if(wo) wo.addEventListener('click', function(){ curWo = code; sshow('gym'); });
       bindImgs(det);
     }
@@ -2743,13 +2902,12 @@ document.addEventListener('click', function(e){
     var pw = progWeek(), wv = (pw - 1) % 4;
     var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + WAVE[wv][0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
-      imgBtn(w.img, w.name) + '<div class="hint" style="margin-top:4px;">Poza zilei · atinge ca s-o mărești</div>' +
       '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     w.ex.forEach(function(e,ei){
       html += '<div class="ex"><div class="ex-top"><span class="ex-n">' + (ei+1) + '. ' + e[0] + '</span><span class="ex-meta">' + e[1] + ' × ' + e[2] + '</span></div>' +
         (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') +
-        (e[5] ? '<div class="ex-pic">' + imgBtn(e[5], e[0]) + '</div>' : '') + '<div class="ex-sets">';
+        '<details class="ex-how"><summary>📖 Cum se face</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (si+1) + '</button>'; }
       html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ ' + e[3] + 's</button></div></div>';
     });
