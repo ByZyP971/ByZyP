@@ -511,6 +511,14 @@
   .set-b{ width:44px !important; height:44px !important; border-radius:50% !important; font-size:15px; font-weight:700; }
   .set-b.on{ background:linear-gradient(135deg,#7df0c0,#2fb585) !important; border-color:transparent !important; color:#06251a !important; }
   .rest-b{ border-radius:999px !important; padding:10px 14px !important; }
+  .ex-flag{ display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.14em; font-weight:800; color:#1a1306; background:linear-gradient(135deg,#f1d98f,#c79a3c); border-radius:999px; padding:3px 10px; margin-bottom:10px; }
+  .ex.ex-now{ border-color:rgba(212,175,90,.6) !important; box-shadow:0 0 0 1px rgba(212,175,90,.25), 0 8px 24px -12px rgba(212,175,90,.4); }
+  .ex-fin{ display:block; width:100%; margin-top:14px; padding:14px; border-radius:14px; border:none; cursor:pointer; font-weight:800; font-size:14px; font-family:inherit;
+    color:#06251a; background:linear-gradient(135deg,#7df0c0,#2fb585); }
+  .ex-fin.undo{ background:none; border:1px solid var(--line); color:var(--text-dim); font-weight:600; padding:10px; }
+  .ex-mini{ display:flex !important; align-items:center; gap:12px; padding:10px 14px !important; }
+  .ex-mini .ex-n{ font-size:14px !important; } .ex-mini .ex-pills{ margin-top:4px; }
+  .ex-reopen{ background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:999px; width:34px; height:34px; cursor:pointer; flex:none; }
   .sp-head{ display:flex; justify-content:space-between; align-items:center; }
   .sp-big{ font-size:38px; font-weight:800; letter-spacing:-.03em; line-height:1; } .sp-big span{ font-size:18px; color:var(--text-faint); font-weight:600; }
   .sp-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
@@ -2602,6 +2610,14 @@ document.addEventListener('click', function(e){
       'Îndreptări românești cu gantere|Spatele drept, simți întinderea în spatele coapselor',
       'Îndreptări pe un picior|Echilibru, șoldurile drepte, ganteră aproape',
       'Îndreptări cu picioarele drepte (stiff-leg)|Mișcare din șold, spatele neutru'],
+    quad2:['Deadlift clasic cu haltera|Bara aproape de tibii, spatele drept, împinge podeaua cu picioarele',
+      'Good morning cu haltera|Bara pe spate, șoldurile în spate, spatele drept',
+      'Step-up cu gantere|Pe o bancă, urcă cu piciorul din față, fără avânt',
+      'Fandări cu haltera pe spate|Pas lung înainte, coboară drept, genunchiul aproape de sol',
+      'Deadlift cu bara hexagonală|Stai în interiorul barei, spatele drept, împinge în sus',
+      'Genuflexiuni split cu gantere|Piciorul din spate pe sol, coboară drept',
+      'Hiperextensii pe bancă romană|Spatele drept, urcă controlat, fără să arcuiești',
+      'Hack squat cu pauză|Ține 1 secundă jos, apoi împinge'],
     hip:['Hip thrust cu haltera|Bărbia în piept, strânge fesele sus 1 s',
       'Pod pentru fese la mașină|Împinge din călcâie, pauză sus',
       'Hip thrust cu ganteră|Ganteră pe șolduri, strânge sus',
@@ -2655,14 +2671,14 @@ document.addEventListener('click', function(e){
     1:{ label:'5 zile · Luni–Vineri', days:[
       { code:'m1', name:'Piept + Triceps', focus:'Piept și triceps', img:'wo-a1.jpg', off:0, slots:[['benchP','c',3,'8–12',0],['inclP','c',3,'10–12',0],['fly','i',2,'12–15',0],['cross','i',2,'12–15',0],['pushdown','i',3,'10–12',0],['overhead','i',2,'10–12',0],['dips','i',2,'12–15',0]] },
       { code:'m2', name:'Spate + Biceps', focus:'Spate și biceps', img:'wo-a2.jpg', off:0, slots:[['lat','c',3,'8–12',0],['rowH','c',3,'8–12',0],['rowC','c',3,'10–12',0],['sarm','i',2,'12–15',0],['bb','i',3,'10–12',0],['db','i',2,'10–12',0],['ham','i',2,'12–15',0]] },
-      { code:'m3', name:'Picioare + Fese', focus:'Picioare și fese', img:'wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['hip','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
+      { code:'m3', name:'Picioare', focus:'Picioare', img:'wo-a3.jpg', off:0, slots:[['squat','c',3,'8–12',0],['lpress','c',3,'10–12',0],['lext','i',2,'12–15',0],['lcurl','i',3,'10–15',0],['rdl','c',3,'8–12',0],['quad2','c',3,'10–12',0],['calf','i',4,'12–20',0]] },
       { code:'m4', name:'Umeri + Abdomen', focus:'Umeri și abdomen', img:'wo-a4.jpg', off:0, slots:[['press','c',2,'8–12',0],['lat2','i',3,'12–15',0],['front','i',2,'12–15',0],['rear','i',3,'12–15',0],['shrug','i',3,'12–15',0],['plank','t',3,'30–60 s',0],['crunch','i',3,'12–20',0]] },
       { code:'m5', name:'Tot corpul', focus:'Tot corpul', img:'wo-a5.jpg', off:2, slots:[['squat','c',3,'8–12',0],['benchP','c',3,'8–12',0],['lat','c',3,'8–12',0],['press','c',2,'10–12',0],['rdl','c',2,'10–12',0],['bb','i',2,'10–12',0],['pushdown','i',2,'10–12',0],['crunch','i',3,'12–20',0]] }
     ], rest:[5,6] },
     2:{ label:'6 zile · Luni–Sâmbătă', days:[
       { code:'s1', name:'Ziua 1 · Piept + Triceps', focus:'Piept și triceps', img:'wo-b1.jpg', slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['fly','i',3,'10–12',0],['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0]] },
       { code:'s2', name:'Ziua 2 · Spate + Biceps', focus:'Spate și biceps', img:'wo-b2.jpg', slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowC','c',3,'10–12',3],['bb','i',3,'10–12',0],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
-      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['add','i',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
+      { code:'s3', name:'Ziua 3 · Picioare', focus:'Picioare', img:'wo-b3.jpg', slots:[['squat','c',3,'10–12',1],['lext','i',3,'10–12',0],['quad2','c',3,'10–12',0],['lcurl','i',3,'10–12',0],['lcurl','i',3,'10–12',1],['lpress','c',3,'10–12',0]] },
       { code:'s4', name:'Ziua 4 · Umeri', focus:'Umeri', img:'wo-b4.jpg', slots:[['rear','i',3,'10–12',0],['front','i',3,'10–12',0],['lat2','i',3,'10–12',0],['lat2','i',3,'10–12',1],['press','c',3,'10–12',0],['press','c',3,'10–12',1]] },
       { code:'s5', name:'Ziua 5 · Brațe', focus:'Triceps și biceps', img:'wo-b5.jpg', slots:[['pushdown','i',3,'10–12',0],['overhead','i',3,'10–12',0],['skull','i',3,'10–12',0],['bb','i',3,'10–12',1],['ham','i',3,'10–12',3],['bb','i',3,'10–12',3]] },
       { code:'s6', name:'Ziua 6 · Tot corpul', focus:'Tot corpul', img:'wo-b6.jpg', slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat','c',3,'10–12',0],['db','i',3,'10–12',0],['pushdown','i',3,'10–12',0]] }
@@ -2805,7 +2821,7 @@ document.addEventListener('click', function(e){
     var n = name.toLowerCase();
     var R = [[/flotări pe bancă|dips/, 'dips'],[/flotări/, 'pushup'],[/fandări/, 'lunge'],[/ridicări pe vârfuri/, 'calf'],[/leg press/, 'legpress'],
       [/flexii picioare|flexii culcat/, 'lcurl'],[/extensii (picioare|cu coborâre|cu pauză|pe un picior)/, 'lext'],
-      [/hip thrust|pod pentru|kickback la scripete/, 'hip'],[/ridicări de umeri|shrug/, 'shrug'],[/ridicări laterale/, 'lateral'],[/ridicări frontale/, 'front'],
+      [/hip thrust|pod pentru|kickback la scripete/, 'hip'],[/deadlift|good morning|hiperextensii/, 'hinge'],[/step-up/, 'lunge'],[/ridicări de umeri|shrug/, 'shrug'],[/ridicări laterale/, 'lateral'],[/ridicări frontale/, 'front'],
       [/fluturări inverse|face pull/, 'lateral'],[/ramat/, 'row'],[/flexii|curl|spider/, 'curl'],[/împins umeri|arnold/, 'press'],[/împins.*înclinat/, 'incline'],
       [/împins la scripete|fluturări|crossover/, 'fly'],[/împins/, 'bench'],
       [/skull/, 'skull'],[/peste cap|deasupra capului/, 'overhead'],[/extensii|kickback/, 'pushdown'],[/tracțiuni/, 'pulldown'],[/pulldown|pullover/, 'sarm'],
@@ -2841,6 +2857,7 @@ document.addEventListener('click', function(e){
     lext:['leg extension machine form','single leg extension form','leg extension pause form','slow tempo leg extension'],
     lcurl:['lying leg curl form','seated leg curl form','slow negative lying leg curl','single leg curl form'],
     rdl:['barbell romanian deadlift form','dumbbell romanian deadlift form','single leg romanian deadlift form','stiff leg deadlift form'],
+    quad2:['conventional deadlift form','good morning barbell form','dumbbell step up form','barbell lunge form','trap bar deadlift form','dumbbell split squat form','back extension roman chair form','hack squat pause form'],
     hip:['barbell hip thrust form','glute bridge machine form','dumbbell hip thrust form','cable glute kickback form'],
     calf:['standing calf raise machine form','seated calf raise form','calf raise on leg press form','single leg calf raise form'],
     add:['hip adductor machine form','dumbbell sumo squat form','cable hip adduction form','slow adductor machine'],
@@ -3039,6 +3056,7 @@ document.addEventListener('click', function(e){
     pills.innerHTML = codes.map(function(c){ var nm = WO[c].name.replace(/^Ziua \d · /, ''); return '<button class="day-pill' + (c===curWo?' active':'') + '" data-wo="' + c + '">' + nm + '</button>'; }).join('');
     pills.querySelectorAll('.day-pill').forEach(function(b){ b.addEventListener('click', function(){ curWo = b.getAttribute('data-wo'); renderWo(); }); });
   }
+  var woOpen = {};
   function renderWo(){
     renderWoPills();
     var w = WO[curWo], key = todayKey + '|' + curWo;
@@ -3050,34 +3068,60 @@ document.addEventListener('click', function(e){
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
       '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
+    var nowEi = -1;
+    w.ex.forEach(function(e,ei){ var d0 = 0; for(var q=0;q<e[1];q++){ if(st[ei + '-' + q]) d0++; } if(nowEi < 0 && d0 < e[1]) nowEi = ei; });
     w.ex.forEach(function(e,ei){
       var dn = 0; for(var q=0;q<e[1];q++){ if(st[ei + '-' + q]) dn++; }
-      html += '<div class="ex' + (dn === e[1] ? ' ex-done' : '') + '"><div class="ex-top"><span class="ex-bn">' + (dn === e[1] ? '✓' : (ei+1)) + '</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span>' +
+      var fin = dn === e[1];
+      if(fin && !woOpen[curWo + ei]){
+        html += '<div class="ex ex-done ex-mini" id="ex' + ei + '" data-ei="' + ei + '"><span class="ex-bn">✓</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span><div class="ex-pills"><b>' + e[1] + ' × ' + e[2] + '</b><i>terminat</i></div></div><button class="ex-reopen" data-ei="' + ei + '">↩</button></div>';
+        return;
+      }
+      html += '<div class="ex' + (fin ? ' ex-done' : '') + (ei === nowEi ? ' ex-now' : '') + '" id="ex' + ei + '">' + (ei === nowEi ? '<div class="ex-flag">ACUM</div>' : '') +
+        '<div class="ex-top"><span class="ex-bn">' + (fin ? '✓' : (ei+1)) + '</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span>' +
         '<div class="ex-pills"><b>' + e[1] + ' × ' + e[2] + '</b><i>⏱ pauză ' + e[3] + ' s</i></div></div></div>' +
         (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') +
         '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' +
         '<details class="ex-how"><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (st[k] ? '✓' : (si+1)) + '</button>'; }
-      html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ pauză</button></div></div>';
+      html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ pauză</button></div>' +
+        (fin ? '<button class="ex-fin undo" data-ei="' + ei + '" data-undo="1">↩ Nu e terminat</button>' : '<button class="ex-fin" data-ei="' + ei + '">✅ Am terminat exercițiul · următorul →</button>') + '</div>';
     });
     if(done === total) html += '<div class="wo-done">🏆 Antrenament complet! L-am bifat și pe fila Azi.</div>';
-    html += '<div class="hint">Atinge fiecare serie după ce o termini — pornește automat pauza. Progresul se resetează în fiecare zi. Luni viitoare exercițiile se schimbă.</div>';
+    html += '<div class="hint">Atinge fiecare serie după ce o termini (pornește pauza) sau apasă „Am terminat exercițiul” ca să treci la următorul. Progresul se resetează în fiecare zi. Luni viitoare exercițiile se schimbă.</div>';
     var card = document.getElementById('woCard');
     card.innerHTML = html;
     bindImgs(card);
+    function afterChange(){
+      var cur = sp.sets[key] || {}, d2 = Object.keys(cur).filter(function(x){ return cur[x]; }).length;
+      if(d2 === total){
+        var entry = getEntry(todayKey);
+        if(!entry.habits.training){ entry.habits = Object.assign({}, entry.habits, { training:true }); writeDay(todayKey, entry); renderToday(); renderStreaks(); renderPastDays(); }
+      }
+      renderWo(); renderSpToday(); renderPlanTiles();
+    }
     card.querySelectorAll('.set-b').forEach(function(b){
       b.addEventListener('click', function(){
         var k = b.getAttribute('data-k');
         var cur = sp.sets[key] || {}; cur[k] = !cur[k]; sp.sets[key] = cur; spSave();
         if(cur[k]) startRest(+b.getAttribute('data-rest'));
-        var d2 = Object.keys(cur).filter(function(x){ return cur[x]; }).length;
-        if(d2 === total){
-          var entry = getEntry(todayKey);
-          if(!entry.habits.training){ entry.habits = Object.assign({}, entry.habits, { training:true }); writeDay(todayKey, entry); renderToday(); renderStreaks(); renderPastDays(); }
-        }
-        renderWo(); renderSpToday(); renderPlanTiles();
+        afterChange();
       });
     });
+    card.querySelectorAll('.ex-fin').forEach(function(b){
+      b.addEventListener('click', function(){
+        var ei = +b.getAttribute('data-ei'), undo = b.getAttribute('data-undo') === '1', cur = sp.sets[key] || {};
+        for(var q=0;q<w.ex[ei][1];q++) cur[ei + '-' + q] = !undo;
+        sp.sets[key] = cur; spSave(); delete woOpen[curWo + ei];
+        afterChange();
+        if(!undo){
+          var nx = -1; for(var j=0;j<w.ex.length && nx<0;j++){ var c2 = 0; for(var r=0;r<w.ex[j][1];r++){ if(cur[j + '-' + r]) c2++; } if(c2 < w.ex[j][1]) nx = j; }
+          var tgt = document.getElementById(nx >= 0 ? 'ex' + nx : 'woCard');
+          if(tgt && tgt.scrollIntoView) setTimeout(function(){ tgt.scrollIntoView({ behavior:'smooth', block:'start' }); }, 60);
+        }
+      });
+    });
+    card.querySelectorAll('.ex-reopen').forEach(function(b){ b.addEventListener('click', function(){ woOpen[curWo + b.getAttribute('data-ei')] = true; renderWo(); }); });
     card.querySelectorAll('.rest-b').forEach(function(b){ b.addEventListener('click', function(){ startRest(+b.getAttribute('data-rest')); }); });
   }
 
