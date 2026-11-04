@@ -76,20 +76,24 @@ const SLOTS = [8 * 60 + 30, 14 * 60 + 30, 21 * 60 + 30];
 for (let i = 0; i < SLOTS.length; i++) {
   const key = `m-${L.date}-${i}`;
   if (L.hm >= SLOTS[i] && L.hm < SLOTS[i] + 40 && !sent[key]) {
-    if (await send('By ZyP', MOT[L.wd][i], 'motivatie')) { sent[key] = Date.now(); changed = true; }
+    const GYM = { Mon: 'Push (piept, umeri, triceps)', Tue: 'Pull (spate, biceps)', Wed: 'Picioare', Thu: 'Upper (partea de sus)', Fri: 'Lower (picioare)' };
+    const gym = i === 0 && GYM[L.wd];
+    const title = gym ? '🏋️ La sală, ZyP!' : 'By ZyP';
+    const body = gym ? `E 8:30. Pleacă la sală acum și termină antrenamentul (${GYM[L.wd]}), că ai de plecat la muncă. Nu mai sta pe telefon!` : MOT[L.wd][i];
+    if (await send(title, body, gym ? 'sala' : 'motivatie')) { sent[key] = Date.now(); changed = true; }
   }
 }
 
 
 // ---------- supplements: 09:00 / 20:00 / 22:00 (local time) ----------
 const SUPP = [
-  { h: 9 * 60, k: 'am', title: '💊 Suplimentele de dimineață', body: 'Vitamina D3 + K2, Omega 3 și creatină 5 g. Ia-le cu masa de dimineață (D3, K2 și Omega 3 au nevoie de grăsime) și un pahar de apă.' },
-  { h: 20 * 60, k: 'zn', title: '💊 Zincul de seară', body: 'Ia zincul acum, cu cina, ca să nu te supere la stomac.' },
-  { h: 22 * 60, k: 'mg', title: '💊 Magneziul', body: 'Magneziul înainte de somn — te ajută să te relaxezi și să te refaci.' }
+  { h: 9 * 60, k: 'am', title: '🤦 Băi prostule, vitaminele!', body: 'Se apropie 9:00. Ia-ți D3 + K2, Omega 3 și creatina 5 g cu micul dejun (au nevoie de grăsime) și un pahar de apă.' },
+  { h: 20 * 60 + 30, k: 'zn', title: '🤦 Băi prostule, zincul!', body: 'Se apropie cina. Ia zincul cu mâncarea, nu pe stomacul gol, ca să nu te supere.' },
+  { h: 22 * 60, k: 'mg', title: '🤦 Băi prostule, magneziul!', body: 'Se apropie somnul. Ia magneziul acum, te ajută să dormi și să te refaci.' }
 ];
 for (const s of SUPP) {
   const key = `s-${L.date}-${s.k}`;
-  if (L.hm >= s.h && L.hm < s.h + 50 && !sent[key]) {
+  if (L.hm >= s.h - 15 && L.hm < s.h + 50 && !sent[key]) {
     if (await send(s.title, s.body, 'supl-' + s.k)) { sent[key] = Date.now(); changed = true; }
   }
 }
@@ -126,7 +130,9 @@ async function ethNews() {
   if (px) {
     let pos = '';
     if (ETHPOS) { const val = ETHPOS.qty * px.p, pl = val - ETHPOS.invested, pc = pl / ETHPOS.invested * 100;
-      pos = `Banii tăi: ${sgnE(pl)} € (${sgnE(pc)}%) din ${eur(+ETHPOS.invested, 0)} investiți · valoare acum ${eur(val)}.`; }
+      const day = px.ch != null ? val - val / (1 + px.ch / 100) : null;
+      const dayTxt = day != null ? `Azi (24h): ${day >= 0 ? '▲' : '▼'} ${sgnE(day)} € pe banii tăi.\n` : '';
+      pos = `${dayTxt}În total: ${sgnE(pl)} € (${sgnE(pc)}%) din ${eur(+ETHPOS.invested, 0)} investiți · valoare acum ${eur(val)}.`; }
     const chTxt = px.ch != null ? ` · ${px.ch >= 0 ? '▲' : '▼'} ${sgnE(px.ch)}% în 24h` : '';
     // two summaries a day: 10:00 and 18:00
     for (const [h, k] of [[10 * 60, 'am'], [18 * 60, 'pm']]) {

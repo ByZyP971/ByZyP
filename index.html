@@ -3246,7 +3246,7 @@ document.addEventListener('click', function(e){
         h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
       });
     });
-    h += '<div class="hint" style="margin:12px 0 0;">🔔 Notificare la 09:00, 20:00 și 22:00. Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
+    h += '<div class="hint" style="margin:12px 0 0;">🔔 Primești notificare puțin înainte de 09:00, 20:30 și 22:00. Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
     el.innerHTML = h;
     el.querySelectorAll('.supp-row').forEach(function(r){ r.addEventListener('click', function(){
       var a = suppLoad(), d = a[todayKey] || {}; d[r.getAttribute('data-id')] = !d[r.getAttribute('data-id')]; a[todayKey] = d;
