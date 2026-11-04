@@ -101,6 +101,7 @@
   .card-title::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--accent);
     box-shadow:0 0 8px var(--accent); flex:none; }
   .card-sub{ font-size:11px; color:var(--text-faint); margin:-8px 0 12px; }
+  #phaseHint{ white-space:pre-line; font-size:13px; line-height:1.65; }
   .hint{ font-size:11.5px; color:var(--text-faint); margin-top:12px; line-height:1.55; }
   .streak-row{ display:flex; gap:10px; margin-bottom:16px; }
   .streak-card{ flex:1; background:linear-gradient(165deg, var(--bg-card), var(--bg-card-2)); border:1px solid var(--line);
@@ -1127,7 +1128,7 @@
   #tradingGoldActive .pt-r:first-of-type, #planActive .pt-r:first-of-type{ border-top:none; }
 
   /* ===== Jarvis ===== */
-  .jv-fab{ position:fixed; right:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 92px); z-index:40; width:54px; height:54px; border-radius:50%; border:0; cursor:pointer;
+  .jv-fab{ position:fixed; right:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 88px); z-index:40; width:46px; height:46px; opacity:.88; border-radius:50%; border:0; cursor:pointer;
     background:var(--gold-grad, linear-gradient(135deg,#F1DDA8,#D6B26E,#A87D3A)); color:#1A1307; box-shadow:0 14px 30px -10px rgba(214,178,110,.6), 0 0 0 1px rgba(255,255,255,.15) inset;
     display:flex; align-items:center; justify-content:center; }
   .jv-fab:active{ transform:scale(.94); }
@@ -3103,7 +3104,7 @@ document.addEventListener('click', function(e){
       var wo = document.getElementById('wkOpen'); if(wo) wo.addEventListener('click', function(){ curWo = code; sshow('gym'); });
       bindImgs(det);
     }
-    var ph = PHASE_HINT[sp.phase] + ' Ești în săptămâna ' + nowW + ' de antrenament.';
+    var ph = PHASE_HINT[sp.phase] + '\n\nEști în săptămâna ' + nowW + ' de antrenament.\n\nPe scurt: o serie înseamnă un set de repetări, apoi te odihnești 90 de secunde. Alege o greutate cu care ai mai fi putut face încă 2–3 repetări. Când faci ușor toate repetările maxime la două antrenamente la rând, crești puțin greutatea.';
     document.getElementById('phaseHint').textContent = ph;
     document.querySelectorAll('#phasePills .day-pill').forEach(function(p){ p.classList.toggle('active', +p.getAttribute('data-phase') === sp.phase); });
   }
@@ -3222,13 +3223,14 @@ document.addEventListener('click', function(e){
 
   /* ===== Suplimente: lista de azi + notificările vin din push-bot (09:00, 20:00, 22:00) ===== */
   var SUPPS = [
-    { id:'d3k2', g:0, ic:'☀️', n:'Vitamina D3 + K2', d:'Cu masa de dimineață — au nevoie de grăsime ca să se absoarbă.' },
-    { id:'om3', g:0, ic:'🐟', n:'Omega 3', d:'Tot cu masa de dimineață.' },
-    { id:'cre', g:0, ic:'⚡', n:'Creatină 5 g', d:'În fiecare zi, cu un pahar de apă, și în zilele fără sală.' },
-    { id:'zn', g:1, ic:'🛡️', n:'Zinc', d:'Cu cina, ca să nu te supere la stomac.' },
-    { id:'mg', g:2, ic:'🌙', n:'Magneziu', d:'Seara, înainte de somn — te ajută să te relaxezi.' }
+    { id:'d3k2', g:0, ic:'☀️', n:'Vitamina D3 + K2', d:'Cu micul dejun, are nevoie de grăsime ca să se absoarbă. Pentru oase și imunitate.' },
+    { id:'om3', g:0, ic:'🐟', n:'Omega 3', d:'Tot cu micul dejun. Ajută inima și recuperarea.' },
+    { id:'cre', g:0, ic:'⚡', n:'Creatină 5 g', d:'În fiecare zi, și fără sală, cu un pahar de apă. Îți crește forța.' },
+    { id:'whey', g:1, ic:'🥤', n:'Proteină whey, 1 măsură', d:'După sală, cu apă sau lapte și o banană. Ajută mușchiul să crească.' },
+    { id:'zn', g:2, ic:'🛡️', n:'Zinc', d:'Cu cina, nu pe stomacul gol. Pentru imunitate și hormoni.' },
+    { id:'mg', g:3, ic:'🌙', n:'Magneziu', d:'Seara, la 1–2 ore după zinc. Te ajută la somn și la relaxarea mușchilor.' }
   ];
-  var SUPP_G = [ { t:'09:00', l:'Dimineața', ic:'🌅' }, { t:'20:00', l:'La cină', ic:'🍽️' }, { t:'22:00', l:'Înainte de somn', ic:'🌙' } ];
+  var SUPP_G = [ { t:'09:00', l:'La micul dejun', ic:'🌅' }, { t:'19:30', l:'După sală', ic:'💪' }, { t:'20:30', l:'La cină', ic:'🍽️' }, { t:'22:00', l:'Înainte de somn', ic:'🌙' } ];
   var SUPP_KEY = 'byzyp_supp_v1';
   function suppLoad(){ try{ return JSON.parse(localStorage.getItem(SUPP_KEY) || '{}') || {}; }catch(e){ return {}; } }
   function renderSupp(){
@@ -3244,7 +3246,7 @@ document.addEventListener('click', function(e){
         h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
       });
     });
-    h += '<div class="hint" style="margin:12px 0 0;">🔔 Notificare la 09:00, 20:00 și 22:00. Dozele după ambalaj sau după medic.</div>';
+    h += '<div class="hint" style="margin:12px 0 0;">🔔 Notificare la 09:00, 20:00 și 22:00. Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
     el.innerHTML = h;
     el.querySelectorAll('.supp-row').forEach(function(r){ r.addEventListener('click', function(){
       var a = suppLoad(), d = a[todayKey] || {}; d[r.getAttribute('data-id')] = !d[r.getAttribute('data-id')]; a[todayKey] = d;
