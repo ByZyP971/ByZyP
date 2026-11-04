@@ -81,7 +81,7 @@
   /* fila Aur ascunsă pentru moment — o readuci cu window.SHOW_GOLD = true și scoțînd linia asta */
   .tab[data-view="gold"], .gold-only{ display:none !important; }
   /* Bani: doar Ethereum (restul e ascuns, nu șters) */
-  #moneySeg, #view-money .card:not(#ethCard){ display:none !important; }
+  #moneySeg, #view-money .card:not(#ethCard):not(#ethNewsCard){ display:none !important; }
   .dash-card[data-g="worth"], .dash-card[data-g="trading"], .day-pill[data-g="worth"], .day-pill[data-g="trading"]{ display:none !important; }
   .tab{ flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column;
     align-items:center; gap:3px; padding:10px 2px 8px; color:var(--text-faint); font-family:inherit; font-size:10px;
@@ -519,6 +519,8 @@
   .ex-mini{ display:flex !important; align-items:center; gap:12px; padding:10px 14px !important; }
   .ex-mini .ex-n{ font-size:14px !important; } .ex-mini .ex-pills{ margin-top:4px; }
   .ex-reopen{ background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:999px; width:34px; height:34px; cursor:pointer; flex:none; }
+  .en-it{ display:block; padding:12px 0; border-top:1px solid var(--line); text-decoration:none; color:inherit; } .en-it:first-child{ border-top:none; }
+  .en-t{ font-size:14px; font-weight:600; line-height:1.4; } .en-m{ font-size:11px; color:var(--text-faint); margin-top:4px; font-family:var(--mono); }
   .sp-head{ display:flex; justify-content:space-between; align-items:center; }
   .sp-big{ font-size:38px; font-weight:800; letter-spacing:-.03em; line-height:1; } .sp-big span{ font-size:18px; color:var(--text-faint); font-weight:600; }
   .sp-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
@@ -1683,6 +1685,11 @@
 
       <div class="card eth-card" data-seg-card="worth" id="ethCard">
         <div id="ethBody"><div class="hint" style="margin-top:0;">Se încarcă prețul Ethereum…</div></div>
+      </div>
+
+      <div class="card" data-seg-card="worth" id="ethNewsCard">
+        <div class="card-title">📰 Știri Ethereum</div>
+        <div id="ethNews"><div class="hint" style="margin-top:0;">Se încarcă știrile…</div></div>
       </div>
 
       <div class="card" data-seg-card="worth">
@@ -4507,6 +4514,7 @@ document.addEventListener('click', function(e){
     var el = document.getElementById('ethBody'); if(!el) return;
     if(useLocal && !eth._ll){ eth._ll = 1; try{ var lp = JSON.parse(safeGet('reset_eth_v1') || 'null'); if(lp && lp.qty > 0) eth.pos = lp; }catch(e){} }
     var h = '', L = eth.live, pos = eth.pos;
+    window.__ethPos = pos;
     if(eth.err && L == null){ el.innerHTML = '<div class="td-risk warn">⚠️ ' + eth.err + '</div><button class="ghost-btn" id="ethRetry" style="margin-top:8px;">↻ Reîncearcă</button>'; document.getElementById('ethRetry').addEventListener('click', function(){ ethRefresh(true); }); return; }
     var ch = ethChg(), C = ethCalc();
     h += '<div class="eth-hd"><div class="eth-logo">' + ethLogo(26) + '</div><div class="eth-hn"><b>Ethereum</b><span><i class="lv-dot"></i>ETH / EUR · <u id="ethAgo">live</u></span></div>' +
@@ -4531,6 +4539,7 @@ document.addEventListener('click', function(e){
         '<div class="hint" id="ethMsg" style="margin:4px 0 8px;">Azi = prețul live de acum. Pentru o dată din trecut iau prețul real al zilei.</div>' +
         '<div class="eth-btns"><button class="primary-btn" id="ethSet">' + (pos ? 'Înlocuiește poziția' : 'Salvează') + '</button>' + (pos ? '<button class="ghost-btn" id="ethAdd">➕ Adaugă la poziție</button>' : '') + '</div></div>';
     } else h += '<div class="eth-btns"><button class="ghost-btn" id="ethEdit">✏️ Modifică / adaugă sumă</button><button class="ghost-btn" id="ethDel" style="color:var(--danger);">🗑️ Șterge</button></div>';
+    if(pos) h += '<div class="hint" style="margin-top:10px;">🔔 Vrei notificare cu câștigul tău? Profil → Notificări → <b>Copiază codul</b> și pune-l în GitHub la <b>PUSH_SUB</b> (o dată, și după ce schimbi suma).</div>';
     h += '<div class="hint">Prețul vine de la Binance (rezerva: CoinGecko) și se mișcă la secundă cât ai cardul deschis. Câștigul se calculează după prețul real al ETH în euro, fără comisioane sau taxe de rețea.</div>';
     el.innerHTML = h; eth.shown = L;
     el.querySelectorAll('.eth-rg button').forEach(function(b){ b.addEventListener('click', function(){ eth.range = b.getAttribute('data-r'); safeSet('reset_eth_range_v1', eth.range); eth.pts = []; renderEth(); ethRefresh(true); }); });
@@ -4578,6 +4587,29 @@ document.addEventListener('click', function(e){
   }
   function ethWsStop(){ clearTimeout(eth.wsTimer); try{ if(eth.ws){ var w = eth.ws; eth.ws = null; w.onclose = null; w.close(); } }catch(e){} }
   function ethWsSync(){ var c = document.getElementById('ethCard'); (c && c.offsetParent !== null && !document.hidden) ? ethWsStart() : ethWsStop(); }
+
+  /* ===== Știri Ethereum (CryptoCompare, rezervă Cointelegraph) ===== */
+  var enT = 0;
+  function enAgo(ts){ var m = Math.max(0, Math.round((Date.now() - ts) / 60000)); return m < 60 ? 'acum ' + Math.max(1, m) + ' min' : m < 1440 ? 'acum ' + Math.round(m / 60) + ' ore' : 'acum ' + Math.round(m / 1440) + ' zile'; }
+  function enRender(items){
+    var el = document.getElementById('ethNews'); if(!el) return;
+    if(!items.length){ el.innerHTML = '<div class="hint" style="margin-top:0;">Nu am putut încărca știrile acum. Încearcă mai târziu.</div>'; return; }
+    el.innerHTML = items.slice(0, 8).map(function(x){ return '<a class="en-it" href="' + accEsc(x.url) + '" target="_blank" rel="noopener"><div class="en-t">' + accEsc(x.title) + '</div><div class="en-m">' + accEsc(x.src) + ' · ' + enAgo(x.t) + '</div></a>'; }).join('') +
+      '<div class="hint" style="margin-bottom:0;">Titlurile sunt în engleză. Atinge o știre ca s-o citești.</div>';
+  }
+  function loadEthNews(force){
+    if(!force && Date.now() - enT < 300000) return; enT = Date.now();
+    fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=ETH', { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
+      var d = (j && j.Data) || []; if(!d.length) throw 0;
+      enRender(d.map(function(x){ return { title:x.title, url:x.url, src:x.source_info && x.source_info.name || x.source || '', t:(x.published_on || 0) * 1000 }; }));
+    }).catch(function(){
+      fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://cointelegraph.com/rss/tag/ethereum')).then(function(r){ return r.json(); }).then(function(j){
+        enRender(((j && j.items) || []).map(function(x){ return { title:x.title, url:x.link, src:'Cointelegraph', t:new Date(String(x.pubDate).replace(' ', 'T') + 'Z').getTime() || Date.now() }; }));
+      }).catch(function(){ enRender([]); });
+    });
+  }
+  loadEthNews(true);
+  document.querySelectorAll('.tab[data-view="money"]').forEach(function(t){ t.addEventListener('click', function(){ setTimeout(function(){ loadEthNews(false); }, 60); }); });
   function ethSave(np){
     eth.pos = np; renderEth();
     if(useLocal){ safeSet('reset_eth_v1', np ? JSON.stringify(np) : ''); }
@@ -6213,7 +6245,9 @@ document.addEventListener('click', function(e){
   loadPushLog(); setInterval(loadPushLog, 120000);
   document.getElementById('ntCopy').addEventListener('click', function(){
     var done = function(){ document.getElementById('ntCopy').textContent = '✓ Copiat'; };
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, function(){ ta.select(); document.execCommand('copy'); done(); });
+    var txt = ta.value;
+    try{ var jj = JSON.parse(txt), ep = window.__ethPos; if(jj && typeof jj === 'object' && !Array.isArray(jj) && ep && ep.qty > 0){ jj.eth = { invested: ep.invested, qty: ep.qty, entry: ep.entry, date: ep.date }; txt = JSON.stringify(jj); } }catch(e){}
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ ta.select(); document.execCommand('copy'); done(); });
     else { ta.select(); document.execCommand('copy'); done(); }
   });
 })();

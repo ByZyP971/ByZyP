@@ -1,5 +1,5 @@
 // By ZyP — push bot, run by GitHub Actions every ~5 minutes.
-// Sends: motivation at 08:30 / 14:30 / 21:30, supplements at 09:00 / 20:00 / 22:00 (local time) and a warning before every red (High) news.
+// Sends: motivation at 08:30 / 14:30 / 21:30, supplements at 09:00 / 20:00 / 22:00, Ethereum summary 10:00 / 18:00 + news (local time) and a warning before every red (High) news.
 import webpush from 'web-push';
 import fs from 'fs';
 
@@ -91,6 +91,64 @@ for (const s of SUPP) {
   const key = `s-${L.date}-${s.k}`;
   if (L.hm >= s.h && L.hm < s.h + 50 && !sent[key]) {
     if (await send(s.title, s.body, 'supl-' + s.k)) { sent[key] = Date.now(); changed = true; }
+  }
+}
+
+
+// ---------- Ethereum: price + your gain, news (needs no keys; position comes inside the phone code) ----------
+const ETHPOS = subs.map(x => x.eth).find(e => e && +e.invested > 0 && +e.qty > 0);
+const eur = (n, d = 2) => n.toLocaleString('ro-RO', { minimumFractionDigits: d, maximumFractionDigits: d }) + ' €';
+const sgnE = (n, d = 2) => (n >= 0 ? '+' : '−') + Math.abs(n).toLocaleString('ro-RO', { minimumFractionDigits: d, maximumFractionDigits: d });
+async function getJson(url) { const r = await fetch(url, { signal: AbortSignal.timeout(9000), headers: { 'User-Agent': 'ByZyP-bot' } }); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
+async function ethPrice() {
+  try { const j = await getJson('https://api.exchange.coinbase.com/products/ETH-EUR/stats'); const last = +j.last, open = +j.open; if (last > 0) return { p: last, ch: open > 0 ? (last / open - 1) * 100 : null }; } catch (e) { console.log('eth coinbase:', e.message); }
+  try { const j = await getJson('https://api.kraken.com/0/public/Ticker?pair=ETHEUR'); const t = Object.values(j.result || {})[0]; const last = +t.c[0], open = +t.o; if (last > 0) return { p: last, ch: open > 0 ? (last / open - 1) * 100 : null }; } catch (e) { console.log('eth kraken:', e.message); }
+  return null;
+}
+async function ethNews() {
+  try {
+    const r = await fetch('https://cointelegraph.com/rss/tag/ethereum', { signal: AbortSignal.timeout(9000), headers: { 'User-Agent': 'Mozilla/5.0 ByZyP-bot' } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const x = await r.text(), out = [];
+    for (const it of (x.match(/<item>[\s\S]*?<\/item>/g) || []).slice(0, 8)) {
+      const g = (t) => { const m = it.match(new RegExp('<' + t + '[^>]*>([\\s\\S]*?)</' + t + '>')); return m ? m[1].replace(/<!\[CDATA\[|\]\]>/g, '').trim() : ''; };
+      const t = new Date(g('pubDate')).getTime();
+      if (g('title') && g('link') && t) out.push({ title: g('title'), link: g('link'), t });
+    }
+    return out;
+  } catch (e) { console.log('eth news:', e.message); return []; }
+}
+{
+  const inDay = L.hm >= 8 * 60 && L.hm <= 22 * 60 + 30;
+  const px = (inDay || TEST) ? await ethPrice() : null;
+  const news = inDay ? await ethNews() : [];
+  let sentNow = false;
+  if (px) {
+    let pos = '';
+    if (ETHPOS) { const val = ETHPOS.qty * px.p, pl = val - ETHPOS.invested, pc = pl / ETHPOS.invested * 100;
+      pos = `Banii tăi: ${sgnE(pl)} € (${sgnE(pc)}%) din ${eur(+ETHPOS.invested, 0)} investiți · valoare acum ${eur(val)}.`; }
+    const chTxt = px.ch != null ? ` · ${px.ch >= 0 ? '▲' : '▼'} ${sgnE(px.ch)}% în 24h` : '';
+    // two summaries a day: 10:00 and 18:00
+    for (const [h, k] of [[10 * 60, 'am'], [18 * 60, 'pm']]) {
+      const key = `eth-${L.date}-${k}`;
+      if (L.hm >= h && L.hm < h + 50 && !sent[key]) {
+        const top = news[0] ? `\n📰 ${news[0].title}` : '';
+        if (await send(`Ξ Ethereum ${eur(px.p, 0)}${chTxt}`, (pos || 'Pune suma investită în aplicație (Bani) ca să-ți arăt și câștigul.') + top, 'eth', './#eth')) { sent[key] = Date.now(); changed = true; sentNow = true; }
+      }
+    }
+    // big move: 24h change of 4% or more (once a day per direction)
+    if (inDay && px.ch != null && Math.abs(px.ch) >= 4) {
+      const key = `eth-mv-${L.date}-${px.ch > 0 ? 'up' : 'dn'}`;
+      if (!sent[key]) {
+        if (await send(`${px.ch > 0 ? '🚀' : '⚠️'} Ethereum ${px.ch > 0 ? 'a crescut' : 'a scăzut'} ${sgnE(px.ch, 1)}% în 24h`, `Acum ${eur(px.p, 0)}. ` + pos, 'eth-mv', './#eth')) { sent[key] = Date.now(); changed = true; }
+      }
+    }
+  }
+  // fresh news (max 2 a day, only articles from the last 2 hours)
+  const slots = [1, 2].map(i => `enw-${L.date}-${i}`), used = slots.filter(k => sent[k]).length;
+  if (news.length && used < 2 && !sentNow) {
+    const nw = news.find(n => now.getTime() - n.t < 2 * 3600000 && now.getTime() - n.t > -600000 && !sent['en-' + n.link]);
+    if (nw && await send('📰 Știre Ethereum', nw.title, 'eth-news', nw.link)) { sent['en-' + nw.link] = Date.now(); sent[slots[used]] = Date.now(); changed = true; }
   }
 }
 
