@@ -63,6 +63,25 @@ const L = local(now);
 if (TEST) { await send('By ZyP ✅', 'Notificările funcționează! Ne auzim la cafea. ☕', 'test'); }
 
 // ---------- motivation ----------
+const DAYN = Math.floor(Date.parse(L.date + 'T00:00:00Z') / 86400000);
+const pick = (arr, salt = 0) => arr[(DAYN + salt) % arr.length];
+const FUN = [
+  '😂 Mușchii nu cresc din scuze, ZyP. Deși scuzele fac exercițiu bun pentru limbă.',
+  '🏋️ Gantera nu se ridică singură. Am încercat să-i vorbesc, nu m-a ascultat.',
+  '🍗 Puiul și orezul te așteaptă. Pe aia o iubești mai mult decât pe mine, recunoaște.',
+  '🥤 Whey-ul nu se bea singur. Dar se bea mai bine după sală, nu în loc de sală.',
+  '🦵 Cine sare peste ziua de picioare ajunge cu spate de rege și picioare de pui. Fii rege întreg.',
+  '😴 Somnul e suplimentul gratis. Nu necesită etichetă, doar să lași telefonul jos.',
+  '🧠 Creierul zice „mâine". Mușchiul zice „azi". Pe cine asculți?',
+  '💧 Ai băut apă azi sau doar cafea și vise? Un pahar acum, fără discuții.',
+  '📱 Ai stat pe telefon mai mult decât sub bară. Hai că se rezolvă diseară.',
+  '🐔 Cine mănâncă pui crește. Cine doar se uită la pui crește doar de curiozitate.',
+  '🔥 Un antrenament făcut prost bate unul făcut perfect în capul tău.',
+  '🧘 Întinderile durează 5 minute. Durerea de a doua zi durează 3 zile. Matematica e simplă.',
+  '🍌 Banana e carbohidrat cu cojoc. Pune-o în traistă pentru sală.',
+  '🎯 Greutatea nu minte, oglinda uneori minte. Notează greutatea și gata cu drama.',
+  '🚶 7.000 de pași. Nu trebuie să fugi, trebuie doar să nu stai pe canapea ca o pernă.'
+];
 const MOT = {
   Mon: ['☕ ZyP, cafeaua merge și fără țigară. Săptămână nouă, pornește curat.', '🚭 Poftă după masă? Trece în 3–5 minute. Un pahar de apă și gata.', '✅ Ai bifat azi toate 5? Deschide aplicația și închide ziua cum trebuie.'],
   Tue: ['🌅 Bună dimineața, ZyP. Fiecare dimineață fără fum e o victorie.', '🧠 Pofta e doar un obicei vechi care bate la ușă. Nu-i deschide.', '🌙 Încă o zi fără țigări, ZyP. Mândru de tine. Mâine la fel.'],
@@ -78,8 +97,15 @@ for (let i = 0; i < SLOTS.length; i++) {
   if (L.hm >= SLOTS[i] && L.hm < SLOTS[i] + 40 && !sent[key]) {
     const GYM = { Mon: 'Push (piept, umeri, triceps)', Tue: 'Pull (spate, biceps)', Wed: 'Picioare', Thu: 'Upper (partea de sus)', Fri: 'Lower (picioare)' };
     const gym = i === 0 && GYM[L.wd];
-    const title = gym ? '🏋️ La sală, ZyP!' : 'By ZyP';
-    const body = gym ? `E 8:30. Pleacă la sală acum și termină antrenamentul (${GYM[L.wd]}), că ai de plecat la muncă. Nu mai sta pe telefon!` : MOT[L.wd][i];
+    const GYMV = [
+      d => `E 8:30. Pleacă la sală acum și termină antrenamentul (${d}), că ai de plecat la muncă. Nu mai sta pe telefon!`,
+      d => `Hei, Hercule! Azi e ${d}. Gantera te strigă. Tu ce faci, scrolezi? Pleacă!`,
+      d => `Ora 8:30. Perna te cheamă, dar bara te așteaptă. Azi: ${d}. Nu o lăsa să aștepte!`,
+      d => `Ai spus că vrei mușchi, nu? Mușchii s-au adunat la sală (${d}). Tu unde ești?`,
+      d => `Alarma de sală sună ca un tren. Urcă-te! Azi: ${d}. Terminăm la timp, ajungem la muncă.`
+    ];
+    const title = gym ? pick(['🏋️ La sală, ZyP!', '💪 Hercule, trezirea!', '🦍 Maimuța de sală te cheamă', '🔥 Ora de fier a sosit'], 1) : (i === 1 ? pick(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei', '🥴 Povestea zilei'], 2) : 'By ZyP');
+    const body = gym ? pick(GYMV)(GYM[L.wd]) : (i === 1 ? pick(FUN) : MOT[L.wd][i]);
     if (await send(title, body, gym ? 'sala' : 'motivatie')) { sent[key] = Date.now(); changed = true; }
   }
 }
@@ -87,14 +113,14 @@ for (let i = 0; i < SLOTS.length; i++) {
 
 // ---------- supplements: 09:00 / 20:00 / 22:00 (local time) ----------
 const SUPP = [
-  { h: 9 * 60, k: 'am', title: '🤦 Băi prostule, vitaminele!', body: 'Se apropie 9:00. Ia-ți D3 + K2, Omega 3 și creatina 5 g cu micul dejun (au nevoie de grăsime) și un pahar de apă.' },
-  { h: 20 * 60 + 30, k: 'zn', title: '🤦 Băi prostule, zincul!', body: 'Se apropie cina. Ia zincul cu mâncarea, nu pe stomacul gol, ca să nu te supere.' },
-  { h: 22 * 60, k: 'mg', title: '🤦 Băi prostule, magneziul!', body: 'Se apropie somnul. Ia magneziul acum, te ajută să dormi și să te refaci.' }
+  { h: 9 * 60, k: 'am', titles: ['🤦 Băi prostule, vitaminele!', '🧟 Zombie, bagă vitaminele!', '🦸 Eroul uită iar vitaminele?', '🐟 Peștele așteaptă, ia Omega 3!'], bodies: ['Se apropie 9:00. Ia-ți D3 + K2, Omega 3 și creatina 5 g cu micul dejun (au nevoie de grăsime) și un pahar de apă.', 'Ora 9 bate la ușă. D3+K2, Omega 3, creatină 5 g, toate cu mâncare. Nu le lăsa să plângă în sertar.', 'Nu mă face să vin eu la tine. Vitaminele, mâncare și apă. Acum, nu mâine.', 'Mușchii cresc din mâncare și suplimente, nu din gânduri frumoase. 9:00, la treabă!'] },
+  { h: 20 * 60 + 30, k: 'zn', titles: ['🤦 Băi prostule, zincul!', '🛡️ Zincul nu se ia singur', '🧪 Ora zincului, domnule'], bodies: ['Se apropie cina. Ia zincul cu mâncarea, nu pe stomacul gol, ca să nu te supere.', 'Cina e gata? Atunci și zincul. Pe stomacul gol îți face greață, iar tu o arunci pe mine.', 'Un zinc la cină ține imunitatea în picioare. Nu-l lăsa să stea la rând.'] },
+  { h: 22 * 60, k: 'mg', titles: ['🤦 Băi prostule, magneziul!', '🌙 Magneziul, apoi la nani', '😴 Somnul începe cu magneziul'], bodies: ['Se apropie somnul. Ia magneziul acum, te ajută să dormi și să te refaci.', 'Telefonul jos, magneziul sus. Doar un pahar de apă și mergi la somn ca un campion.', 'Mușchii cresc în somn. Magneziul îi ajută. Nu-i lăsa fără ajutor.'] }
 ];
 for (const s of SUPP) {
   const key = `s-${L.date}-${s.k}`;
   if (L.hm >= s.h - 15 && L.hm < s.h + 50 && !sent[key]) {
-    if (await send(s.title, s.body, 'supl-' + s.k)) { sent[key] = Date.now(); changed = true; }
+    if (await send(pick(s.titles), pick(s.bodies, 1), 'supl-' + s.k)) { sent[key] = Date.now(); changed = true; }
   }
 }
 
@@ -146,7 +172,7 @@ async function ethNews() {
     if (inDay && px.ch != null && Math.abs(px.ch) >= 4) {
       const key = `eth-mv-${L.date}-${px.ch > 0 ? 'up' : 'dn'}`;
       if (!sent[key]) {
-        if (await send(`${px.ch > 0 ? '🚀' : '⚠️'} Ethereum ${px.ch > 0 ? 'a crescut' : 'a scăzut'} ${sgnE(px.ch, 1)}% în 24h`, `Acum ${eur(px.p, 0)}. ` + pos, 'eth-mv', './#eth')) { sent[key] = Date.now(); changed = true; }
+        if (await send(`${px.ch > 0 ? pick(['🚀 Ethereum zboară', '🤑 Banii tăi dansează', '📈 Ethereum a luat-o razna'], 3) : pick(['⚠️ Ethereum a căzut', '😬 Ethereum a alunecat', '📉 Aer tare la Ethereum'], 3)} ${sgnE(px.ch, 1)}% în 24h`, `Acum ${eur(px.p, 0)}. ` + pos, 'eth-mv', './#eth')) { sent[key] = Date.now(); changed = true; }
       }
     }
   }

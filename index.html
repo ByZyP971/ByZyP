@@ -13,7 +13,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://s3.tradingview.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://bskujbfaynbeqjonqydb.supabase.co wss://bskujbfaynbeqjonqydb.supabase.co wss://stream.binance.com:9443 https://api.binance.com https://data-api.binance.vision https://api.coingecko.com https://api.gold-api.com https://nfs.faireconomy.media https://min-api.cryptocompare.com https://api.rss2json.com https://eth.blockscout.com https://ethereum-rpc.publicnode.com https://eth.llamarpc.com https://cloudflare-eth.com https://cointelegraph.com https://xaus.com https://*.tradingview.com; frame-src https://www.tradingview.com https://s.tradingview.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<script>window.zEsc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};</script>
+<script>window.zEsc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};window.zToast=function(m){try{var o=document.getElementById('zToast');if(!o){o=document.createElement('div');o.id='zToast';o.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);max-width:86vw;z-index:9999;padding:11px 16px;border-radius:16px;background:rgba(20,18,12,.96);border:1px solid rgba(212,175,95,.5);color:#f1e6c8;font-size:13.5px;font-weight:600;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .25s;pointer-events:none;';document.body.appendChild(o);}o.textContent=m;o.style.opacity='1';clearTimeout(o._t);o._t=setTimeout(function(){o.style.opacity='0';},2800);}catch(e){}};
+window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3193,6 +3195,8 @@ document.addEventListener('click', function(e){
         sp.sets[key] = cur; spSave(); delete woOpen[curWo + ei];
         afterChange();
         if(!undo){
+          var allDone = true; for(var jj = 0; jj < w.ex.length; jj++){ var cc = 0; for(var rr = 0; rr < w.ex[jj][1]; rr++){ if(cur[jj + '-' + rr]) cc++; } if(cc < w.ex[jj][1]) allDone = false; }
+          zToast(allDone ? zJoke(['🏆 Antrenament terminat! Du-te la muncă, Hercule, ai muncit destul pentru azi.','🦍 Gata! Mușchii zic mulțumesc, șeful zice „unde ești?".','🔥 Terminat! Acum whey, mâncare și somn. În ordinea asta.']) : zJoke(['💪 Încă unul în buzunar! Următorul, nu scrolla.','😎 Ușor ca un pui la grătar. Mai departe!','🦵 Hai că nu te omoară. Încă un exercițiu!','🏋️ Bara zice „bravo". Gantera zice „și eu".','🔥 Mușchiul crește chiar acum. Stai liniștit și mergi la următorul.']));
           var nx = -1; for(var j=0;j<w.ex.length && nx<0;j++){ var c2 = 0; for(var r=0;r<w.ex[j][1];r++){ if(cur[j + '-' + r]) c2++; } if(c2 < w.ex[j][1]) nx = j; }
           var tgt = document.getElementById(nx >= 0 ? 'ex' + nx : 'woCard');
           if(tgt && tgt.scrollIntoView) setTimeout(function(){ tgt.scrollIntoView({ behavior:'smooth', block:'start' }); }, 60);
