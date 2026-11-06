@@ -1442,6 +1442,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
     <div class="pw-wrap"><input type="password" id="authPass" placeholder="Parolă (minim 8 caractere)" autocomplete="current-password"><button type="button" class="pw-eye" id="authEye" aria-label="Arată parola">👁</button></div>
     <button class="primary-btn" id="authLogin">Intră</button>
     <button class="ghost-btn" id="authSignup">Creează cont nou</button>
+    <button class="ghost-btn" id="authForgot" style="border:0;color:var(--text-dim);font-size:13px;">Ai uitat parola?</button>
     <div class="auth-msg" id="authMsg"></div>
   </div>
 </div>
@@ -2174,6 +2175,13 @@ document.addEventListener('click', function(e){
         start(r.data.session);
       });
     };
+    document.getElementById('authForgot').onclick = function(){
+      var e = em.value.trim(); if(!e){ msg('Scrie întâi emailul de mai sus, apoi apasă „Ai uitat parola?”.'); return; }
+      msg('Se trimite emailul…');
+      sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + location.pathname }).then(function(r){
+        msg(r.error ? r.error.message : 'Ți-am trimis un email cu un link. Deschide-l din telefon și alege o parolă nouă (verifică și Spam).');
+      });
+    };
     document.getElementById('authSignup').onclick = function(){
       if(pw.value.length < 8){ msg('Parola trebuie să aibă minim 8 caractere.'); return; }
       msg('Se creează contul…');
@@ -2185,9 +2193,28 @@ document.addEventListener('click', function(e){
     };
   }
 
+  function showRecovery(){
+    gate.style.display = 'flex';
+    var box = gate.querySelector('.auth-msg') || gate;
+    var o = document.createElement('div'); o.style.cssText = 'position:absolute;inset:0;z-index:5;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:12px;padding:28px;';
+    o.innerHTML = '<h2 style="margin:0;font-size:26px;font-weight:800;">Alege o parolă nouă</h2><p style="color:var(--text-dim);margin:0;">Minim 8 caractere.</p><input type="password" id="newPw" placeholder="Parolă nouă" autocomplete="new-password" style="padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--bg-card-2);color:var(--text);font-size:16px;"><button class="primary-btn" id="newPwGo">Salvează parola</button><div class="auth-msg" id="newPwMsg"></div>';
+    gate.appendChild(o);
+    document.getElementById('newPwGo').onclick = function(){
+      var v = document.getElementById('newPw').value, m = document.getElementById('newPwMsg');
+      if(v.length < 8){ m.textContent = 'Parola trebuie să aibă minim 8 caractere.'; return; }
+      m.textContent = 'Se salvează…';
+      sb.auth.updateUser({ password: v }).then(function(r){
+        if(r.error){ m.textContent = r.error.message; return; }
+        try{ history.replaceState(null, '', location.pathname); }catch(e){}
+        sb.auth.getSession().then(function(x){ o.remove(); if(x.data && x.data.session) start(x.data.session); else showGate(); });
+      });
+    };
+  }
+  var isRecovery = /type=recovery/.test(location.hash);
   sb.auth.getSession().then(function(r){
     var s = r.data && r.data.session;
-    if(s) start(s); else showGate();
+    if(isRecovery && s) showRecovery();
+    else if(s) start(s); else showGate();
   });
 })();
 </script>
