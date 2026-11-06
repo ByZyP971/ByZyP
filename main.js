@@ -739,16 +739,16 @@
   }
   // muzică potrivită pentru fiecare tip de exercițiu (doar sugestie + căutare, nu redăm melodii)
   var MUS = {
-    heavy:['Forță','rock / metal / trap greu','130–150','heavy gym workout rock trap 140 bpm'],
-    pump:['Pump','hip-hop / EDM','120–135','pump workout hip hop edm 128 bpm'],
-    legs:['Ritm constant','EDM / drum & bass','135–150','leg day workout edm 140 bpm'],
-    core:['Concentrare','electronic fără versuri','110–125','focus electronic workout no lyrics 120 bpm']
+    heavy:['Forță','ritm greu','140','heavy'],
+    pump:['Pump','energie','128','pump'],
+    legs:['Ritm constant','ritm rapid','150','legs'],
+    core:['Concentrare','calm','118','core']
   };
   function musicFor(pat){
     var g = /^(bench|incline|press|squat|legpress|hinge|row|pulldown|sarm)$/.test(pat) ? 'heavy' : /^(plank|crunch)$/.test(pat) ? 'core' : /^(lcurl|lext|calf|hip|lunge|adduct)$/.test(pat) ? 'legs' : 'pump';
     return MUS[g];
   }
-  function musicBtn(pat){ var m = musicFor(pat); return '<a class="yt-btn" style="margin-top:6px" href="https://www.youtube.com/results?search_query=' + encodeURIComponent(m[3]) + '" target="_blank" rel="noopener">🎵 Muzică potrivită: ' + m[0] + ' · ' + m[1] + ' · ' + m[2] + ' BPM</a>'; }
+  function musicBtn(pat){ var m = musicFor(pat); return '<button class="yt-btn" style="margin-top:6px;width:100%;text-align:left" data-songs="' + m[3] + '">🎤 Piese cu voce: ' + m[0] + ' · ' + m[2] + ' BPM</button><button class="yt-btn" style="margin-top:6px;width:100%;text-align:left;opacity:.8" data-mus="' + m[3] + '">🎧 Doar instrumental, în aplicație</button>'; }
   function figHtml(key){
     var F = FIGS[key]; if(!F) return '';
     function box(svg, lab){ return '<div class="fg-box"><svg viewBox="0 -8 120 84" class="fg">' + svg + '</svg><span>' + lab + '</span></div>'; }
