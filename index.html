@@ -6462,8 +6462,10 @@ document.addEventListener('click', function(e){
   var lastSaved = '';
   function saveSub(sub){      // the robot reads it from the account: after a reinstall you only tap "Activează" — no copy/paste into GitHub
     if(!sub || !window.__byzypDb) return;
-    var txt = JSON.stringify(sub); if(txt === lastSaved) return;
-    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: JSON.parse(txt), at: new Date().toISOString() });
+    var tz = ''; try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){}
+    var mods = null; try{ var pf = JSON.parse(localStorage.getItem('zyp_prefs_v1')||'null'); if(pf && pf.mods) mods = pf.mods; }catch(e){}
+    var txt = JSON.stringify(sub) + '|' + tz + '|' + JSON.stringify(mods); if(txt === lastSaved) return;
+    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: JSON.parse(JSON.stringify(sub)), tz: tz, mods: mods, at: new Date().toISOString() });
       Promise.resolve(pr).then(function(){ lastSaved = txt; cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){}); }catch(e){}
   }
   window.__syncPush = function(){ if(!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;

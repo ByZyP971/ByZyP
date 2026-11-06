@@ -229,6 +229,76 @@ if (evs.length > MAXN) {
   }
 }
 
+// ---------- OTHER USERS: every account gets its own funny notifications, on its own time zone and only for the modules it chose ----------
+const FUNU = [
+  '😂 Mușchii nu cresc din scuze. Deși scuzele fac exercițiu bun pentru limbă.',
+  '🏋️ Gantera nu se ridică singură. Am încercat să-i vorbesc, nu m-a ascultat.',
+  '🍗 Puiul și orezul te așteaptă. Pe ele le iubești mai mult decât pe mine, recunoaște.',
+  '🥤 Proteina nu se bea singură. Dar se bea mai bine după sală, nu în loc de sală.',
+  '😴 Somnul e suplimentul gratis. Nu are etichetă, doar lași telefonul jos.',
+  '🧠 Creierul zice „mâine". Mușchiul zice „azi". Pe cine asculți?',
+  '💧 Ai băut apă azi sau doar cafea și vise? Un pahar acum, fără discuții.',
+  '📱 Ai stat pe telefon mai mult decât sub bară. Hai că se rezolvă diseară.',
+  '🔥 Un antrenament făcut prost bate unul făcut perfect în capul tău.',
+  '🧘 Întinderile durează 5 minute. Durerea de a doua zi durează 3 zile. Matematica e simplă.',
+  '🍌 Banana e carbohidrat cu cojoc. Pune-o în traistă pentru sală.',
+  '🚶 7.000 de pași. Nu trebuie să fugi, trebuie doar să nu stai pe canapea ca o pernă.'
+];
+const UGYM = [
+  ['🏋️ Hei, campionule!', 'Ora de sală se apropie. Gantera te strigă, tu ce faci, scrolezi? Deschide planul de azi.'],
+  ['🦍 Maimuța de sală te cheamă', 'Azi e zi de antrenament. Perna te cheamă, dar bara te așteaptă. Nu o lăsa să aștepte!'],
+  ['💪 Hercule, trezirea!', 'Ai spus că vrei mușchi, nu? Mușchii s-au adunat la sală. Tu unde ești?'],
+  ['🔥 Ora de fier a sosit', 'Încălzire, serii simple, bifat. Fără scuze azi. Deschide antrenamentul.']
+];
+const UFOOD = [
+  ['🍗 Ora de mâncare', 'Ai mâncat proteine azi? Stomacul zice că nu e momentul să fii zen. Deschide meniul.'],
+  ['🥣 Stomacul trimite mesaj', 'Un prânz făcut acasă bate orice fast-food. Meniul de azi te așteaptă în aplicație.'],
+  ['🍚 Orezul nu se face singur', 'Pune apa la fiert și deschide meniul. Mâncarea simplă face mușchi simpli.']
+];
+const USUPP = [
+  { h: 9 * 60, k: 'am', t: ['🤦 Hei, vitaminele!', '🐟 Peștele așteaptă, ia Omega 3!', '🧟 Zombie, bagă vitaminele!'], b: ['Se apropie 9:00. Ia suplimentele de dimineață, cu micul dejun.', 'Dimineața e momentul vitaminelor. Deschide bifa din aplicație și ia-le acum.'] },
+  { h: 20 * 60 + 30, k: 'ev', t: ['🛡️ Ora suplimentelor de seară', '🧪 Zincul nu se ia singur'], b: ['Se apropie cina. Ia suplimentele de seară cu mâncarea, ca să nu te supere stomacul.', 'Cina e gata? Atunci și suplimentele de seară. Bifează-le în aplicație.'] },
+  { h: 22 * 60, k: 'ng', t: ['🌙 Magneziul, apoi la nani', '😴 Somnul începe cu magneziul'], b: ['Se apropie somnul. Ia ce ai de luat înainte de culcare și lasă telefonul jos.', 'Telefonul jos, magneziul sus. Somn bun, campionule.'] }
+];
+function localTz(d, tz) {
+  try {
+    const p = new Intl.DateTimeFormat('en-GB', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false })
+      .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
+    return { date: `${p.year}-${p.month}-${p.day}`, hm: (+p.hour % 24) * 60 + +p.minute, wd: p.weekday };
+  } catch (e) { return local(d); }
+}
+if (KEY) {
+  let all = [];
+  try {
+    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_all_push', { method: 'POST',
+      headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
+    if (r.ok) { const j = await r.json(); all = Array.isArray(j) ? j : []; } else console.log('all-users lookup failed: HTTP', r.status);
+  } catch (e) { console.log('all-users lookup failed:', e.message); }
+  const mine = new Set(subs.map(x => x.endpoint));
+  const others = all.filter(u => u && okSub(u.sub) && !mine.has(u.sub.endpoint));
+  console.log('other users:', others.length);
+  for (const u of others) {
+    const id = String(u.sub.endpoint).slice(-14).replace(/[^A-Za-z0-9]/g, '_');
+    const M = u.mods && typeof u.mods === 'object' ? u.mods : {};
+    const on = (m) => M[m] === undefined || +M[m] !== 0;
+    const U = localTz(now, u.tz || TZ);
+    const dn = Math.floor(Date.parse(U.date + 'T00:00:00Z') / 86400000), salt = id.length * 7 + id.charCodeAt(id.length - 1);
+    const up = (arr, z = 0) => arr[(dn + salt + z) % arr.length];
+    const todo = [];
+    if (on('sport') && ['Mon','Tue','Wed','Thu','Fri'].includes(U.wd) && U.hm >= 17 * 60 + 30 && U.hm < 17 * 60 + 70) todo.push(['gym', up(UGYM)]);
+    if (on('food') && U.hm >= 13 * 60 && U.hm < 13 * 60 + 40) todo.push(['food', up(UFOOD)]);
+    if (U.hm >= 14 * 60 + 30 && U.hm < 14 * 60 + 70) todo.push(['joke', [up(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei'], 1), up(FUNU)]]);
+    if (on('supp')) for (const q of USUPP) if (U.hm >= q.h - 15 && U.hm < q.h + 50) todo.push(['s-' + q.k, [up(q.t), up(q.b, 1)]]);
+    for (const [k, [title, body]] of todo) {
+      const key = `u-${id}-${U.date}-${k}`;
+      if (sent[key]) continue;
+      try { await webpush.sendNotification(u.sub, JSON.stringify({ title, body, tag: 'u-' + k, url: './' }), { TTL: 1800, urgency: 'high' }); console.log('sent to user', id, k); }
+      catch (e) { console.log('user push error', id, e.statusCode || e.message); }
+      sent[key] = Date.now(); changed = true;
+    }
+  }
+}
+
 // keep state small (last 4 days)
 for (const k of Object.keys(sent)) if (!k.startsWith('_') && Date.now() - sent[k] > 4 * 86400000) { delete sent[k]; changed = true; }
 sent._status = status.slice(-15);
