@@ -7,13 +7,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="By ZyP">
-<meta name="theme-color" content="#0A0A0B">
+<meta name="theme-color" content="#050505">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://s3.tradingview.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://bskujbfaynbeqjonqydb.supabase.co wss://bskujbfaynbeqjonqydb.supabase.co wss://stream.binance.com:9443 https://api.binance.com https://data-api.binance.vision https://api.coingecko.com https://api.gold-api.com https://nfs.faireconomy.media https://min-api.cryptocompare.com https://api.rss2json.com https://eth.blockscout.com https://ethereum-rpc.publicnode.com https://eth.llamarpc.com https://cloudflare-eth.com https://cointelegraph.com https://xaus.com https://*.tradingview.com; frame-src https://www.tradingview.com https://s.tradingview.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<script>window.zEsc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};window.zToast=function(m){try{var o=document.getElementById('zToast');if(!o){o=document.createElement('div');o.id='zToast';o.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);max-width:86vw;z-index:9999;padding:11px 16px;border-radius:16px;background:rgba(20,18,12,.96);border:1px solid rgba(212,175,95,.5);color:#f1e6c8;font-size:13.5px;font-weight:600;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .25s;pointer-events:none;';document.body.appendChild(o);}o.textContent=m;o.style.opacity='1';clearTimeout(o._t);o._t=setTimeout(function(){o.style.opacity='0';},2800);}catch(e){}};
+<script>window.zEsc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};window.zToast=function(m){try{var o=document.getElementById('zToast');if(!o){o=document.createElement('div');o.id='zToast';o.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);max-width:86vw;z-index:9999;padding:11px 16px;border-radius:16px;background:rgba(20,18,12,.96);border:1px solid rgba(163,255,18,.5);color:#F5F8F2;font-size:13.5px;font-weight:600;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:opacity .25s;pointer-events:none;';document.body.appendChild(o);}o.textContent=m;o.style.opacity='1';clearTimeout(o._t);o._t=setTimeout(function(){o.style.opacity='0';},2800);}catch(e){}};
 window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
@@ -21,11 +21,21 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
 <title>By ZyP</title>
+<meta name="description" content="By ZyP: planul tău zilnic pentru sală, suplimente, mâncare și disciplină, cu notificări pe telefon.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="By ZyP · Sală, suplimente, mâncare, disciplină">
+<meta property="og:description" content="Planul tău zilnic, simplu și cu notificări pe telefon.">
+<meta property="og:image" content="https://byzyp971.github.io/ByZyP/og.png">
+<meta property="og:url" content="https://byzyp971.github.io/ByZyP/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="By ZyP">
+<meta name="twitter:description" content="Planul tău zilnic pentru sală, suplimente și mâncare.">
+<meta name="twitter:image" content="https://byzyp971.github.io/ByZyP/og.png">
 <style>
   :root{
     --bg:#05080D; --bg-card:#0B121B; --bg-card-2:#080E16; --bg-raised:#101A26;
     --line:#18263A; --text:#E8F0F7; --text-dim:#8B9DB3; --text-faint:#4F6078;
-    --accent:#3DE0C4; --accent-ink:#021412; --gold:#F2B84B; --danger:#FF6F6F;
+    --accent:#3DE0C4; --accent-ink:#021412; --gold:#A3FF12; --danger:#FF6F6F;
     --mono:"SF Mono",ui-monospace,Menlo,Consolas,"Roboto Mono",monospace;
     box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   }
@@ -36,7 +46,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
       radial-gradient(1.5px 1.5px at 42% 32%, rgba(61,224,196,.6), transparent 60%),
       radial-gradient(1px 1px at 88% 44%, rgba(255,255,255,.35), transparent 60%),
       radial-gradient(1px 1px at 22% 63%, rgba(255,255,255,.3), transparent 60%),
-      radial-gradient(1.5px 1.5px at 66% 71%, rgba(242,184,75,.45), transparent 60%),
+      radial-gradient(1.5px 1.5px at 66% 71%, rgba(163,255,18,.45), transparent 60%),
       radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,.35), transparent 60%),
       radial-gradient(1px 1px at 55% 92%, rgba(255,255,255,.3), transparent 60%),
       linear-gradient(rgba(61,224,196,.035) 1px, transparent 1px),
@@ -275,19 +285,19 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   #splash.hide{ opacity:0; visibility:hidden; }
   .sp-orbit{ position:relative; width:130px; height:130px; }
   .sp-ring{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(61,224,196,.18); }
-  .sp-ring.r2{ inset:18px; border-color:rgba(242,184,75,.16); }
+  .sp-ring.r2{ inset:18px; border-color:rgba(163,255,18,.16); }
   .sp-sat{ position:absolute; inset:0; animation:spin 2.4s linear infinite; }
   .sp-sat::after{ content:''; position:absolute; top:-4px; left:50%; width:8px; height:8px; margin-left:-4px; border-radius:50%;
     background:#3DE0C4; box-shadow:0 0 14px #3DE0C4, 0 0 4px #fff; }
   .sp-sat.s2{ inset:18px; animation-duration:1.6s; animation-direction:reverse; }
-  .sp-sat.s2::after{ background:#F2B84B; box-shadow:0 0 12px #F2B84B; width:6px; height:6px; margin-left:-3px; top:-3px; }
+  .sp-sat.s2::after{ background:#A3FF12; box-shadow:0 0 12px #A3FF12; width:6px; height:6px; margin-left:-3px; top:-3px; }
   .sp-core{ position:absolute; inset:40px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(155deg,#3DE0C4,#F2B84B); color:#021412; font-size:24px; font-weight:800;
+    background:linear-gradient(155deg,#3DE0C4,#A3FF12); color:#021412; font-size:24px; font-weight:800;
     box-shadow:0 0 34px -4px rgba(61,224,196,.7); animation:pulse 1.8s ease-in-out infinite; }
   .sp-title{ font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:.32em; color:#E8F0F7; padding-left:.32em; }
   .sp-sub{ font-family:var(--mono); font-size:10.5px; letter-spacing:.2em; color:#3DE0C4; text-transform:uppercase; min-height:14px; }
   .sp-bar{ width:170px; height:2px; background:#18263A; border-radius:2px; overflow:hidden; }
-  .sp-bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#3DE0C4,#F2B84B);
+  .sp-bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#3DE0C4,#A3FF12);
     box-shadow:0 0 10px #3DE0C4; animation:load 1.7s cubic-bezier(.6,.1,.3,1) forwards; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
   @keyframes pulse{ 50%{ box-shadow:0 0 48px 0 rgba(61,224,196,.85); } }
@@ -531,7 +541,18 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .wl-sum{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; } .wl-sum div{ background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:10px; } .wl-sum span{ display:block; font-size:10.5px; color:var(--text-faint); } .wl-sum b{ font-size:15px; }
   .wl-tx{ display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-top:1px solid var(--line); font-size:13px; } .wl-tx:first-of-type{ border-top:0; } .wl-tx span{ display:block; font-size:11px; color:var(--text-faint); margin-top:2px; } .wl-r{ text-align:right; } .wl-r span.hs-win, .wl-r span.hs-loss{ font-weight:600; }
   .wl-row{ display:flex; gap:8px; margin-top:10px; } .wl-row button{ flex:1; padding:11px; border-radius:12px; border:1px solid var(--line); background:var(--bg-card-2); color:var(--text); font-weight:600; cursor:pointer; }
-  .wl-row button.pri{ background:linear-gradient(135deg,#E9D29A,#B8914A); color:#1a1305; border:0; }
+  .wl-row button.pri{ background:linear-gradient(135deg,#D9FF7A,#5BD400); color:#0A1200; border:0; }
+
+  html.pf-nosport .tab[data-view="sport"], html.pf-nofood .tab[data-view="food"], html.pf-nomoney .tab[data-view="money"], html.pf-nosupp #suppCard{ display:none !important; }
+  .onb{ position:fixed; inset:0; z-index:10000; background:radial-gradient(circle at 30% 10%,#10200a,#050505 70%); color:#F5F8F2; display:flex; flex-direction:column; padding:calc(env(safe-area-inset-top,0px) + 28px) 22px calc(env(safe-area-inset-bottom,0px) + 24px); overflow:auto; }
+  .onb h1{ font-family:var(--serif); font-size:32px; margin:18px 0 8px; } .onb p{ color:#9BA59A; font-size:15px; line-height:1.55; margin:0 0 18px; }
+  .onb-logo{ width:84px; height:84px; border-radius:22px; box-shadow:0 0 40px rgba(163,255,18,.3); }
+  .onb-opt{ display:flex; align-items:center; gap:14px; padding:15px 16px; margin-bottom:10px; border-radius:16px; border:1px solid rgba(163,255,18,.25); background:rgba(255,255,255,.04); cursor:pointer; }
+  .onb-opt b{ display:block; font-size:15px; } .onb-opt span{ font-size:12.5px; color:#9BA59A; } .onb-opt .ic{ font-size:26px; }
+  .onb-opt input{ margin-left:auto; width:22px; height:22px; accent-color:#A3FF12; }
+  .onb-btn{ margin-top:auto; padding:16px; border-radius:16px; border:0; font-size:16px; font-weight:800; background:linear-gradient(135deg,#D9FF7A,#5BD400); color:#0A1200; cursor:pointer; }
+  .onb-skip{ margin-top:12px; background:none; border:0; color:#9BA59A; font-size:13px; cursor:pointer; }
+  .onb-dots{ display:flex; gap:6px; margin-top:6px; } .onb-dots i{ width:22px; height:4px; border-radius:2px; background:rgba(255,255,255,.18); } .onb-dots i.on{ background:#A3FF12; }
   .en-it{ display:block; padding:12px 0; border-top:1px solid var(--line); text-decoration:none; color:inherit; } .en-it:first-child{ border-top:none; }
   .en-t{ font-size:14px; font-weight:600; line-height:1.4; } .en-m{ font-size:11px; color:var(--text-faint); margin-top:4px; font-family:var(--mono); }
   .sp-head{ display:flex; justify-content:space-between; align-items:center; }
@@ -988,23 +1009,23 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
      DESIGN 3 · „Private” — black lacquer, champagne gold, serif display
      ===================================================================== */
   :root{
-    --bg:#0A0A0B; --bg-card:#131315; --bg-card-2:#0E0E10; --bg-raised:#19191C;
-    --line:#2A2721; --text:#F4EFE6; --text-dim:#AAA397; --text-faint:#6F695F;
-    --accent:#5FBF8F; --accent-ink:#1A1307; --gold:#D6B26E; --danger:#E0685C;
-    --gold-hi:#F1DDA8; --gold-lo:#A87D3A;
-    --gold-grad:linear-gradient(135deg, #F1DDA8 0%, #D6B26E 45%, #A87D3A 100%);
-    --hair:color-mix(in srgb, var(--gold) 16%, transparent);
-    --serif:"Cormorant Garamond", "Iowan Old Style", "Palatino", Georgia, serif;
-    --body:"Manrope", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --bg:#050505; --bg-card:#0E100E; --bg-card-2:#090B09; --bg-raised:#141714;
+    --line:#212721; --text:#F5F8F2; --text-dim:#9BA59A; --text-faint:#5F695F;
+    --accent:#A3FF12; --accent-ink:#0A1200; --gold:#A3FF12; --danger:#FF5C5C;
+    --gold-hi:#D9FF7A; --gold-lo:#5BD400;
+    --gold-grad:linear-gradient(135deg, #E4FF8A 0%, #A3FF12 50%, #5BD400 100%);
+    --hair:color-mix(in srgb, var(--gold) 20%, transparent);
+    --serif:-apple-system, "SF Pro Display", "Helvetica Neue", Arial, system-ui, sans-serif;
+    --body:-apple-system, "SF Pro Text", "Helvetica Neue", Arial, system-ui, sans-serif;
     --display:var(--serif);
-    --mono:"Manrope", -apple-system, system-ui, sans-serif;
-    --r-card:20px; --r-tile:14px;
+    --mono:-apple-system, "SF Pro Text", system-ui, sans-serif;
+    --r-card:22px; --r-tile:16px;
   }
   :root[data-theme="light"]{
     --bg:#F1F0EC; --bg-card:#FFFFFF; --bg-card-2:#F6F5F1; --bg-raised:#FFFFFF;
     --line:#E3DED3; --text:#16140F; --text-dim:#5F594E; --text-faint:#9A9385;
-    --accent:#2F8A5C; --accent-ink:#1A1307; --gold:#9C7630; --danger:#B64A3C;
-    --gold-hi:#C9A45E; --gold-lo:#7C5A1F; --hair:color-mix(in srgb, var(--gold) 22%, transparent);
+    --accent:#2E9C00; --accent-ink:#FFFFFF; --gold:#3AA800; --danger:#C23B3B;
+    --gold-hi:#6BD01A; --gold-lo:#2A7D00; --hair:color-mix(in srgb, var(--gold) 22%, transparent);
   }
   body{ font-family:var(--body); font-feature-settings:"tnum" 1; letter-spacing:.003em; }
   body::before{ background:none !important; }
@@ -1028,6 +1049,10 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .card-title::before{ display:none; }
   .sec-h{ font-family:var(--serif); font-size:27px; font-weight:600; letter-spacing:.005em; text-transform:none; color:var(--text); margin:30px 4px 12px; line-height:1.05; }
   .hint{ color:var(--text-faint); font-size:12px; }
+  h1, .card-title, .sec-h, .gd-sec, .onb h1{ font-weight:800 !important; letter-spacing:-.025em !important; }
+  h1{ font-size:24px; } .card-title{ font-size:20px; } .sec-h{ font-size:25px; }
+  .tab.active{ color:var(--gold) !important; text-shadow:0 0 14px color-mix(in srgb, var(--gold) 55%, transparent); }
+  .card{ box-shadow:0 0 0 1px color-mix(in srgb, var(--gold) 5%, transparent), 0 24px 48px -32px rgba(0,0,0,.9) !important; }
 
   /* small labels: sentence case, no tracked caps */
   .donut-c span, .eq-start label, .gr-cat, .mm-slot, .mm2-h, .news-day, .prof-chip span, .prof-sub, .run-sess b, .sp-sub, .spt-l, .spt-meta span, .today-pl-l,
@@ -1098,7 +1123,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
 
   /* ---- floating tab bar ---- */
   nav.tabbar{ left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 8px); border-radius:24px; padding-bottom:0;
-    background:color-mix(in srgb, #0A0A0B 88%, transparent); border:1px solid var(--hair); box-shadow:0 20px 44px -18px rgba(0,0,0,.85); }
+    background:color-mix(in srgb, #050505 88%, transparent); border:1px solid var(--hair); box-shadow:0 20px 44px -18px rgba(0,0,0,.85); }
   :root[data-theme="light"] nav.tabbar{ background:color-mix(in srgb, #FFFFFF 90%, transparent); box-shadow:0 14px 34px -18px rgba(22,20,15,.35); }
   .tabbar-inner{ padding:6px 4px; gap:0; }
   .tab{ border-radius:18px; padding:7px 2px 6px; font-size:10.5px; font-weight:700; color:var(--text-faint); background:none; }
@@ -1141,32 +1166,32 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
 
   /* ===== Jarvis ===== */
   .jv-fab{ position:fixed; right:16px; bottom:calc(env(safe-area-inset-bottom,0px) + 88px); z-index:40; width:46px; height:46px; opacity:.88; border-radius:50%; border:0; cursor:pointer;
-    background:var(--gold-grad, linear-gradient(135deg,#F1DDA8,#D6B26E,#A87D3A)); color:#1A1307; box-shadow:0 14px 30px -10px rgba(214,178,110,.6), 0 0 0 1px rgba(255,255,255,.15) inset;
+    background:var(--gold-grad, linear-gradient(135deg,#E4FF8A,#A3FF12,#5BD400)); color:#1A1307; box-shadow:0 14px 30px -10px rgba(163,255,18,.6), 0 0 0 1px rgba(255,255,255,.15) inset;
     display:flex; align-items:center; justify-content:center; }
   .jv-fab:active{ transform:scale(.94); }
   .jv-ov{ position:fixed; inset:0; z-index:95; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
   .jv-ov.open{ opacity:1; pointer-events:auto; }
-  .jv-card{ width:100%; max-width:520px; max-height:90vh; overflow:auto; background:linear-gradient(180deg,#141416,#0B0B0C); border:1px solid rgba(214,178,110,.22); border-bottom:0; border-radius:26px 26px 0 0;
+  .jv-card{ width:100%; max-width:520px; max-height:90vh; overflow:auto; background:linear-gradient(180deg,#141416,#0B0B0C); border:1px solid rgba(163,255,18,.22); border-bottom:0; border-radius:26px 26px 0 0;
     padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 20px); position:relative; text-align:center; }
   :root[data-theme="light"] .jv-card{ background:#FFFFFF; }
   .jv-orb{ width:118px; height:118px; margin:6px auto 12px; border-radius:50%; position:relative; cursor:pointer;
-    background:radial-gradient(circle at 35% 30%, #FFF1C9, #D6B26E 45%, #6E4E17 100%); box-shadow:0 0 50px -8px rgba(214,178,110,.65); }
-  .jv-orb span{ position:absolute; inset:-10px; border-radius:50%; border:1px solid rgba(214,178,110,.35); opacity:0; }
+    background:radial-gradient(circle at 35% 30%, #FFF1C9, #A3FF12 45%, #6E4E17 100%); box-shadow:0 0 50px -8px rgba(163,255,18,.65); }
+  .jv-orb span{ position:absolute; inset:-10px; border-radius:50%; border:1px solid rgba(163,255,18,.35); opacity:0; }
   .jv-orb.on span{ animation:jvpulse 1.6s ease-out infinite; } .jv-orb.on span:nth-child(2){ animation-delay:.5s; } .jv-orb.on span:nth-child(3){ animation-delay:1s; }
   .jv-orb.on{ animation:jvbreath 1.2s ease-in-out infinite; }
   @keyframes jvpulse{ 0%{ transform:scale(.9); opacity:.9; } 100%{ transform:scale(1.5); opacity:0; } }
   @keyframes jvbreath{ 50%{ transform:scale(1.05); } }
   .jv-status{ font-family:var(--serif, Georgia); font-size:19px; font-weight:600; color:var(--text); min-height:26px; }
   .jv-sugg{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:12px 0; }
-  .jv-sugg button{ background:transparent; border:1px solid rgba(214,178,110,.3); color:var(--gold); border-radius:16px; padding:7px 11px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+  .jv-sugg button{ background:transparent; border:1px solid rgba(163,255,18,.3); color:var(--gold); border-radius:16px; padding:7px 11px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; }
   .jv-type{ display:flex; gap:6px; margin-bottom:12px; }
   .jv-type input{ flex:1; background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; color:var(--text); font-size:16px; padding:11px 13px; font-family:inherit; }
-  .jv-type button{ width:46px; border-radius:14px; border:0; background:var(--gold-grad, #D6B26E); color:#1A1307; font-size:18px; cursor:pointer; }
+  .jv-type button{ width:46px; border-radius:14px; border:0; background:var(--gold-grad, #A3FF12); color:#1A1307; font-size:18px; cursor:pointer; }
   .jv-log{ text-align:left; }
   .jv-q{ font-size:12.5px; color:var(--text-faint); margin-top:12px; }
   .jv-a{ font-size:14.5px; line-height:1.5; color:var(--text); background:var(--bg-card-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-top:6px; }
   /* ===== Terminal ===== */
-  .term-btn{ float:right; margin:-4px -4px 6px 8px; background:transparent; border:1px solid rgba(214,178,110,.35); color:var(--gold); border-radius:12px; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; position:relative; z-index:2; }
+  .term-btn{ float:right; margin:-4px -4px 6px 8px; background:transparent; border:1px solid rgba(163,255,18,.35); color:var(--gold); border-radius:12px; padding:6px 10px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; position:relative; z-index:2; }
   .term{ position:fixed; inset:0; z-index:96; background:#050505; color:#F4EFE6; overflow:auto; opacity:0; pointer-events:none; transition:opacity .25s;
     padding:calc(env(safe-area-inset-top,0px) + 14px) calc(env(safe-area-inset-right,0px) + 14px) calc(env(safe-area-inset-bottom,0px) + 14px) calc(env(safe-area-inset-left,0px) + 14px); }
   .term.open{ opacity:1; pointer-events:auto; }
@@ -1174,7 +1199,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .term-head{ display:flex; align-items:baseline; gap:10px; padding-right:44px; margin-bottom:8px; flex-wrap:wrap; }
   .term-grid{ display:grid; grid-template-columns:1fr; gap:8px; }
   @media (orientation: landscape){ .term-grid{ grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); align-items:start; } }
-  .term-sym{ font-size:11px; font-weight:800; color:#D6B26E; letter-spacing:.06em; }
+  .term-sym{ font-size:11px; font-weight:800; color:#A3FF12; letter-spacing:.06em; }
   .term-price{ font-family:var(--serif, Georgia); font-size:30px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; }
   .term-price.up{ animation:tmUp .9s; } .term-price.dn{ animation:tmDn .9s; }
   @keyframes tmUp{ 0%{ color:#5FBF8F; text-shadow:0 0 18px rgba(95,191,143,.6); } 100%{ color:#F4EFE6; } }
@@ -1185,24 +1210,24 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .term .ch-tf button{ padding:4px 9px; font-size:11px; }
   .term #termChart svg{ max-height:52vh; }
   @media (orientation: landscape){ .term #termChart svg{ max-height:calc(100vh - 110px); } }
-  .term-box{ border:1px solid rgba(214,178,110,.18); border-radius:14px; padding:9px 11px; background:#0C0C0E; margin-bottom:8px; }
+  .term-box{ border:1px solid rgba(163,255,18,.18); border-radius:14px; padding:9px 11px; background:#0C0C0E; margin-bottom:8px; }
   .term-l{ font-size:10.5px; font-weight:700; color:#AAA397; margin-bottom:4px; }
   .term-radar{ display:flex; align-items:center; gap:12px; }
   .term-radar svg{ width:92px; height:92px; flex:none; }
   .term-v{ display:flex; flex-direction:column; gap:2px; font-weight:800; font-size:13px; }
   .term-news{ font-size:12px; line-height:1.35; }
-  .term-cd{ display:inline-block; font-family:var(--serif, Georgia); font-size:20px; font-weight:600; color:#D6B26E; margin-left:6px; font-variant-numeric:tabular-nums; }
+  .term-cd{ display:inline-block; font-family:var(--serif, Georgia); font-size:20px; font-weight:600; color:#A3FF12; margin-left:6px; font-variant-numeric:tabular-nums; }
   .term #tmActive .pt-r{ padding:6px 0; font-size:12px; }
   .term #tmActive .ae-sum{ font-size:11px; }
   .term-x{ width:30px; height:30px; font-size:12px; }
-  .term .pt-r{ border-top-color:rgba(214,178,110,.14); }
+  .term .pt-r{ border-top-color:rgba(163,255,18,.14); }
   /* ===== Vault ===== */
   .vault{ position:fixed; inset:0; z-index:96; background:radial-gradient(ellipse at 50% 30%, #1A1712, #050505 70%); opacity:0; pointer-events:none; transition:opacity .25s; }
   .vault.open{ opacity:1; pointer-events:auto; }
   .vault-canvas{ position:absolute; inset:0; }
   .vault-hud{ position:absolute; left:0; right:0; top:calc(env(safe-area-inset-top,0px) + 22px); text-align:center; z-index:2; pointer-events:none; }
   .vault-l{ font-size:12px; font-weight:700; color:#AAA397; letter-spacing:.08em; }
-  .vault-v{ font-family:var(--serif, Georgia); font-size:54px; font-weight:600; background:linear-gradient(135deg,#F1DDA8,#D6B26E 45%,#A87D3A); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1.05; }
+  .vault-v{ font-family:var(--serif, Georgia); font-size:54px; font-weight:600; background:linear-gradient(135deg,#E4FF8A,#A3FF12 45%,#5BD400); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1.05; }
   .vault-s{ font-size:13px; color:#F4EFE6; opacity:.8; }
   .vault-hint{ position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 22px); text-align:center; font-size:12px; color:#AAA397; z-index:2; padding:0 20px; }
 
@@ -1210,22 +1235,22 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   #splash{ background:#050505 !important; gap:0 !important; overflow:hidden; transition:opacity .7s ease, visibility .7s, transform .7s ease !important; }
   #splash.hide{ opacity:0; visibility:hidden; transform:scale(1.04); }
   .sp2-glow{ position:absolute; width:520px; height:520px; left:50%; top:42%; margin:-260px 0 0 -260px; border-radius:50%;
-    background:radial-gradient(circle, rgba(214,178,110,.16), rgba(214,178,110,0) 62%); animation:sp2glow 2.2s ease-out both; pointer-events:none; }
+    background:radial-gradient(circle, rgba(163,255,18,.16), rgba(163,255,18,0) 62%); animation:sp2glow 2.2s ease-out both; pointer-events:none; }
   .sp2-emblem{ position:relative; width:150px; height:150px; margin-bottom:26px; }
   .sp2-ring{ position:absolute; inset:-14px; width:178px; height:178px; transform:rotate(-90deg); }
   .sp2-ring circle{ stroke-dasharray:100; stroke-dashoffset:100; animation:sp2draw 1.3s cubic-bezier(.6,0,.2,1) .15s forwards; }
   .sp2-ring circle + circle{ animation-delay:.35s; }
   .sp2-icon{ position:absolute; inset:0; border-radius:50%; overflow:hidden; background:url(icon.png) center/cover no-repeat;
-    box-shadow:0 30px 60px -24px rgba(214,178,110,.45), 0 0 0 1px rgba(214,178,110,.22);
+    box-shadow:0 30px 60px -24px rgba(163,255,18,.45), 0 0 0 1px rgba(163,255,18,.22);
     opacity:0; transform:scale(.86); animation:sp2in .9s cubic-bezier(.2,.8,.2,1) .1s forwards; }
   .sp2-icon i{ position:absolute; top:0; bottom:0; width:45%; left:-60%; transform:skewX(-18deg);
     background:linear-gradient(90deg, transparent, rgba(255,240,200,.38), transparent); animation:sp2shine 1.1s ease-in-out .9s forwards; }
   .sp2-title{ font-family:"Cormorant Garamond", "Iowan Old Style", Georgia, serif; font-size:40px; font-weight:600; color:#F4EFE6; letter-spacing:.02em; line-height:1; display:flex; }
   .sp2-title span{ display:inline-block; opacity:0; transform:translateY(14px); animation:sp2up .6s cubic-bezier(.2,.8,.2,1) forwards; }
   .sp2-title span:nth-child(1){ animation-delay:.55s; } .sp2-title span:nth-child(2){ animation-delay:.6s; } .sp2-title span:nth-child(3){ animation-delay:.63s; }
-  .sp2-title span:nth-child(4){ animation-delay:.68s; color:#D6B26E; } .sp2-title span:nth-child(5){ animation-delay:.73s; color:#D6B26E; } .sp2-title span:nth-child(6){ animation-delay:.78s; color:#D6B26E; }
-  .sp2-rule{ width:120px; height:1px; margin:16px 0 14px; background:rgba(214,178,110,.18); overflow:hidden; }
-  .sp2-rule i{ display:block; height:100%; width:0; background:linear-gradient(90deg, transparent, #D6B26E, transparent); animation:sp2fill 1.1s ease .9s forwards; }
+  .sp2-title span:nth-child(4){ animation-delay:.68s; color:#A3FF12; } .sp2-title span:nth-child(5){ animation-delay:.73s; color:#A3FF12; } .sp2-title span:nth-child(6){ animation-delay:.78s; color:#A3FF12; }
+  .sp2-rule{ width:120px; height:1px; margin:16px 0 14px; background:rgba(163,255,18,.18); overflow:hidden; }
+  .sp2-rule i{ display:block; height:100%; width:0; background:linear-gradient(90deg, transparent, #A3FF12, transparent); animation:sp2fill 1.1s ease .9s forwards; }
   .sp2-greet{ font-family:"Cormorant Garamond", Georgia, serif; font-style:italic; font-size:21px; color:#F4EFE6; opacity:0; animation:sp2fade .7s ease 1.05s forwards; }
   .sp2-date{ font-family:"Manrope", -apple-system, system-ui, sans-serif; font-size:11.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#8F887C; margin-top:6px; opacity:0; animation:sp2fade .7s ease 1.2s forwards; }
   @keyframes sp2draw{ to{ stroke-dashoffset:0; } }
@@ -1293,9 +1318,9 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .ph-wrap{ position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#000; line-height:0; }
   .ph-img{ width:100%; height:auto; display:block; } .ph-img.dim{ opacity:.45; margin-top:6px; border-radius:12px; }
   .ph-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; } .ph-lbs{ position:absolute; inset:0; pointer-events:none; line-height:1; }
-  .ph-ln{ stroke-width:1.5; vector-effect:non-scaling-stroke; opacity:.9; } .ph-ln.sup{ stroke:#5FBF8F; } .ph-ln.res{ stroke:#E0685C; } .ph-ln.ent{ stroke:#D6B26E; stroke-width:2; } .ph-ln.slx{ stroke:#FF5A4D; } .ph-ln.tpx{ stroke:#5FE0A0; } .ph-ln.tl{ stroke-width:2; opacity:.95; }
+  .ph-ln{ stroke-width:1.5; vector-effect:non-scaling-stroke; opacity:.9; } .ph-ln.sup{ stroke:#5FBF8F; } .ph-ln.res{ stroke:#E0685C; } .ph-ln.ent{ stroke:#A3FF12; stroke-width:2; } .ph-ln.slx{ stroke:#FF5A4D; } .ph-ln.tpx{ stroke:#5FE0A0; } .ph-ln.tl{ stroke-width:2; opacity:.95; }
   .ph-lb{ position:absolute; right:4px; transform:translateY(-50%); font-size:10px; font-weight:800; padding:3px 6px; border-radius:6px; color:#101010; font-variant-numeric:tabular-nums; }
-  .ph-lb.sup{ background:#5FBF8F; } .ph-lb.res{ background:#E0685C; } .ph-lb.ent{ background:#D6B26E; } .ph-lb.slx{ background:#FF5A4D; } .ph-lb.tpx{ background:#5FE0A0; }
+  .ph-lb.sup{ background:#5FBF8F; } .ph-lb.res{ background:#E0685C; } .ph-lb.ent{ background:#A3FF12; } .ph-lb.slx{ background:#FF5A4D; } .ph-lb.tpx{ background:#5FE0A0; }
   .ph-wrap[data-off~="lv"] .g-lv, .ph-wrap[data-off~="us"] .g-us, .ph-wrap[data-off~="sc"] .g-sc{ display:none; }
   .ph-sum{ margin:12px 0; font-size:14px; line-height:1.55; }
   .ph-card{ margin-top:10px; padding:13px 14px; border-radius:16px; background:var(--bg-card-2); border:1px solid var(--line); }
@@ -1324,7 +1349,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .am-custom input:first-child{ width:56px; text-align:center; } .am-custom input:nth-child(2){ flex:1; } .am-custom .primary-btn{ width:auto; padding:0 16px; }
 
   /* ===== Ethereum card ===== */
-  .eth-card{ background:radial-gradient(130% 70% at 0% 0%, rgba(140,158,255,.17), transparent 58%), radial-gradient(90% 55% at 100% 0%, rgba(214,178,110,.09), transparent 62%), linear-gradient(180deg, var(--bg-raised), var(--bg-card)) !important;
+  .eth-card{ background:radial-gradient(130% 70% at 0% 0%, rgba(140,158,255,.17), transparent 58%), radial-gradient(90% 55% at 100% 0%, rgba(163,255,18,.09), transparent 62%), linear-gradient(180deg, var(--bg-raised), var(--bg-card)) !important;
     border-color:color-mix(in srgb, #8C9EFF 30%, var(--line)) !important; overflow:hidden; }
   :root[data-theme="light"] .eth-card{ background:radial-gradient(130% 70% at 0% 0%, rgba(110,125,230,.13), transparent 58%), linear-gradient(180deg, #fff, var(--bg-card)) !important; }
   .eth-hd{ display:flex; align-items:center; gap:12px; }
@@ -1338,7 +1363,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   @keyframes ethUp{ 0%{ color:#5FBF8F; text-shadow:0 0 26px rgba(95,191,143,.75); } 100%{ color:var(--text); text-shadow:none; } }
   @keyframes ethDn{ 0%{ color:#E0685C; text-shadow:0 0 26px rgba(224,104,92,.75); } 100%{ color:var(--text); text-shadow:none; } }
   .eth-r24{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-dim); font-variant-numeric:tabular-nums; margin-top:4px; }
-  .eth-r24b{ flex:1; height:5px; border-radius:4px; position:relative; background:linear-gradient(90deg, #E0685C, #D6B26E, #5FBF8F); opacity:.85; }
+  .eth-r24b{ flex:1; height:5px; border-radius:4px; position:relative; background:linear-gradient(90deg, #E0685C, #A3FF12, #5FBF8F); opacity:.85; }
   .eth-r24b i{ position:absolute; top:50%; width:13px; height:13px; border-radius:50%; background:#fff; border:3px solid #8C9EFF; transform:translate(-50%,-50%); box-shadow:0 0 12px rgba(140,158,255,.8); transition:left .5s ease; }
   .eth-r24l{ font-size:10px; color:var(--text-faint); text-align:center; margin:3px 0 0; }
   .eth-pos{ margin:16px 0 4px; padding:15px; border-radius:18px; border:1px solid var(--line); background:linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,0)), var(--bg-card-2); box-shadow:0 18px 40px -26px rgba(0,0,0,.9); transition:border-color .4s, background .4s; }
@@ -1349,8 +1374,8 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .eth-pos.up .eth-pl{ color:#5FBF8F; } .eth-pos.dn .eth-pl{ color:#E0685C; }
   .eth-sub{ font-size:12.5px; color:var(--text-dim); margin:2px 0 12px; } .eth-sub b{ color:var(--text); }
   .eth-bar{ position:relative; height:8px; border-radius:6px; background:var(--line); } .eth-bf{ position:absolute; top:0; bottom:0; border-radius:6px; }
-  .eth-pos.up .eth-bf{ background:linear-gradient(90deg, #D6B26E, #5FBF8F); } .eth-pos.dn .eth-bf{ background:linear-gradient(90deg, #E0685C, #D6B26E); }
-  .eth-be{ position:absolute; top:-3px; width:3px; height:14px; border-radius:2px; background:#D6B26E; transform:translateX(-50%); }
+  .eth-pos.up .eth-bf{ background:linear-gradient(90deg, #A3FF12, #5FBF8F); } .eth-pos.dn .eth-bf{ background:linear-gradient(90deg, #E0685C, #A3FF12); }
+  .eth-be{ position:absolute; top:-3px; width:3px; height:14px; border-radius:2px; background:#A3FF12; transform:translateX(-50%); }
   .eth-bn{ position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:#fff; transform:translate(-50%,-50%); box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 2px 8px rgba(0,0,0,.5); }
   .eth-bl{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin:7px 0 12px; }
   .eth-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; } .eth-grid div{ background:color-mix(in srgb, var(--bg) 45%, var(--bg-card)); border:1px solid var(--line); border-radius:12px; padding:9px 11px; }
@@ -1384,7 +1409,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   .nu-bmi{ text-align:center; padding:10px 14px; border:1px solid var(--line); border-radius:14px; background:var(--bg-card-2); } .nu-bmi b{ display:block; font-size:20px; font-variant-numeric:tabular-nums; } .nu-bmi span{ font-size:10.5px; color:var(--text-faint); }
   .nu-empty{ margin-top:14px; padding:16px; border-radius:14px; border:1px dashed var(--hair, var(--line)); font-size:13.5px; line-height:1.55; color:var(--text-dim); }
   .nu-hero{ margin-top:16px; padding:16px; border-radius:18px; border:1px solid color-mix(in srgb, var(--gold) 30%, var(--line)); background:radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 60%), var(--bg-card-2); }
-  .nu-kc b{ font-family:var(--serif, var(--display)); font-size:54px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; background:var(--gold-grad, linear-gradient(135deg,#F1DDA8,#D6B26E)); -webkit-background-clip:text; background-clip:text; color:transparent; } .nu-kc span{ margin-left:8px; font-size:13px; color:var(--text-dim); font-weight:700; }
+  .nu-kc b{ font-family:var(--serif, var(--display)); font-size:54px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; background:var(--gold-grad, linear-gradient(135deg,#E4FF8A,#A3FF12)); -webkit-background-clip:text; background-clip:text; color:transparent; } .nu-kc span{ margin-left:8px; font-size:13px; color:var(--text-dim); font-weight:700; }
   .nu-mac{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; } .nu-mac div{ padding:9px 8px 9px 12px; border-radius:12px; background:var(--bg-card); border:1px solid var(--line); border-left:3px solid var(--c); } .nu-mac b{ display:block; font-size:16px; font-variant-numeric:tabular-nums; } .nu-mac span{ font-size:10.5px; color:var(--text-faint); }
   .nu-bars{ margin-top:14px; display:grid; gap:10px; } .nu-bars > div{ position:relative; font-size:11.5px; display:flex; justify-content:space-between; flex-wrap:wrap; } .nu-bars span{ color:var(--text-dim); font-weight:600; } .nu-bars em{ font-style:normal; font-variant-numeric:tabular-nums; }
   .nu-bars i{ flex-basis:100%; height:7px; border-radius:5px; background:var(--line); margin-top:5px; position:relative; overflow:hidden; } .nu-bars i::after{ content:''; position:absolute; left:0; top:0; bottom:0; width:var(--w); background:var(--b, var(--gold)); border-radius:5px; transition:width .5s ease; }
@@ -1426,9 +1451,9 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
   <div class="sp2-glow"></div>
   <div class="sp2-emblem">
     <svg class="sp2-ring" viewBox="0 0 200 200">
-      <defs><linearGradient id="sp2g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1DDA8"/><stop offset=".5" stop-color="#D6B26E"/><stop offset="1" stop-color="#8C6424"/></linearGradient></defs>
+      <defs><linearGradient id="sp2g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4FF8A"/><stop offset=".5" stop-color="#A3FF12"/><stop offset="1" stop-color="#8C6424"/></linearGradient></defs>
       <circle cx="100" cy="100" r="94" fill="none" stroke="url(#sp2g)" stroke-width="1.2" pathLength="100"/>
-      <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(214,178,110,.25)" stroke-width="0.6" pathLength="100"/>
+      <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(163,255,18,.25)" stroke-width="0.6" pathLength="100"/>
     </svg>
     <div class="sp2-icon"><i></i></div>
   </div>
@@ -1652,29 +1677,31 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
 
       <div class="card" data-fseg-card="menu">
         <div class="card-title">Meniu 7 zile</div>
+        <div class="hint" style="margin:0 0 10px;">💶 Țintă de buget: sub 10 € pe zi. Estimat 6–8 € pe zi (aprox. 45–55 € pe săptămână), cu prețuri medii din Spania. Gătești doar la aragaz.</div>
         <div class="day-pills" id="dayPills"></div>
-        <div id="menuDays"><div class="mm-day" data-day="Luni"><div class="mm-dayname">Luni</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă din 3 ouă cu spanac și roșii + pâine integrală</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Piept de pui la grătar + bulgur sau orez + salată cu ulei de măsline</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt grecesc + o mână de nuci</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Somon la cuptor + legume coapte</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Marți"><div class="mm-dayname">Marți</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Iaurt grecesc + ovăz + fructe de pădure</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Paste integrale cu ton, roșii și măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Brânză de vaci + castravete</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pulpe de pui la cuptor + cartofi + salată</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Miercuri"><div class="mm-dayname">Miercuri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">3 ouă fierte + feta + roșii + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Curcan la tigaie + quinoa + broccoli</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Hummus + morcovi + 2 ouă fierte</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Tocăniță de năut cu pui și legume</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Joi"><div class="mm-dayname">Joi</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Clătite din ovăz, banană și ouă + iaurt</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Orez + 3 ouă + legume sotate + feta</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt grecesc + migdale</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pește alb la cuptor + salată mare</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Vineri"><div class="mm-dayname">Vineri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Brânză de vaci + roșii + castraveți + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Chiftele de pui la cuptor + piure + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Kefir + nuci</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Salată grecească cu pui</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Sâmbătă"><div class="mm-dayname">Sâmbătă</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă cu ciuperci și brânză</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Sardine sau somon + cartof copt + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt + fructe</span><span class="mm-p">~18g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pui la wok cu legume + orez</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Duminică"><div class="mm-dayname">Duminică</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Ochiuri + avocado + pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Masă liberă: o proteină + multe legume</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Fructe + nuci</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Supă de legume + pui sau ou + salată</span><span class="mm-p">~25g</span></div></div></div>
+        <div id="menuDays"><div class="mm-day" data-day="Luni"><div class="mm-dayname">Luni</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă din 3 ouă cu spanac și roșii + pâine integrală</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Piept de pui la tigaie + bulgur sau orez + salată cu ulei de măsline</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt natural + o banană</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pulpe de pui la tigaie + legume sote</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Marți"><div class="mm-dayname">Marți</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Iaurt natural + ovăz + banană</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Paste integrale cu ton, roșii și măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Brânză de vaci + castravete</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pulpe de pui înăbușite la oală + cartofi fierți + salată</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Miercuri"><div class="mm-dayname">Miercuri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">3 ouă fierte + feta + roșii + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Pui la tigaie + orez + broccoli</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Hummus + morcovi + 2 ouă fierte</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Tocăniță de năut cu pui și legume</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Joi"><div class="mm-dayname">Joi</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Clătite din ovăz, banană și ouă + iaurt</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Orez + 3 ouă + legume sotate + feta</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt natural + ovăz</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Ton din conservă + orez + salată mare</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Vineri"><div class="mm-dayname">Vineri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Brânză de vaci + roșii + castraveți + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Chiftele de pui la tigaie + piure + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Kefir + o banană</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Salată grecească cu pui</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Sâmbătă"><div class="mm-dayname">Sâmbătă</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă cu ciuperci și brânză</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Macrou sau sardine din conservă + cartofi fierți + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt + fructe</span><span class="mm-p">~18g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pui la wok cu legume + orez</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Duminică"><div class="mm-dayname">Duminică</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Ochiuri + roșii + pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Masă liberă: o proteină + multe legume</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Fructe + iaurt</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Supă de legume + pui sau ou + salată</span><span class="mm-p">~25g</span></div></div></div>
         <div class="hint">Gramele sunt aproximative (proteine pe masă). Poți schimba zilele între ele cum vrei — contează proteina + legumele la fiecare masă.</div>
       </div>
 
       <div class="card" data-fseg-card="menu">
         <div class="card-title">Alte variante · 42 feluri</div>
         <div class="day-pills"><button class="day-pill idea-pill" data-idea="Dimineața">Dimineața</button><button class="day-pill idea-pill" data-idea="Prânz">Prânz</button><button class="day-pill idea-pill" data-idea="Gustare">Gustare</button><button class="day-pill idea-pill" data-idea="Seara">Seara</button></div>
-        <div class="idea-group" data-idea-g="Dimineața"><div class="mm-row"><span class="mm-food">Omletă cu spanac, roșii și feta</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Iaurt grecesc + ovăz + fructe de pădure</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Ouă fierte + avocado + pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Terci de ovăz făcut cu lapte + nuci + banană</span><span class="mm-p">~18g</span></div><div class="mm-row"><span class="mm-food">Brânză de vaci + roșii + castraveți + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Clătite din ovăz și ouă</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">Shakshuka (ouă în sos de roșii cu ardei)</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Sandviș integral cu ou, curcan și salată</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Ovăz peste noapte cu iaurt și chia</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Omletă cu ciuperci și brânză</span><span class="mm-p">~28g</span></div></div><div class="idea-group" data-idea-g="Prânz"><div class="mm-row"><span class="mm-food">Piept de pui la grătar + bulgur + salată</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Paste integrale cu ton, roșii și măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Orez + 3 ouă + legume sotate</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Curcan + quinoa + broccoli</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Bol cu orez, pui, porumb, fasole, salsa</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Chiftele de pui la cuptor + piure + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Tocăniță de năut cu pui</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Supă cremă de linte + pui la grătar</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Wrap integral cu pui, hummus și legume</span><span class="mm-p">~32g</span></div><div class="mm-row"><span class="mm-food">Risotto de orez cu pui și ciuperci</span><span class="mm-p">~32g</span></div><div class="mm-row"><span class="mm-food">Carne de vită slabă + cartofi copți + salată (1–2×/săpt.)</span><span class="mm-p">~38g</span></div></div><div class="idea-group" data-idea-g="Gustare"><div class="mm-row"><span class="mm-food">Iaurt grecesc + nuci</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">Brânză de vaci + castravete</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">2 ouă fierte + un măr</span><span class="mm-p">~13g</span></div><div class="mm-row"><span class="mm-food">Hummus + morcovi + ardei</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-food">Kefir + o banană</span><span class="mm-p">~10g</span></div><div class="mm-row"><span class="mm-food">Rondele de orez + unt de arahide 100%</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-food">Ton pe pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">O mână de migdale + o pară</span><span class="mm-p">~7g</span></div><div class="mm-row"><span class="mm-food">Edamame fierte</span><span class="mm-p">~17g</span></div><div class="mm-row"><span class="mm-food">Lapte + banană la blender</span><span class="mm-p">~10g</span></div></div><div class="idea-group" data-idea-g="Seara"><div class="mm-row"><span class="mm-food">Somon la cuptor + legume coapte</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Pește alb + salată mare cu ulei de măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Salată grecească cu pui</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Pui la wok cu legume + puțin orez</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Omletă cu legume + salată</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Supă de legume + pui + salată</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Dovlecei umpluți cu carne de curcan</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Frigărui de pui cu ardei + tzatziki</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Creveți cu usturoi + legume</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Ardei umpluți cu orez și carne slabă</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Sardine + salată de roșii + pâine integrală</span><span class="mm-p">~28g</span></div></div>
+        <div class="idea-group" data-idea-g="Dimineața"><div class="mm-row"><span class="mm-food">Omletă cu spanac, roșii și feta</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Iaurt natural + ovăz + banană</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Ouă fierte + roșii + pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Terci de ovăz făcut cu lapte + nuci + banană</span><span class="mm-p">~18g</span></div><div class="mm-row"><span class="mm-food">Brânză de vaci + roșii + castraveți + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Clătite din ovăz și ouă</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">Shakshuka (ouă în sos de roșii cu ardei)</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Sandviș integral cu ou, ton și salată</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Ovăz peste noapte cu iaurt și chia</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">Omletă cu ciuperci și brânză</span><span class="mm-p">~28g</span></div></div><div class="idea-group" data-idea-g="Prânz"><div class="mm-row"><span class="mm-food">Piept de pui la tigaie + bulgur + salată</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Paste integrale cu ton, roșii și măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Orez + 3 ouă + legume sotate</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Pui + orez + broccoli</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Bol cu orez, pui, porumb, fasole, salsa</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-food">Chiftele de pui la tigaie + piure + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Tocăniță de năut cu pui</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Supă cremă de linte + pui la tigaie</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Wrap integral cu pui, hummus și legume</span><span class="mm-p">~32g</span></div><div class="mm-row"><span class="mm-food">Risotto de orez cu pui și ciuperci</span><span class="mm-p">~32g</span></div><div class="mm-row"><span class="mm-food">Carne de vită slabă + cartofi copți + salată (1–2×/săpt.)</span><span class="mm-p">~38g</span></div></div><div class="idea-group" data-idea-g="Gustare"><div class="mm-row"><span class="mm-food">Iaurt natural + o banană</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">Brânză de vaci + castravete</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-food">2 ouă fierte + un măr</span><span class="mm-p">~13g</span></div><div class="mm-row"><span class="mm-food">Hummus + morcovi + ardei</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-food">Kefir + o banană</span><span class="mm-p">~10g</span></div><div class="mm-row"><span class="mm-food">Rondele de orez + unt de arahide 100%</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-food">Ton pe pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-food">O pară + o felie de pâine</span><span class="mm-p">~7g</span></div><div class="mm-row"><span class="mm-food">Edamame fierte</span><span class="mm-p">~17g</span></div><div class="mm-row"><span class="mm-food">Lapte + banană la blender</span><span class="mm-p">~10g</span></div></div><div class="idea-group" data-idea-g="Seara"><div class="mm-row"><span class="mm-food">Pulpe de pui la tigaie + legume sote</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Pește alb + salată mare cu ulei de măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Salată grecească cu pui</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Pui la wok cu legume + puțin orez</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Omletă cu legume + salată</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-food">Supă de legume + pui + salată</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-food">Dovlecei umpluți cu carne de pui</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Frigărui de pui cu ardei + tzatziki</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-food">Creveți cu usturoi + legume</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Ardei umpluți cu orez și carne slabă</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-food">Sardine + salată de roșii + pâine integrală</span><span class="mm-p">~28g</span></div></div>
         <div class="hint">Oricare poate înlocui masa din meniul zilei. Gramele de proteină sunt aproximative.</div>
       </div>
 
       <div class="card" data-fseg-card="shop">
         <div class="card-title">Listă de cumpărături</div>
+        <div class="hint" style="margin:0 0 10px;">💶 Coșul pe o săptămână costă cam 45–55 €. Ia pui în pachet mare, ouă la 30 de bucăți, orez și ovăz la kilogram, și conserve de ton. Iese mai ieftin.</div>
         <div class="gr-progress" id="grProgress"></div>
-        <div class="gr-cat">Proteine</div><div class="gr-item" data-gr="Ouă (30 buc)"><span class="gr-box"></span><span>Ouă (30 buc)</span></div><div class="gr-item" data-gr="Piept de pui"><span class="gr-box"></span><span>Piept de pui</span></div><div class="gr-item" data-gr="Curcan"><span class="gr-box"></span><span>Curcan</span></div><div class="gr-item" data-gr="Somon sau pește alb"><span class="gr-box"></span><span>Somon sau pește alb</span></div><div class="gr-item" data-gr="Ton în apă (conservă)"><span class="gr-box"></span><span>Ton în apă (conservă)</span></div><div class="gr-item" data-gr="Sardine"><span class="gr-box"></span><span>Sardine</span></div><div class="gr-item" data-gr="Brânză de vaci"><span class="gr-box"></span><span>Brânză de vaci</span></div><div class="gr-item" data-gr="Iaurt grecesc"><span class="gr-box"></span><span>Iaurt grecesc</span></div><div class="gr-item" data-gr="Feta"><span class="gr-box"></span><span>Feta</span></div><div class="gr-item" data-gr="Kefir"><span class="gr-box"></span><span>Kefir</span></div><div class="gr-item" data-gr="Năut / fasole"><span class="gr-box"></span><span>Năut / fasole</span></div><div class="gr-cat">Carbohidrați buni</div><div class="gr-item" data-gr="Ovăz"><span class="gr-box"></span><span>Ovăz</span></div><div class="gr-item" data-gr="Orez"><span class="gr-box"></span><span>Orez</span></div><div class="gr-item" data-gr="Quinoa sau bulgur"><span class="gr-box"></span><span>Quinoa sau bulgur</span></div><div class="gr-item" data-gr="Paste integrale"><span class="gr-box"></span><span>Paste integrale</span></div><div class="gr-item" data-gr="Pâine integrală"><span class="gr-box"></span><span>Pâine integrală</span></div><div class="gr-item" data-gr="Cartofi"><span class="gr-box"></span><span>Cartofi</span></div><div class="gr-cat">Legume și fructe</div><div class="gr-item" data-gr="Spanac"><span class="gr-box"></span><span>Spanac</span></div><div class="gr-item" data-gr="Roșii"><span class="gr-box"></span><span>Roșii</span></div><div class="gr-item" data-gr="Castraveți"><span class="gr-box"></span><span>Castraveți</span></div><div class="gr-item" data-gr="Ardei"><span class="gr-box"></span><span>Ardei</span></div><div class="gr-item" data-gr="Broccoli"><span class="gr-box"></span><span>Broccoli</span></div><div class="gr-item" data-gr="Morcovi"><span class="gr-box"></span><span>Morcovi</span></div><div class="gr-item" data-gr="Ciuperci"><span class="gr-box"></span><span>Ciuperci</span></div><div class="gr-item" data-gr="Salată verde"><span class="gr-box"></span><span>Salată verde</span></div><div class="gr-item" data-gr="Banane"><span class="gr-box"></span><span>Banane</span></div><div class="gr-item" data-gr="Mere"><span class="gr-box"></span><span>Mere</span></div><div class="gr-item" data-gr="Fructe de pădure congelate"><span class="gr-box"></span><span>Fructe de pădure congelate</span></div><div class="gr-item" data-gr="Lămâi"><span class="gr-box"></span><span>Lămâi</span></div><div class="gr-cat">Grăsimi bune</div><div class="gr-item" data-gr="Ulei de măsline extravirgin"><span class="gr-box"></span><span>Ulei de măsline extravirgin</span></div><div class="gr-item" data-gr="Nuci"><span class="gr-box"></span><span>Nuci</span></div><div class="gr-item" data-gr="Migdale"><span class="gr-box"></span><span>Migdale</span></div><div class="gr-item" data-gr="Avocado"><span class="gr-box"></span><span>Avocado</span></div><div class="gr-item" data-gr="Măsline"><span class="gr-box"></span><span>Măsline</span></div><div class="gr-cat">Extra</div><div class="gr-item" data-gr="Hummus"><span class="gr-box"></span><span>Hummus</span></div><div class="gr-item" data-gr="Scorțișoară"><span class="gr-box"></span><span>Scorțișoară</span></div><div class="gr-item" data-gr="Cacao pudră (fără zahăr)"><span class="gr-box"></span><span>Cacao pudră (fără zahăr)</span></div><div class="gr-item" data-gr="Curmale"><span class="gr-box"></span><span>Curmale</span></div><div class="gr-item" data-gr="Semințe de chia"><span class="gr-box"></span><span>Semințe de chia</span></div><div class="gr-item" data-gr="Condimente, usturoi, ierburi"><span class="gr-box"></span><span>Condimente, usturoi, ierburi</span></div>
+        <div class="gr-cat">Proteine</div><div class="gr-item" data-gr="Ouă (30 buc)"><span class="gr-box"></span><span>Ouă (30 buc)</span></div><div class="gr-item" data-gr="Piept de pui"><span class="gr-box"></span><span>Piept de pui</span></div><div class="gr-item" data-gr="Ton sau macrou din conservă"><span class="gr-box"></span><span>Ton sau macrou din conservă</span></div><div class="gr-item" data-gr="Sardine"><span class="gr-box"></span><span>Sardine</span></div><div class="gr-item" data-gr="Brânză de vaci"><span class="gr-box"></span><span>Brânză de vaci</span></div><div class="gr-item" data-gr="Iaurt natural"><span class="gr-box"></span><span>Iaurt natural</span></div><div class="gr-item" data-gr="Feta"><span class="gr-box"></span><span>Feta</span></div><div class="gr-item" data-gr="Kefir"><span class="gr-box"></span><span>Kefir</span></div><div class="gr-item" data-gr="Năut / fasole"><span class="gr-box"></span><span>Năut / fasole</span></div><div class="gr-cat">Carbohidrați buni</div><div class="gr-item" data-gr="Ovăz"><span class="gr-box"></span><span>Ovăz</span></div><div class="gr-item" data-gr="Orez"><span class="gr-box"></span><span>Orez</span></div><div class="gr-item" data-gr="Orez sau bulgur"><span class="gr-box"></span><span>Orez sau bulgur</span></div><div class="gr-item" data-gr="Paste integrale"><span class="gr-box"></span><span>Paste integrale</span></div><div class="gr-item" data-gr="Pâine integrală"><span class="gr-box"></span><span>Pâine integrală</span></div><div class="gr-item" data-gr="Cartofi"><span class="gr-box"></span><span>Cartofi</span></div><div class="gr-cat">Legume și fructe</div><div class="gr-item" data-gr="Spanac"><span class="gr-box"></span><span>Spanac</span></div><div class="gr-item" data-gr="Roșii"><span class="gr-box"></span><span>Roșii</span></div><div class="gr-item" data-gr="Castraveți"><span class="gr-box"></span><span>Castraveți</span></div><div class="gr-item" data-gr="Ardei"><span class="gr-box"></span><span>Ardei</span></div><div class="gr-item" data-gr="Broccoli"><span class="gr-box"></span><span>Broccoli</span></div><div class="gr-item" data-gr="Morcovi"><span class="gr-box"></span><span>Morcovi</span></div><div class="gr-item" data-gr="Ciuperci"><span class="gr-box"></span><span>Ciuperci</span></div><div class="gr-item" data-gr="Salată verde"><span class="gr-box"></span><span>Salată verde</span></div><div class="gr-item" data-gr="Banane"><span class="gr-box"></span><span>Banane</span></div><div class="gr-item" data-gr="Mere"><span class="gr-box"></span><span>Mere</span></div><div class="gr-item" data-gr="Lămâi"><span class="gr-box"></span><span>Lămâi</span></div><div class="gr-cat">Grăsimi bune</div><div class="gr-item" data-gr="Ulei de măsline extravirgin"><span class="gr-box"></span><span>Ulei de măsline extravirgin</span></div><div class="gr-item" data-gr="Nuci"><span class="gr-box"></span><span>Nuci</span></div><div class="gr-item" data-gr="Măsline"><span class="gr-box"></span><span>Măsline</span></div><div class="gr-cat">Extra</div><div class="gr-item" data-gr="Hummus"><span class="gr-box"></span><span>Hummus</span></div><div class="gr-item" data-gr="Scorțișoară"><span class="gr-box"></span><span>Scorțișoară</span></div><div class="gr-item" data-gr="Cacao pudră (fără zahăr)"><span class="gr-box"></span><span>Cacao pudră (fără zahăr)</span></div><div class="gr-item" data-gr="Condimente, usturoi, ierburi"><span class="gr-box"></span><span>Condimente, usturoi, ierburi</span></div>
         <button class="ghost-btn" id="grReset" style="margin-top:14px;">Golește bifele</button>
         <div class="hint">Atinge un produs când l-ai pus în coș. Bifele rămân pe telefonul tău.</div>
       </div>
 
       <div class="card" data-fseg-card="sweet">
         <div class="card-title">Deserturi fără zahăr · 18 rețete</div>
-        <div class="dessert-card"><div class="dessert-name">Clătite proteice cu banană</div><div class="dessert-ing">1 banană zdrobită + 2 ouă + o mână de ovăz — amesteci și le faci la tigaie antiaderentă.</div></div><div class="dessert-card"><div class="dessert-name">Iaurt cu fructe și nuci</div><div class="dessert-ing">Iaurt grecesc + fructe de pădure + nuci mărunțite + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Bile din curmale și cacao</div><div class="dessert-ing">Curmale fără sâmburi + migdale sau caju + cacao pudră — blender, bilute, 30 min la frigider.</div></div><div class="dessert-card"><div class="dessert-name">Măr copt cu scorțișoară</div><div class="dessert-ing">Măr scobit + scorțișoară + nuci în mijloc — 20 min la cuptor, 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Brânză dulce cu cacao</div><div class="dessert-ing">Brânză de vaci + cacao + scorțișoară + banană zdrobită pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Chia pudding</div><div class="dessert-ing">Semințe de chia + lapte + scorțișoară, peste noapte la frigider, dimineața fructe deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Banană înghețată cu cacao</div><div class="dessert-ing">Felii de banană congelate, date prin cacao pudră.</div></div><div class="dessert-card"><div class="dessert-name">„Înghețată” de banană</div><div class="dessert-ing">2 banane congelate date la blender până devin cremoase. Poți adăuga cacao sau unt de arahide 100%.</div></div><div class="dessert-card"><div class="dessert-name">Pară coaptă cu nuci</div><div class="dessert-ing">Pară tăiată în jumătăți, scorțișoară, nuci deasupra — 25 min la cuptor, 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Brioșe din ovăz și banană</div><div class="dessert-ing">2 banane + 2 ouă + 150 g ovăz + scorțișoară + un pumn de afine. În forme de brioșe, 20 min la 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Prăjitură de ovăz cu mere</div><div class="dessert-ing">Ovăz + 2 ouă + mere rase + scorțișoară + nuci. În tavă, 25 min la 180°C. Tai pătrățele.</div></div><div class="dessert-card"><div class="dessert-name">Batoane din ovăz și curmale</div><div class="dessert-ing">Curmale pasate + ovăz + migdale tocate — presezi în tavă, frigider 1 oră, tai batoane.</div></div><div class="dessert-card"><div class="dessert-name">Ciocolată caldă fără zahăr</div><div class="dessert-ing">Lapte cald + cacao pudră + scorțișoară + o curmală mixată pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Căpșuni cu iaurt și cacao</div><div class="dessert-ing">Căpșuni tăiate + iaurt grecesc + un praf de cacao și migdale feliate.</div></div><div class="dessert-card"><div class="dessert-name">Mousse de cacao cu avocado</div><div class="dessert-ing">1 avocado copt + 1 banană + 2 linguri cacao — la blender, frigider 30 min. Cremos ca o mousse.</div></div><div class="dessert-card"><div class="dessert-name">Pepene / fructe de sezon</div><div class="dessert-ing">Cel mai simplu desert: un bol mare de fructe proaspete, reci, cu câteva frunze de mentă.</div></div><div class="dessert-card"><div class="dessert-name">Tartine dulci de orez expandat</div><div class="dessert-ing">Rondele de orez expandat + unt de arahide 100% + felii subțiri de banană + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Budincă de orez cu lapte</div><div class="dessert-ing">Orez fiert în lapte cu scorțișoară și coajă de lămâie, îndulcit doar cu stafide sau banană.</div></div>
+        <div class="dessert-card"><div class="dessert-name">Clătite proteice cu banană</div><div class="dessert-ing">1 banană zdrobită + 2 ouă + o mână de ovăz — amesteci și le faci la tigaie antiaderentă.</div></div><div class="dessert-card"><div class="dessert-name">Iaurt cu fructe și nuci</div><div class="dessert-ing">Iaurt natural + banană + ovăz + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Bile din curmale și cacao</div><div class="dessert-ing">Banană pasată + ovăz + cacao pudră — blender, bilute, 30 min la frigider.</div></div><div class="dessert-card"><div class="dessert-name">Măr fiert cu scorțișoară</div><div class="dessert-ing">Măr tăiat cuburi + scorțișoară + o lingură de apă — 10 min la foc mic, acoperit, apoi ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brânză dulce cu cacao</div><div class="dessert-ing">Brânză de vaci + cacao + scorțișoară + banană zdrobită pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Chia pudding</div><div class="dessert-ing">Semințe de chia + lapte + scorțișoară, peste noapte la frigider, dimineața fructe deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Banană înghețată cu cacao</div><div class="dessert-ing">Felii de banană congelate, date prin cacao pudră.</div></div><div class="dessert-card"><div class="dessert-name">„Înghețată” de banană</div><div class="dessert-ing">2 banane congelate date la blender până devin cremoase. Poți adăuga cacao sau unt de arahide 100%.</div></div><div class="dessert-card"><div class="dessert-name">Pară fiartă cu nuci</div><div class="dessert-ing">Pară tăiată în jumătăți, puțină apă și scorțișoară — 12 min la foc mic, acoperit, ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brioșe din ovăz și banană</div><div class="dessert-ing">2 banane + 2 ouă + 150 g ovăz + scorțișoară + un pumn de afine. În forme de brioșe, 20 min la 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Prăjitură de ovăz cu mere</div><div class="dessert-ing">Ovăz + 2 ouă + mere rase + scorțișoară + nuci. În tavă, 25 min la 180°C. Tai pătrățele.</div></div><div class="dessert-card"><div class="dessert-name">Batoane din ovăz și curmale</div><div class="dessert-ing">Curmale pasate + ovăz + ovăz — presezi în tavă, frigider 1 oră, tai batoane.</div></div><div class="dessert-card"><div class="dessert-name">Ciocolată caldă fără zahăr</div><div class="dessert-ing">Lapte cald + cacao pudră + scorțișoară + o curmală mixată pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Căpșuni cu iaurt și cacao</div><div class="dessert-ing">Căpșuni tăiate + iaurt natural + un praf de cacao și banană.</div></div><div class="dessert-card"><div class="dessert-name">Mousse de cacao cu banană</div><div class="dessert-ing">2 banane coapte + 2 linguri cacao — la blender, frigider 30 min. Cremos ca o mousse.</div></div><div class="dessert-card"><div class="dessert-name">Pepene / fructe de sezon</div><div class="dessert-ing">Cel mai simplu desert: un bol mare de fructe proaspete, reci, cu câteva frunze de mentă.</div></div><div class="dessert-card"><div class="dessert-name">Tartine dulci de orez expandat</div><div class="dessert-ing">Rondele de orez expandat + unt de arahide 100% + felii subțiri de banană + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Budincă de orez cu lapte</div><div class="dessert-ing">Orez fiert în lapte cu scorțișoară și coajă de lămâie, îndulcit doar cu stafide sau banană.</div></div>
         <div class="hint">Dulceața vine doar din fructe — fără zahăr și fără miere.</div>
       </div>
     </section>
@@ -1948,6 +1975,16 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
       <div class="card">
         <div class="card-title">Poze de progres</div>
         <div class="gallery" id="gallery"></div>
+      </div>
+          <div class="card" id="legalCard">
+        <div class="card-title">ℹ️ Important</div>
+        <div class="hint" style="margin:0;">By ZyP e o aplicație de organizare și motivație. Nu oferă sfaturi medicale, nutriționale sau financiare. Programele de antrenament, mesele și suplimentele sunt orientative: dacă ai probleme de sănătate, iei medicamente sau ești însărcinată, vorbește întâi cu medicul. Informațiile despre bani și criptomonede nu sunt recomandări de investiții, iar valorile pot scădea. Datele tale se salvează în contul tău și pe telefonul tău.</div>
+      </div>
+          <div class="card" id="prefCard">
+        <div class="card-title">⚙️ Personalizează aplicația</div>
+        <div class="hint" style="margin:0 0 10px;">Alege ce vrei să vezi. Poți schimba oricând.</div>
+        <div id="prefList"></div>
+        <button class="onb-skip" id="prefGuide" style="display:block;margin:6px 0 0;">Vezi din nou ghidul de pornire</button>
       </div>
     </section>
   </main>
@@ -2465,7 +2502,7 @@ document.addEventListener('click', function(e){
 
   function fireConfetti(){
     var box = document.getElementById('confetti'); if(!box) return;
-    var cols = ['#3DE0C4','#F2B84B','#FF6F6F','#8B9DB3','#E8F0F7'];
+    var cols = ['#3DE0C4','#A3FF12','#FF6F6F','#8B9DB3','#E8F0F7'];
     var html = '';
     for(var i=0;i<42;i++){
       html += '<i style="left:' + (Math.random()*100) + '%;background:' + cols[i%cols.length] + ';--dx:' + (Math.random()*120-60) + 'px;--rot:' + (Math.random()*720-360) + 'deg;animation-delay:' + (Math.random()*0.35) + 's"></i>';
@@ -3196,7 +3233,7 @@ document.addEventListener('click', function(e){
         afterChange();
         if(!undo){
           var allDone = true; for(var jj = 0; jj < w.ex.length; jj++){ var cc = 0; for(var rr = 0; rr < w.ex[jj][1]; rr++){ if(cur[jj + '-' + rr]) cc++; } if(cc < w.ex[jj][1]) allDone = false; }
-          zToast(allDone ? zJoke(['🏆 Antrenament terminat! Du-te la muncă, Hercule, ai muncit destul pentru azi.','🦍 Gata! Mușchii zic mulțumesc, șeful zice „unde ești?".','🔥 Terminat! Acum whey, mâncare și somn. În ordinea asta.']) : zJoke(['💪 Încă unul în buzunar! Următorul, nu scrolla.','😎 Ușor ca un pui la grătar. Mai departe!','🦵 Hai că nu te omoară. Încă un exercițiu!','🏋️ Bara zice „bravo". Gantera zice „și eu".','🔥 Mușchiul crește chiar acum. Stai liniștit și mergi la următorul.']));
+          zToast(allDone ? zJoke(['🏆 Antrenament terminat! Du-te la muncă, Hercule, ai muncit destul pentru azi.','🦍 Gata! Mușchii zic mulțumesc, șeful zice „unde ești?".','🔥 Terminat! Acum whey, mâncare și somn. În ordinea asta.']) : zJoke(['💪 Încă unul în buzunar! Următorul, nu scrolla.','😎 Ușor ca un pui la tigaie. Mai departe!','🦵 Hai că nu te omoară. Încă un exercițiu!','🏋️ Bara zice „bravo". Gantera zice „și eu".','🔥 Mușchiul crește chiar acum. Stai liniștit și mergi la următorul.']));
           var nx = -1; for(var j=0;j<w.ex.length && nx<0;j++){ var c2 = 0; for(var r=0;r<w.ex[j][1];r++){ if(cur[j + '-' + r]) c2++; } if(c2 < w.ex[j][1]) nx = j; }
           var tgt = document.getElementById(nx >= 0 ? 'ex' + nx : 'woCard');
           if(tgt && tgt.scrollIntoView) setTimeout(function(){ tgt.scrollIntoView({ behavior:'smooth', block:'start' }); }, 60);
@@ -3413,14 +3450,14 @@ document.addEventListener('click', function(e){
   function fmtEUR(n){ var sign = n<0?'-':''; return sign + '€' + Math.abs(n).toFixed(0); }
 
   var ACC_DEFAULT = [
-    { k:'cash', n:'Cash', ic:'💵', c:'#F2B84B' },
+    { k:'cash', n:'Cash', ic:'💵', c:'#A3FF12' },
     { k:'revolut', n:'Revolut', ic:'💳', c:'#6C8CFF' },
     { k:'icard', n:'iCard', ic:'🏦', c:'#B18CFF' },
     { k:'xtb', n:'XTB', ic:'📊', c:'#3DE0C4' },
     { k:'eth', n:'ETH · MetaMask', ic:'⟠', c:'#FF9A3C' }
   ];
   var ACC = ACC_DEFAULT.slice();                     // the list is yours: add / rename / delete (saved in the account as settings/accounts)
-  var ACC_PAL = ['#F2B84B', '#6C8CFF', '#B18CFF', '#3DE0C4', '#FF9A3C', '#5FBF8F', '#E0685C', '#7FD1FF', '#F4A6D7', '#C8E36B'];
+  var ACC_PAL = ['#A3FF12', '#6C8CFF', '#B18CFF', '#3DE0C4', '#FF9A3C', '#5FBF8F', '#E0685C', '#7FD1FF', '#F4A6D7', '#C8E36B'];
   var accTyped = {};
   function accClean(list){
     var out = []; (Array.isArray(list) ? list : []).forEach(function(x, i){ if(!x || typeof x.k !== 'string' || !/^[a-z0-9_]{1,24}$/i.test(x.k) || out.some(function(o){ return o.k === x.k; })) return;
@@ -4552,7 +4589,7 @@ document.addEventListener('click', function(e){
     for(var gi = 1; gi <= 3; gi++){ var gv = B.lo + (B.hi - B.lo) * gi / 4; svg += '<line x1="' + G.pl + '" x2="' + (G.W - G.pr) + '" y1="' + Y(gv).toFixed(1) + '" y2="' + Y(gv).toFixed(1) + '" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="2 4"/><text x="' + (G.W - G.pr + 5) + '" y="' + (Y(gv) + 3).toFixed(1) + '" font-size="8.5" fill="var(--text-faint)" font-family="sans-serif">' + Math.round(gv).toLocaleString('ro-RO') + '</text>'; }
     svg += '<path d="' + line + ' L' + X(B.t1).toFixed(1) + ' ' + (G.H - G.pb) + ' L' + X(B.t0).toFixed(1) + ' ' + (G.H - G.pb) + ' Z" fill="url(#ethg)"/><path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#ethGl)"/>';
     var yLast = Y(last);
-    if(entry != null){ var ye = Y(entry), yt = ye; if(Math.abs(ye - yLast) < 17) yt = ye <= yLast ? yLast - 17 : yLast + 17; svg += '<line x1="' + G.pl + '" x2="' + (G.W - G.pr) + '" y1="' + ye.toFixed(1) + '" y2="' + ye.toFixed(1) + '" stroke="#D6B26E" stroke-width="1.1" stroke-dasharray="5 3"/><rect x="' + (G.W - G.pr + 2) + '" y="' + (yt - 7.5).toFixed(1) + '" width="' + (G.pr - 3) + '" height="15" rx="4" fill="#D6B26E"/><text x="' + (G.W - G.pr / 2 + 0.5).toFixed(1) + '" y="' + (yt + 3).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="800" fill="#1A1307" font-family="sans-serif">intrare</text>'; }
+    if(entry != null){ var ye = Y(entry), yt = ye; if(Math.abs(ye - yLast) < 17) yt = ye <= yLast ? yLast - 17 : yLast + 17; svg += '<line x1="' + G.pl + '" x2="' + (G.W - G.pr) + '" y1="' + ye.toFixed(1) + '" y2="' + ye.toFixed(1) + '" stroke="#A3FF12" stroke-width="1.1" stroke-dasharray="5 3"/><rect x="' + (G.W - G.pr + 2) + '" y="' + (yt - 7.5).toFixed(1) + '" width="' + (G.pr - 3) + '" height="15" rx="4" fill="#A3FF12"/><text x="' + (G.W - G.pr / 2 + 0.5).toFixed(1) + '" y="' + (yt + 3).toFixed(1) + '" text-anchor="middle" font-size="8.5" font-weight="800" fill="#1A1307" font-family="sans-serif">intrare</text>'; }
     [[iMax, -7], [iMin, 13]].forEach(function(a){ var q = pts[a[0]], x = X(q[0]), y = Y(q[1]); if(a[0] === pts.length - 1) return; var anc = x > G.W - G.pr - 46 ? 'end' : (x < 40 ? 'start' : 'middle');
       svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.3" fill="var(--bg)" stroke="' + col + '" stroke-width="1.2"/><text x="' + x.toFixed(1) + '" y="' + (y + a[1]).toFixed(1) + '" text-anchor="' + anc + '" font-size="8.5" font-weight="700" fill="var(--text-dim)" font-family="sans-serif">' + Math.round(q[1]).toLocaleString('ro-RO') + '</text>'; });
     var xl = X(B.t1), yl = Y(last);
@@ -4809,7 +4846,7 @@ document.addEventListener('click', function(e){
     cartof:{ n:'Cartofi', ic:'🥔', k:77, p:2, c:17, f:0.1 },
     cartofd:{ n:'Cartofi dulci', ic:'🍠', k:86, p:1.6, c:20, f:0.1 },
     paine:{ n:'Pâine integrală', ic:'🍞', k:250, p:10, c:43, f:3.5 },
-    fructe:{ n:'Fructe de pădure sau mere', ic:'🍓', k:55, p:0.7, c:13, f:0.3 },
+    fructe:{ n:'Banane sau mere', ic:'🍓', k:55, p:0.7, c:13, f:0.3 },
     legume:{ n:'Legume / salată', ic:'🥗', k:25, p:1.5, c:4, f:0.3 },
     ulei:{ n:'Ulei de măsline', ic:'🫒', k:884, p:0, c:0, f:100, spoon:13 },
     nuci:{ n:'Nuci', ic:'🌰', k:654, p:15, c:14, f:65 },
@@ -4817,16 +4854,16 @@ document.addEventListener('click', function(e){
     avocado:{ n:'Avocado', ic:'🥑', k:160, p:2, c:9, f:15 }
   };
   var NU_T = {
-    b:[ { n:'Ovăz cu iaurt grecesc, fructe și nuci', p:'iaurt', c:'ovaz', f:'nuci', fx:[['fructe', 100]] },
+    b:[ { n:'Ovăz cu iaurt natural, fructe și nuci', p:'iaurt', c:'ovaz', f:'nuci', fx:[['fructe', 100]] },
         { n:'Omletă cu legume și pâine integrală', p:'oua', pcap:165, palt:'cottage', c:'paine', f:'ulei', fx:[['legume', 120]] },
-        { n:'Cottage cu ovăz, fructe și migdale', p:'cottage', c:'ovaz', f:'migdale', fx:[['fructe', 120]] } ],
+        { n:'Cottage cu ovăz, fructe și nuci', p:'cottage', c:'ovaz', f:'nuci', fx:[['fructe', 120]] } ],
     l:[ { n:'Pui cu orez și legume', p:'pui', c:'orez', f:'ulei', fx:[['legume', 250]] },
-        { n:'Somon cu cartofi și salată', p:'somon', c:'cartof', cap:300, alt:'paine', f:'ulei', fx:[['legume', 250]] },
-        { n:'Curcan cu paste integrale și legume', p:'curcan', c:'paste', f:'ulei', fx:[['legume', 250]] },
-        { n:'Linte cu quinoa și legume', p:'linte', c:'quinoa', f:'ulei', fx:[['legume', 250]] } ],
+        { n:'Ton cu cartofi și salată', p:'ton', c:'cartof', cap:300, alt:'paine', f:'ulei', fx:[['legume', 250]] },
+        { n:'Pui cu paste și legume', p:'pui', c:'paste', f:'ulei', fx:[['legume', 250]] },
+        { n:'Linte cu orez și legume', p:'linte', c:'orez', f:'ulei', fx:[['legume', 250]] } ],
     d:[ { n:'Ton cu cartofi dulci și salată', p:'ton', c:'cartofd', cap:300, alt:'paine', f:'ulei', fx:[['legume', 300]] },
-        { n:'Ouă cu legume, pâine și avocado', p:'oua', pcap:165, palt:'ton', c:'paine', f:'avocado', fx:[['legume', 200]] },
-        { n:'Pui cu cartofi la cuptor și salată', p:'pui', c:'cartof', cap:300, alt:'paine', f:'ulei', fx:[['legume', 300]] },
+        { n:'Ouă cu legume și pâine', p:'oua', pcap:165, palt:'ton', c:'paine', f:'ulei', fx:[['legume', 200]] },
+        { n:'Pui cu cartofi fierți și salată', p:'pui', c:'cartof', cap:300, alt:'paine', f:'ulei', fx:[['legume', 300]] },
         { n:'Vită slabă cu orez și legume', p:'vita', c:'orez', f:'ulei', fx:[['legume', 250]] } ]
   };
   var NU_M = [ { k:'b', n:'Dimineața', ic:'🌅', kc:0.28, pr:0.30 }, { k:'l', n:'La prânz', ic:'☀️', kc:0.40, pr:0.35 }, { k:'d', n:'Seara', ic:'🌙', kc:0.32, pr:0.35 } ];
@@ -4918,7 +4955,7 @@ document.addEventListener('click', function(e){
     var D = nuDay(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal, nu.v); D.W = W; D.P = P; nu.D = D; var c = D.c, eaten = nuEaten(D), mask = nu.log[todayKey] || 0;
     var sum = { kcal:0, p:0, c:0, f:0 }; D.meals.forEach(function(m){ sum.kcal += m.tot.kcal; sum.p += m.tot.p; sum.c += m.tot.c; sum.f += m.tot.f; });
     var h = '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>kcal pe zi</span></div><div class="nu-mac">' +
-      '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină</span></div><div style="--c:#D6B26E"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați</span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi</span></div></div>' +
+      '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină</span></div><div style="--c:#A3FF12"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați</span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi</span></div></div>' +
       '<div class="nu-bars"><div><span>Mâncat azi · calorii</span><em>' + nuN(eaten.kcal) + ' / ' + nuN(Math.round(c.kcal / 10) * 10) + '</em><i style="--w:' + Math.min(100, eaten.kcal / c.kcal * 100).toFixed(0) + '%"></i></div><div><span>Mâncat azi · proteină</span><em>' + nuN(eaten.p) + ' / ' + nuN(c.P) + ' g</em><i style="--w:' + Math.min(100, eaten.p / c.P * 100).toFixed(0) + '%;--b:#5FBF8F"></i></div></div>' +
       '<div class="nu-sub">💧 Apă: <b>' + nuN(c.water, 1) + ' L</b> (+0,5 L în zilele de sală sau alergat) · 🌾 Fibre: <b>≥ ' + nuN(c.fiber) + ' g</b></div></div>';
     D.meals.forEach(function(m, i){
@@ -5773,13 +5810,13 @@ document.addEventListener('click', function(e){
     var mk = (gold.ptrades || []).filter(function(t){ return !t.closed && t.status !== 'în așteptare'; }).slice(-8).map(function(t){ return { t:t.side, p:t.entry, col:t.side === 'BUY' ? '#5FBF8F' : '#E0685C', ts:Math.floor(new Date(t.opened || (t.date + 'T00:00:00')).getTime() / 1000), d:t.date }; });
     drawGoldChart('termChart', sc, { tf: goldTf.termChart || '15m', plan:true, marks: mk });
     var S = gold.strategies || [], n = S.length, svg = '';
-    [30, 55, 80].forEach(function(r){ svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="rgba(214,178,110,.18)" stroke-width="0.6"/>'; });
+    [30, 55, 80].forEach(function(r){ svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="rgba(163,255,18,.18)" stroke-width="0.6"/>'; });
     S.forEach(function(x, i){ var a = -Math.PI / 2 + i / n * Math.PI * 2, r = x.verdict === 'BUY' || x.verdict === 'SELL' ? 36 + x.strength * 15 : 30;
-      var col = x.verdict === 'BUY' ? '#5FBF8F' : x.verdict === 'SELL' ? '#E0685C' : x.verdict === 'AȘTEAPTĂ' ? '#D6B26E' : '#6F695F';
+      var col = x.verdict === 'BUY' ? '#5FBF8F' : x.verdict === 'SELL' ? '#E0685C' : x.verdict === 'AȘTEAPTĂ' ? '#A3FF12' : '#6F695F';
       var px = 100 + Math.cos(a) * r, py = 100 + Math.sin(a) * r;
       svg += '<line x1="100" y1="100" x2="' + px.toFixed(1) + '" y2="' + py.toFixed(1) + '" stroke="' + col + '" stroke-opacity=".35" stroke-width="0.8"/><circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="3.2" fill="' + col + '"/>'; });
     var c = gold.confluence || {};
-    svg += '<circle cx="100" cy="100" r="20" fill="#0A0A0B" stroke="rgba(214,178,110,.5)"/><text x="100" y="104" text-anchor="middle" font-size="11" font-weight="800" fill="' + (c.verdict === 'BUY' ? '#5FBF8F' : c.verdict === 'SELL' ? '#E0685C' : '#D6B26E') + '" font-family="sans-serif">' + (c.verdict === 'AȘTEAPTĂ' ? 'WAIT' : c.verdict || '') + '</text>';
+    svg += '<circle cx="100" cy="100" r="20" fill="#050505" stroke="rgba(163,255,18,.5)"/><text x="100" y="104" text-anchor="middle" font-size="11" font-weight="800" fill="' + (c.verdict === 'BUY' ? '#5FBF8F' : c.verdict === 'SELL' ? '#E0685C' : '#A3FF12') + '" font-family="sans-serif">' + (c.verdict === 'AȘTEAPTĂ' ? 'WAIT' : c.verdict || '') + '</text>';
     document.getElementById('tmRadar').innerHTML = svg;
     document.getElementById('tmVerdict').innerHTML = '<span style="color:#5FBF8F">BUY ' + (c.buyN || 0) + '</span><span style="color:#AAA397">neutre ' + (c.waitN || 0) + '</span><span style="color:#E0685C">SELL ' + (c.sellN || 0) + '</span>';
     document.getElementById('tmActive').innerHTML = activeEntriesHtml(4);
@@ -6406,6 +6443,40 @@ document.addEventListener('click', function(e){
 <script>
 (function(){ var b = document.getElementById('authEye'), i = document.getElementById('authPass'); if(!b || !i) return;
   b.addEventListener('click', function(){ var show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.classList.toggle('on', show); b.textContent = show ? '🙈' : '👁'; b.setAttribute('aria-label', show ? 'Ascunde parola' : 'Arată parola'); }); })();
+</script>
+<script>
+(function(){
+  var KEY='zyp_prefs_v1', MODS=[
+    {k:'sport',ic:'🏋️',n:'Sală și antrenamente',d:'Program pe zile, exerciții explicate'},
+    {k:'food',ic:'🥗',n:'Mâncare',d:'Meniu, listă de cumpărături, calorii'},
+    {k:'supp',ic:'💊',n:'Suplimente',d:'Ce iei și la ce oră'},
+    {k:'money',ic:'💶',n:'Bani și Ethereum',d:'Preț, știri, portofel (doar citire)'}];
+  function load(){ try{ var p=JSON.parse(localStorage.getItem(KEY)||'null'); if(p&&p.mods) return p; }catch(e){} return null; }
+  function save(p){ try{ localStorage.setItem(KEY,JSON.stringify(p)); }catch(e){} }
+  function apply(p){ var r=document.documentElement; MODS.forEach(function(m){ r.classList.toggle('pf-no'+m.k, !(p&&p.mods[m.k])); });
+    var act=document.querySelector('.tab.active'); if(act&&act.offsetParent===null){ var t=document.querySelector('.tab[data-view="today"]'); if(t) t.click(); } }
+  var cur=load(); if(cur) apply(cur);
+  function box(m,on){ return '<label class="onb-opt"><span class="ic">'+m.ic+'</span><div><b>'+m.n+'</b><span>'+m.d+'</span></div><input type="checkbox" data-k="'+m.k+'"'+(on?' checked':'')+'></label>'; }
+  function renderPref(){ var el=document.getElementById('prefList'); if(!el) return; var p=load()||{mods:{sport:1,food:1,supp:1,money:1}};
+    el.innerHTML=MODS.map(function(m){ return box(m,p.mods[m.k]); }).join('');
+    el.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ var q=load()||{done:1,mods:{sport:1,food:1,supp:1,money:1}}; q.mods[i.getAttribute('data-k')]=i.checked?1:0; q.done=1; save(q); apply(q); }); });
+  }
+  function guide(){
+    if(document.getElementById('onb')) return;
+    var o=document.createElement('div'); o.className='onb'; o.id='onb'; document.body.appendChild(o); var step=0, sel={sport:1,food:1,supp:1,money:1};
+    var p0=load(); if(p0) sel=Object.assign({},p0.mods);
+    function dots(){ return '<div class="onb-dots">'+[0,1,2].map(function(i){ return '<i class="'+(i<=step?'on':'')+'"></i>'; }).join('')+'</div>'; }
+    function draw(){
+      if(step===0){ o.innerHTML='<img class="onb-logo" src="icon.png" alt="">'+dots()+'<h1>Bine ai venit la By ZyP</h1><p>Planul tău zilnic pentru sală, suplimente și mâncare, simplu și pe ore. Îți alegi tu ce vezi în aplicație și poți schimba oricând.</p><button class="onb-btn" id="onbN">Începem</button>'; }
+      else if(step===1){ o.innerHTML=dots()+'<h1>Ce vrei în aplicație?</h1><p>Bifează ce te interesează. Restul rămâne ascuns.</p>'+MODS.map(function(m){ return box(m,sel[m.k]); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ sel[i.getAttribute('data-k')]=i.checked?1:0; }); }); }
+      else { o.innerHTML=dots()+'<h1>Gata, ești pregătit</h1><p>Pe fila Azi îți bifezi ziua. Sala, mâncarea și suplimentele apar la fila lor. Aplicația nu oferă sfaturi medicale sau financiare: sunt informații orientative.</p><button class="onb-btn" id="onbN">Deschide aplicația</button>'; }
+      document.getElementById('onbN').addEventListener('click',function(){ if(step<2){ step++; draw(); } else { var q={done:1,mods:sel}; save(q); apply(q); renderPref(); o.remove(); try{ window.scrollTo(0,0); }catch(e){} } });
+    }
+    draw();
+  }
+  document.addEventListener('DOMContentLoaded',function(){ renderPref(); var pg=document.getElementById('prefGuide'); if(pg) pg.addEventListener('click',guide); });
+  window.addEventListener('load',function(){ if(!load()) setTimeout(guide,4200); });
+})();
 </script>
 </body>
 </html>
