@@ -3117,7 +3117,7 @@
     var g = gold, up = g.change >= 0;
     var meter = ''; for(var i=-5;i<=5;i++){ if(i===0) continue; var on = (g.score>0 && i>0 && i<=g.score) || (g.score<0 && i<0 && i>=g.score); meter += '<i class="' + (on ? (i>0?'on-b':'on-s') : '') + '"></i>'; }
     var upd = new Date(g.updated);
-    var html = '<div class="gd-btns"><a class="term-btn" href="https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD" target="_blank" rel="noopener">📈 TradingView</a><button class="term-btn" onclick="window.__openTerminal && window.__openTerminal()">🖥️ Terminal</button></div><div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
+    var html = '<div class="gd-btns"><a class="term-btn" href="https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD" target="_blank" rel="noopener">📈 TradingView</a><button class="term-btn" data-act="terminal">🖥️ Terminal</button></div><div class="gd-top"><div><div class="gd-sym">XAUUSD · AUR <span class="live-tag" id="gdLiveTag"></span></div><div class="gd-price" id="gdPrice">' + f2(g.price) + '</div>' +
       '<div class="gd-chg ' + (up?'pos':'neg') + '" id="gdChg">' + (up?'+':'') + f2(g.change) + ' (' + (up?'+':'') + g.changePct + '%) azi</div></div>' +
       '<div class="gd-bias"><div class="gd-badge ' + g.bias + '">' + g.bias + '</div><div class="gd-meter">' + meter + '</div><div class="gd-sub">scor ' + (g.score>0?'+':'') + g.score + ' din 5</div></div></div>';
 
