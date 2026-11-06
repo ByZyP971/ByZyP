@@ -49,7 +49,8 @@
       '<div class="card top-me"><div class="top-me-em">' + emblem(lv, 74) + '</div><div class="top-me-in">' +
       '<div class="top-me-nick">' + esc(me.nick) + '</div><div class="top-me-sub" style="color:' + t[2] + '">Nivel ' + lv + ' · ' + esc(t[1]) + '</div>' +
       '<div class="top-bar"><i style="width:' + progress(me.score, lv) + '%"></i></div>' +
-      '<div class="top-me-meta">' + me.score + ' puncte · Locul #' + me.rank + (me.streak ? ' · 🔥 ' + me.streak : '') + '</div></div></div>' +
+      '<div class="top-me-meta">' + me.score + ' puncte · Locul #' + me.rank + (me.streak ? ' · 🔥 ' + me.streak : '') + '</div>' +
+      '<button class="top-edit" data-prof="' + esc(me.nick) + '">✏️ Profilul meu</button></div></div>' +
       '<div class="seg" id="topSeg"><button class="seg-btn' + (seg==='rank'?' active':'') + '" data-tseg="rank">🏆 Clasament</button><button class="seg-btn' + (seg==='chat'?' active':'') + '" data-tseg="chat">💬 Chat global</button></div>' +
       '<div id="topBody"></div>' +
       '<div class="top-foot">Puncte: obiceiuri bifate, antrenamente făcute, zile perfecte. Poți câștiga cel mult 600 pe zi.</div>';
@@ -62,13 +63,13 @@
   // ---------- clasament ----------
   function row(r){
     var t = tier(r.level);
-    return '<div class="top-row' + (r.me ? ' me' : '') + '"><span class="top-rk">' + r.rank + '</span><span class="top-em">' + emblem(r.level, 34) + '</span>' +
+    return '<div class="top-row' + (r.me ? ' me' : '') + '" data-prof="' + esc(r.nick) + '"><span class="top-rk">' + r.rank + '</span><span class="top-em">' + emblem(r.level, 34) + '</span>' +
       '<span class="top-rn"><b>' + esc(r.nick) + '</b><small>Nivel ' + r.level + ' · <span style="color:' + t[2] + '">' + esc(t[1]) + '</span>' + (r.streak ? ' · 🔥 ' + r.streak : '') + '</small></span><span class="top-sc">' + r.score + '</span></div>';
   }
   function podium(r, place){
     if(!r) return '<div class="top-pod p' + place + '"></div>';
     var t = tier(r.level);
-    return '<div class="top-pod p' + place + '"><div class="top-pod-em">' + emblem(r.level, place===1 ? 58 : 46) + '</div><div class="top-pod-n">' + esc(r.nick) + '</div><div class="top-pod-s">' + r.score + '</div><div class="top-pod-b"><span>' + place + '</span></div></div>';
+    return '<div class="top-pod p' + place + '" data-prof="' + esc(r.nick) + '"><div class="top-pod-em">' + emblem(r.level, place===1 ? 58 : 46) + '</div><div class="top-pod-n">' + esc(r.nick) + '</div><div class="top-pod-s">' + r.score + '</div><div class="top-pod-b"><span>' + place + '</span></div></div>';
   }
   function renderBoard(){
     var b = document.getElementById('topBody'); if(!b) return;
@@ -135,6 +136,81 @@
     }).catch(function(){});
   }
   function stopChat(){ if(chatTimer){ clearInterval(chatTimer); chatTimer = null; } }
+
+  // ---------- profil public ----------
+  var AV_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+  function avatarHtml(p, px){
+    var t = tier(p.level);
+    if(p.avatar && AV_RE.test(p.avatar)) return '<img class="top-pf-img" style="width:'+px+'px;height:'+px+'px" alt="" src="' + p.avatar + '">';
+    return '<div class="top-pf-img top-pf-ph" style="width:'+px+'px;height:'+px+'px;color:'+t[2]+';border-color:'+t[2]+';font-size:'+Math.round(px*0.42)+'px">' + esc((p.nick||'?').charAt(0).toUpperCase()) + '</div>';
+  }
+  function toJpeg(file){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onload = function(){ var im = new Image(); im.onload = function(){
+        var s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 192;
+        c.getContext('2d').drawImage(im, (im.width-s)/2, (im.height-s)/2, s, s, 0, 0, 192, 192);
+        var q = .82, d = c.toDataURL('image/jpeg', q); while(d.length > 38000 && q > .4){ q -= .1; d = c.toDataURL('image/jpeg', q); }
+        res(d); }; im.onerror = rej; im.src = fr.result; };
+      fr.onerror = rej; fr.readAsDataURL(file);
+    });
+  }
+  function closeProf(){ var m = document.getElementById('topModal'); if(m) m.remove(); }
+  function sinceTxt(at){ try{ return new Date(at).toLocaleDateString('ro-RO',{month:'long',year:'numeric'}); }catch(e){ return ''; } }
+  function openProfile(nick){
+    closeProf();
+    var m = document.createElement('div'); m.id = 'topModal'; m.className = 'top-modal';
+    m.innerHTML = '<div class="top-modal-box"><button class="top-x" id="topX" aria-label="Închide">✕</button><div id="topPf"><div class="top-load">Se încarcă…</div></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', function(e){ if(e.target === m) closeProf(); });
+    document.getElementById('topX').addEventListener('click', closeProf);
+    rpc('get_public_profile', {p_nick:nick}).then(function(p){
+      if(!p){ document.getElementById('topPf').innerHTML = '<div class="top-load">Profilul nu mai există.</div>'; return; }
+      renderProfile(p);
+    }).catch(function(e){ var b = document.getElementById('topPf'); if(b) b.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
+  }
+  function renderProfile(p){
+    var box = document.getElementById('topPf'); if(!box) return; var t = tier(p.level);
+    box.innerHTML =
+      '<div class="top-pf">' + avatarHtml(p, 112) +
+      '<div class="top-pf-nick">' + esc(p.nick) + '</div>' +
+      '<div class="top-pf-tier" style="color:' + t[2] + ';border-color:' + t[2] + '">' + emblem(p.level, 16) + ' Nivel ' + p.level + ' · ' + esc(t[1]) + '</div>' +
+      (p.bio ? '<div class="top-pf-bio">' + esc(p.bio) + '</div>' : (p.me ? '<div class="top-pf-bio dim">Adaugă un bio ca să te cunoască ceilalți.</div>' : '')) +
+      (p.hidden ? '<div class="top-hint" style="text-align:center">Poza și bio sunt ascunse după raportări.</div>' : '') +
+      '<div class="top-pf-stats"><div><b>#' + p.rank + '</b><span>Loc</span></div><div><b>' + p.score + '</b><span>Puncte</span></div><div><b>' + (p.streak || 0) + ' 🔥</b><span>Serie</span></div></div>' +
+      '<div class="top-pf-since">Membru din ' + esc(sinceTxt(p.since)) + '</div>' +
+      (p.me ? '<button class="top-btn top-pf-btn" id="pfEdit">✏️ Editează profilul</button>'
+            : '<button class="top-pf-rep" id="pfRep">🚩 Raportează profilul</button>' + (isAdmin ? ' <button class="top-pf-rep" id="pfClr">🧹 Șterge poza și bio</button>' : '')) +
+      '</div>';
+    var e1 = document.getElementById('pfEdit'); if(e1) e1.addEventListener('click', function(){ renderEdit(p); });
+    var r1 = document.getElementById('pfRep'); if(r1) r1.addEventListener('click', function(){ if(confirm('Raportezi acest profil?')) rpc('report_profile', {p_nick:p.nick}).then(function(){ toast('Profil raportat. Mulțumim!'); closeProf(); }).catch(function(e){ toast(errMsg(e)); }); });
+    var c1 = document.getElementById('pfClr'); if(c1) c1.addEventListener('click', function(){ if(confirm('Ștergi poza și bio?')) rpc('admin_clear_profile', {p_nick:p.nick}).then(function(){ toast('Șters'); openProfile(p.nick); }).catch(function(e){ toast(errMsg(e)); }); });
+  }
+  function renderEdit(p){
+    var box = document.getElementById('topPf'); if(!box) return; var newAv = null, clear = false;
+    box.innerHTML =
+      '<div class="top-pf"><div id="pfAv">' + avatarHtml(p, 112) + '</div>' +
+      '<div class="top-pf-acts"><button class="top-pf-rep" id="pfPick">📷 Alege poză</button><button class="top-pf-rep" id="pfDel">Șterge poza</button></div>' +
+      '<input type="file" id="pfFile" accept="image/*" style="display:none">' +
+      '<textarea id="pfBio" class="top-in top-pf-ta" maxlength="150" rows="3" placeholder="Bio (max 150 caractere, fără link-uri)">' + esc(p.bio || '') + '</textarea>' +
+      '<div class="top-hint" id="pfCnt" style="text-align:right">' + (p.bio||'').length + '/150</div>' +
+      '<div class="top-hint">Poza și bio se văd public. Nu pune date personale.</div>' +
+      '<button class="top-btn top-pf-btn" id="pfSave">Salvează</button><button class="top-pf-rep" id="pfCancel">Anulează</button><div class="top-err" id="pfErr"></div></div>';
+    var bio = document.getElementById('pfBio');
+    bio.addEventListener('input', function(){ document.getElementById('pfCnt').textContent = bio.value.length + '/150'; });
+    document.getElementById('pfPick').addEventListener('click', function(){ document.getElementById('pfFile').click(); });
+    document.getElementById('pfFile').addEventListener('change', function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      toJpeg(f).then(function(d){ newAv = d; clear = false; document.getElementById('pfAv').innerHTML = avatarHtml({avatar:d, nick:p.nick, level:p.level}, 112); }).catch(function(){ document.getElementById('pfErr').textContent = 'Nu am putut citi poza.'; });
+    });
+    document.getElementById('pfDel').addEventListener('click', function(){ newAv = null; clear = true; document.getElementById('pfAv').innerHTML = avatarHtml({avatar:null, nick:p.nick, level:p.level}, 112); });
+    document.getElementById('pfCancel').addEventListener('click', function(){ renderProfile(p); });
+    document.getElementById('pfSave').addEventListener('click', function(){
+      var btn = this, er = document.getElementById('pfErr'); er.textContent = ''; btn.disabled = true;
+      rpc('set_my_extra', {p_bio:bio.value, p_avatar:newAv, p_clear_avatar:clear}).then(function(np){ toast('Profil salvat'); renderProfile(np); }).catch(function(e){ btn.disabled = false; er.textContent = errMsg(e); });
+    });
+  }
+  root.addEventListener('click', function(ev){ var el = ev.target.closest('[data-prof]'); if(el && !ev.target.closest('.top-ma')) openProfile(el.getAttribute('data-prof')); });
 
   // ---------- scor ----------
   function sync(){

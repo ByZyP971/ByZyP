@@ -1439,3 +1439,23 @@
 .top-msg-a{ margin-left:auto; display:flex; gap:2px; }.top-ma{ background:none; border:none; font-size:14px; padding:2px 5px; opacity:.55; cursor:pointer; }
 .top-msg-b{ font-size:14.5px; line-height:1.35; word-break:break-word; margin-top:2px; }
 .top-send{ display:flex; gap:8px; margin-top:8px; }.top-send .top-in{ flex:1; }
+
+/* ===== profil public ===== */
+.top-row[data-prof],.top-pod[data-prof],.top-msg-em[data-prof],.top-msg-h b[data-prof]{ cursor:pointer; }
+.top-edit{ margin-top:8px; background:none; border:1px solid var(--line); color:var(--gold); border-radius:10px; padding:6px 12px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.top-modal{ position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.72); display:flex; align-items:flex-end; justify-content:center; animation:fade .2s ease; }
+.top-modal-box{ position:relative; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; background:var(--bg-card); border:1px solid var(--line); border-radius:24px 24px 0 0; padding:26px 20px calc(28px + env(safe-area-inset-bottom)); }
+.top-x{ position:absolute; right:12px; top:10px; background:none; border:none; color:var(--text-dim); font-size:20px; padding:8px; cursor:pointer; }
+.top-pf{ display:flex; flex-direction:column; align-items:center; text-align:center; }
+.top-pf-img{ border-radius:50%; object-fit:cover; border:3px solid var(--gold); display:block; }
+.top-pf-ph{ display:flex; align-items:center; justify-content:center; font-weight:800; background:var(--bg-card-2); }
+.top-pf-nick{ font-size:22px; font-weight:800; margin-top:12px; }
+.top-pf-tier{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; border:1px solid; border-radius:20px; padding:3px 12px 3px 8px; margin-top:6px; }
+.top-pf-bio{ margin-top:12px; font-size:15px; line-height:1.45; max-width:340px; word-break:break-word; }.top-pf-bio.dim{ color:var(--text-dim); }
+.top-pf-stats{ display:flex; gap:10px; width:100%; margin-top:18px; }
+.top-pf-stats div{ flex:1; background:var(--bg-card-2); border-radius:14px; padding:10px 4px; }.top-pf-stats b{ display:block; font-size:18px; }.top-pf-stats span{ font-size:12px; color:var(--text-dim); }
+.top-pf-since{ font-size:12px; color:var(--text-dim); margin-top:12px; }
+.top-pf-btn{ width:100%; margin-top:16px; }
+.top-pf-rep{ background:none; border:none; color:var(--text-dim); font-size:13px; font-family:inherit; padding:10px; cursor:pointer; text-decoration:underline; }
+.top-pf-acts{ display:flex; gap:6px; margin:8px 0 10px; }
+.top-pf-ta{ resize:none; margin-top:6px; }
