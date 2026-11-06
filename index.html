@@ -27,7 +27,7 @@
 <meta name="twitter:description" content="Planul tău zilnic pentru sală, suplimente și mâncare.">
 <meta name="twitter:image" content="https://byzyp971.github.io/ByZyP/og.png">
 
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="app.css?v=4">
 </head>
 <body>
 <div id="authGate" class="auth-gate" style="display:none;">
@@ -505,6 +505,8 @@
     </section>
 
     <!-- PROFILE -->
+    <section class="view" id="view-top"><div id="topRoot"></div></section>
+
     <section class="view" id="view-profile">
       <div class="card prof-hero">
         <div class="prof-glow"></div>
@@ -587,7 +589,7 @@
           <div class="card" id="legalCard">
         <div class="card-title">ℹ️ Important</div>
         <details style="margin:0 0 10px;"><summary style="cursor:pointer;font-weight:700;color:var(--gold);">🔒 Confidențialitate (pe scurt)</summary>
-        <div class="hint" style="margin:8px 0 0;">Salvăm doar emailul tău și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Fiecare cont vede doar datele lui. Nu vindem și nu dăm datele nimănui și nu facem reclame. Poți descărca tot din „Descarcă backup” și poți șterge contul definitiv din Profil, oricând. Notificările folosesc un cod al telefonului, salvat în contul tău, pe care îl poți opri din setările telefonului.</div></details>
+        <div class="hint" style="margin:8px 0 0;">Salvăm doar emailul tău și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Fiecare cont vede doar datele lui. Dacă intri în clasament sau în chatul global, numele de utilizator ales, nivelul, punctele și mesajele tale se văd public pentru toți utilizatorii. Nu e nevoie de numele real. Le poți șterge oricând ștergând contul. Nu vindem și nu dăm datele nimănui și nu facem reclame. Poți descărca tot din „Descarcă backup” și poți șterge contul definitiv din Profil, oricând. Notificările folosesc un cod al telefonului, salvat în contul tău, pe care îl poți opri din setările telefonului.</div></details>
         <div class="hint" style="margin:0;">By ZyP e o aplicație de organizare și motivație. Nu oferă sfaturi medicale, nutriționale sau financiare. Programele de antrenament, mesele și suplimentele sunt orientative: dacă ai probleme de sănătate, iei medicamente sau ești însărcinată, vorbește întâi cu medicul. Informațiile despre bani și criptomonede nu sunt recomandări de investiții, iar valorile pot scădea. Datele tale se salvează în contul tău și pe telefonul tău.</div>
       </div>
           <div class="card" id="prefCard">
@@ -608,6 +610,7 @@
       <button class="tab" data-view="food"><span class="ic">🍳</span>Mâncare</button>
       <button class="tab" data-view="money"><span class="ic">📈</span>Bani</button>
       <button class="tab" data-view="gold"><span class="ic">🥇</span>Aur</button>
+      <button class="tab" data-view="top"><span class="ic">🏆</span>Top</button>
       <button class="tab" data-view="profile"><span class="ic">👤</span>Profil</button>
     </div>
   </nav>
@@ -620,10 +623,11 @@
 
 <script src="core.js?v=2"></script>
 <script src="cloud.js?v=2"></script>
-<script src="main.js?v=4"></script>
+<script src="main.js?v=5"></script>
 <script src="notify.js?v=2"></script>
 <script src="auth-ui.js?v=2"></script>
 <script src="onboarding.js?v=4"></script>
 <script src="admin.js?v=1"></script>
+<script src="community.js?v=1"></script>
 </body>
 </html>

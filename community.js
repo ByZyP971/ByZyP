@@ -1,0 +1,163 @@
+/* By ZyP · Comunitate: clasament + chat global. Toate datele trec prin funcții Supabase (vezi community.sql). */
+(function(){
+  'use strict';
+  var esc = window.zEsc || function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+  var root = document.getElementById('topRoot'); if(!root) return;
+  var TIERS = [[1,'Începător','#9aa3a0'],[4,'Bronz','#cd7f32'],[7,'Argint','#c9d3dc'],[11,'Aur','#ffd24a'],[16,'Platină','#5ee0e8'],[23,'Diamant','#6aa8ff'],[35,'Legendă','#ff5d8f']];
+  function tier(lv){ var t = TIERS[0]; for(var i=0;i<TIERS.length;i++) if(lv >= TIERS[i][0]) t = TIERS[i]; return t; }
+  function lvOf(score){ return Math.floor(Math.sqrt(Math.max(score,0)/25)) + 1; }
+  function emblem(lv, px){
+    var c = tier(lv)[2];
+    return '<svg viewBox="0 0 48 56" width="'+px+'" height="'+Math.round(px*56/48)+'" aria-hidden="true">' +
+      '<path d="M24 2 L44 10 V28 C44 42 34 51 24 54 C14 51 4 42 4 28 V10 Z" fill="#0b121b" stroke="'+c+'" stroke-width="3"/>' +
+      '<path d="M24 9 L38 15 V28 C38 38 31 45 24 48 C17 45 10 38 10 28 V15 Z" fill="'+c+'" opacity=".2"/>' +
+      '<text x="24" y="34" text-anchor="middle" font-size="'+(lv>99?14:18)+'" font-weight="800" fill="'+c+'" font-family="Inter,sans-serif">'+lv+'</text></svg>';
+  }
+  function toast(m){ if(window.zToast) window.zToast(m); }
+  function errMsg(e){ var m = (e && e.message) || 'Eroare'; return String(m).replace(/^.*?:\s*/, ''); }
+  function rpc(name, args){ var sb = window.__sb; if(!sb) return Promise.reject(new Error('Nu ești conectat')); return sb.rpc(name, args||{}).then(function(r){ if(r.error) throw r.error; return r.data; }); }
+  function stats(){ try{ return window.__zStats ? window.__zStats() : {score:0,streak:0}; }catch(e){ return {score:0,streak:0}; } }
+
+  var me = null, board = null, seg = 'rank', lastId = 0, chatTimer = null, scoreTimer = null, isAdmin = false, loaded = false, busy = false;
+  var blocked = []; try{ blocked = JSON.parse(localStorage.getItem('zyp_blocked')||'[]')||[]; }catch(e){}
+  function saveBlocked(){ try{ localStorage.setItem('zyp_blocked', JSON.stringify(blocked.slice(-200))); }catch(e){} }
+  function active(){ var v = document.getElementById('view-top'); return !!(v && v.classList.contains('active')); }
+
+  // ---------- ecran de intrare ----------
+  function renderJoin(){
+    stopTimers();
+    root.innerHTML =
+      '<div class="card top-join"><div class="top-join-ic">🏆</div><h3>Intră în clasament</h3>' +
+      '<p>Vezi unde ești față de ceilalți și vorbește în chatul global. Alege un nume de utilizator.</p>' +
+      '<input id="topNick" class="top-in" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ex: Cristi_Fit">' +
+      '<div class="top-hint">3–20 caractere: litere, cifre, _ sau . · <b>Numele se vede public, tuturor.</b> Nu folosi numele real, emailul sau telefonul.</div>' +
+      '<div class="top-rules">Reguli: fii respectuos, fără link-uri și spam. Mesajele pot fi raportate și ascunse, iar conturile care încalcă regulile sunt blocate.</div>' +
+      '<button class="top-btn" id="topJoin">Intră</button><div class="top-err" id="topErr"></div></div>';
+    document.getElementById('topJoin').addEventListener('click', function(){
+      var n = document.getElementById('topNick').value.trim(), er = document.getElementById('topErr'); er.textContent = '';
+      if(!/^[A-Za-z0-9_.]{3,20}$/.test(n)){ er.textContent = 'Nume invalid. Folosește 3–20 litere, cifre, _ sau .'; return; }
+      var s = stats(); this.disabled = true; var btn = this;
+      rpc('set_my_profile', {p_nick:n, p_score:s.score, p_streak:s.streak}).then(function(p){ me = p; toast('Bine ai venit, ' + p.nick + '!'); renderMain(); }).catch(function(e){ btn.disabled = false; er.textContent = errMsg(e); });
+    });
+  }
+
+  // ---------- ecran principal ----------
+  function progress(score, lv){ var a = 25*(lv-1)*(lv-1), b = 25*lv*lv; return Math.max(0, Math.min(100, Math.round((score-a)/(b-a)*100))); }
+  function renderMain(){
+    var lv = me.level || lvOf(me.score), t = tier(lv);
+    root.innerHTML =
+      '<div class="card top-me"><div class="top-me-em">' + emblem(lv, 74) + '</div><div class="top-me-in">' +
+      '<div class="top-me-nick">' + esc(me.nick) + '</div><div class="top-me-sub" style="color:' + t[2] + '">Nivel ' + lv + ' · ' + esc(t[1]) + '</div>' +
+      '<div class="top-bar"><i style="width:' + progress(me.score, lv) + '%"></i></div>' +
+      '<div class="top-me-meta">' + me.score + ' puncte · Locul #' + me.rank + (me.streak ? ' · 🔥 ' + me.streak : '') + '</div></div></div>' +
+      '<div class="seg" id="topSeg"><button class="seg-btn' + (seg==='rank'?' active':'') + '" data-tseg="rank">🏆 Clasament</button><button class="seg-btn' + (seg==='chat'?' active':'') + '" data-tseg="chat">💬 Chat global</button></div>' +
+      '<div id="topBody"></div>' +
+      '<div class="top-foot">Puncte: obiceiuri bifate, antrenamente făcute, zile perfecte. Poți câștiga cel mult 600 pe zi.</div>';
+    root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('active', x===b); }); showSeg(); }); });
+    showSeg();
+    startScoreTimer();
+  }
+  function showSeg(){ stopChat(); if(seg === 'chat') renderChat(); else renderBoard(); }
+
+  // ---------- clasament ----------
+  function row(r){
+    var t = tier(r.level);
+    return '<div class="top-row' + (r.me ? ' me' : '') + '"><span class="top-rk">' + r.rank + '</span><span class="top-em">' + emblem(r.level, 34) + '</span>' +
+      '<span class="top-rn"><b>' + esc(r.nick) + '</b><small>Nivel ' + r.level + ' · <span style="color:' + t[2] + '">' + esc(t[1]) + '</span>' + (r.streak ? ' · 🔥 ' + r.streak : '') + '</small></span><span class="top-sc">' + r.score + '</span></div>';
+  }
+  function podium(r, place){
+    if(!r) return '<div class="top-pod p' + place + '"></div>';
+    var t = tier(r.level);
+    return '<div class="top-pod p' + place + '"><div class="top-pod-em">' + emblem(r.level, place===1 ? 58 : 46) + '</div><div class="top-pod-n">' + esc(r.nick) + '</div><div class="top-pod-s">' + r.score + '</div><div class="top-pod-b"><span>' + place + '</span></div></div>';
+  }
+  function renderBoard(){
+    var b = document.getElementById('topBody'); if(!b) return;
+    b.innerHTML = '<div class="top-load">Se încarcă clasamentul…</div>';
+    rpc('get_leaderboard', {p_limit:100}).then(function(d){
+      board = d; me = d.me || me; if(!document.getElementById('topBody') || seg !== 'rank') return;
+      var top = d.top || [], html = '';
+      html += '<div class="top-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
+      html += '<div class="top-list">' + top.slice(3).map(row).join('') + '</div>';
+      var inTop = top.some(function(r){ return r.me; });
+      if(me && !inTop) html += '<div class="top-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
+      if(!top.length) html = '<div class="top-load">Nimeni încă. Fii primul! 🏆</div>';
+      html += '<div class="top-foot">' + (d.total || top.length) + ' conturi în clasament</div>';
+      document.getElementById('topBody').innerHTML = html;
+    }).catch(function(e){ var bb = document.getElementById('topBody'); if(bb) bb.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
+  }
+
+  // ---------- chat ----------
+  function fmtT(at){ try{ return new Date(at).toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+  function msgHtml(m){
+    if(!m.mine && blocked.indexOf(m.nick.toLowerCase()) >= 0) return '';
+    var t = tier(m.lvl);
+    var acts = m.mine ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge">🗑</button>' :
+      '<button class="top-ma" data-rep="' + m.id + '" title="Raportează">🚩</button><button class="top-ma" data-blk="' + esc(m.nick) + '" title="Blochează">🚫</button>' + (isAdmin ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge (admin)">🗑</button><button class="top-ma" data-ban="' + esc(m.nick) + '" title="Blochează cont">⛔</button>' : '');
+    return '<div class="top-msg' + (m.mine ? ' mine' : '') + '" data-id="' + m.id + '"><span class="top-msg-em">' + emblem(m.lvl, 26) + '</span><div class="top-msg-c">' +
+      '<div class="top-msg-h"><b style="color:' + t[2] + '">' + esc(m.nick) + '</b><small>' + esc(fmtT(m.at)) + '</small><span class="top-msg-a">' + acts + '</span></div>' +
+      '<div class="top-msg-b">' + esc(m.body) + '</div></div></div>';
+  }
+  function renderChat(){
+    var b = document.getElementById('topBody'); if(!b) return;
+    lastId = 0;
+    b.innerHTML = '<div class="card top-chat"><div class="top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
+      '<div class="top-send"><input id="topMsgIn" class="top-in" maxlength="300" autocomplete="off" placeholder="Scrie un mesaj…"><button class="top-btn" id="topSend">Trimite</button></div>' +
+      '<div class="top-err" id="topCErr"></div><div class="top-hint">Fără link-uri. Fii respectuos. 🚩 raportează, 🚫 blochează un utilizator.</div></div>';
+    var box = document.getElementById('topMsgs');
+    box.addEventListener('click', function(ev){
+      var el = ev.target.closest('button'); if(!el) return;
+      var id = el.getAttribute('data-rep') || el.getAttribute('data-del'), nk = el.getAttribute('data-blk') || el.getAttribute('data-ban');
+      if(el.hasAttribute('data-rep')){ if(confirm('Raportezi acest mesaj?')) rpc('report_chat', {p_id:+id}).then(function(){ toast('Mesaj raportat. Mulțumim!'); }).catch(function(e){ toast(errMsg(e)); }); }
+      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi ' + nk + '? Nu îi mai vezi mesajele.')){ blocked.push(nk.toLowerCase()); saveBlocked(); box.querySelectorAll('.top-msg').forEach(function(x){ var h = x.querySelector('b'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
+      else if(el.hasAttribute('data-del')){ if(confirm('Ștergi mesajul?')) rpc('delete_chat', {p_id:+id}).then(function(){ var x = box.querySelector('[data-id="' + id + '"]'); if(x) x.remove(); }).catch(function(e){ toast(errMsg(e)); }); }
+      else if(el.hasAttribute('data-ban')){ if(confirm('Blochezi contul ' + nk + '?')) rpc('admin_ban', {p_nick:nk, p_on:true}).then(function(){ toast('Cont blocat'); }).catch(function(e){ toast(errMsg(e)); }); }
+    });
+    function send(){
+      var inp = document.getElementById('topMsgIn'), v = inp.value.trim(), er = document.getElementById('topCErr'); if(!v) return; er.textContent = '';
+      var btn = document.getElementById('topSend'); btn.disabled = true;
+      rpc('send_chat', {p_body:v}).then(function(){ inp.value = ''; btn.disabled = false; pull(true); }).catch(function(e){ btn.disabled = false; er.textContent = errMsg(e); });
+    }
+    document.getElementById('topSend').addEventListener('click', send);
+    document.getElementById('topMsgIn').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); send(); } });
+    pull(true);
+    chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 4000);
+  }
+  function pull(scroll){
+    var box = document.getElementById('topMsgs'); if(!box) return;
+    rpc('get_chat', {p_after:lastId, p_limit:80}).then(function(d){
+      isAdmin = !!d.admin; var msgs = d.msgs || [];
+      if(lastId === 0) box.innerHTML = '';
+      if(!msgs.length){ if(lastId === 0) box.innerHTML = '<div class="top-load">Niciun mesaj încă. Scrie primul! 👋</div>'; return; }
+      var near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+      var html = msgs.map(msgHtml).join(''); lastId = msgs[msgs.length-1].id;
+      box.insertAdjacentHTML('beforeend', html);
+      if(scroll || near) box.scrollTop = box.scrollHeight;
+    }).catch(function(){});
+  }
+  function stopChat(){ if(chatTimer){ clearInterval(chatTimer); chatTimer = null; } }
+
+  // ---------- scor ----------
+  function sync(){
+    if(!me) return Promise.resolve(); var s = stats();
+    return rpc('set_my_profile', {p_nick:null, p_score:s.score, p_streak:s.streak}).then(function(p){ me = p; }).catch(function(){});
+  }
+  function startScoreTimer(){ if(scoreTimer) return; scoreTimer = setInterval(function(){ if(active()) sync(); }, 120000); }
+  function stopTimers(){ stopChat(); if(scoreTimer){ clearInterval(scoreTimer); scoreTimer = null; } }
+
+  // ---------- pornire ----------
+  function open(){
+    if(busy) return; busy = true;
+    var sb = window.__sb; if(!sb){ root.innerHTML = '<div class="top-load">Conectează-te ca să vezi clasamentul.</div>'; busy = false; return; }
+    if(loaded && me){ sync().then(function(){ renderMain(); }); busy = false; return; }
+    root.innerHTML = '<div class="top-load">Se încarcă…</div>';
+    rpc('get_my_profile').then(function(p){
+      loaded = true;
+      if(!p){ me = null; renderJoin(); return; }
+      if(p.banned){ root.innerHTML = '<div class="card"><h3>Cont blocat</h3><p class="top-hint">Contul tău a fost blocat din comunitate pentru încălcarea regulilor.</p></div>'; return; }
+      me = p; return sync().then(function(){ renderMain(); });
+    }).catch(function(e){ root.innerHTML = '<div class="card top-join"><h3>Clasamentul nu e disponibil încă</h3><p class="top-hint">' + esc(errMsg(e)) + '</p></div>'; }).then(function(){ busy = false; });
+  }
+  var tab = document.querySelector('.tab[data-view="top"]');
+  if(tab) tab.addEventListener('click', function(){ setTimeout(open, 60); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && active() && seg === 'chat') pull(false); });
+})();

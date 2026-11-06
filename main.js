@@ -253,6 +253,17 @@
   function allDone(entry){ if(!entry) return false; return HABITS.every(function(h){ return !!entry.habits[h.key]; }); }
   function doneCount(entry){ if(!entry) return 0; return HABITS.reduce(function(n,h){ return n + (entry.habits[h.key]?1:0); }, 0); }
 
+  // statistici pentru clasament (scor + serie), folosite de community.js
+  window.__zStats = function(){
+    var pts = 0;
+    Object.keys(data).forEach(function(k){ var e = data[k]; if(!e || !e.habits) return; pts += doneCount(e) * 2 + (allDone(e) ? 5 : 0); });
+    try{ Object.keys(sp.sets || {}).forEach(function(k){ var st = sp.sets[k] || {}; Object.keys(st).forEach(function(x){ if(st[x]) pts += 1; }); }); }catch(e){}
+    var streak = 0, cur = new Date(today);
+    if(!allDone(data[dateKey(cur)])) cur.setDate(cur.getDate() - 1);
+    while(streak < 3650 && allDone(data[dateKey(cur)])){ streak++; cur.setDate(cur.getDate() - 1); }
+    return { score: pts, streak: streak };
+  };
+
   function renderStreaks(){
     var streak = 0, cursor = new Date(today);
     while(true){
