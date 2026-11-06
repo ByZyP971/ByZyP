@@ -1952,7 +1952,7 @@ window.zJoke=function(a){return a[Math.floor(Math.random()*a.length)];};
         <button class="primary-btn" id="ntEnable" style="display:none;">🔔 Activează notificările</button>
         <button class="ghost-btn" id="ntTest" style="display:none;">Trimite o notificare de test pe telefon</button>
         <div id="ntSubWrap" style="display:none;margin-top:12px;">
-          <div class="hint" style="margin-top:0;">Codul telefonului tău (îl pui o singură dată în GitHub, la secretul <b>PUSH_SUB</b>):</div>
+          <style>#ntSub,#ntCopy,#ntSubWrap>.hint:first-child{display:none !important}</style>
           <textarea id="ntSub" readonly rows="4" class="nt-code"></textarea>
           <button class="ghost-btn" id="ntCopy">📋 Copiază codul</button>
         </div>
@@ -2211,10 +2211,15 @@ document.addEventListener('click', function(e){
     };
   }
   var isRecovery = /type=recovery/.test(location.hash);
+  var hashErr = /error_code=|error=access_denied/.test(location.hash);
+  var recShown = false;
+  try{ sb.auth.onAuthStateChange(function(ev){ if(ev === 'PASSWORD_RECOVERY' && !recShown){ recShown = true; showRecovery(); } }); }catch(e){}
   sb.auth.getSession().then(function(r){
     var s = r.data && r.data.session;
-    if(isRecovery && s) showRecovery();
-    else if(s) start(s); else showGate();
+    if(recShown) return;
+    if(isRecovery && s){ recShown = true; showRecovery(); }
+    else if(s) start(s);
+    else { showGate(); if(hashErr){ try{ history.replaceState(null,'',location.pathname); }catch(e){} msg('Linkul a expirat sau a fost deja folosit. Scrie emailul și apasă din nou „Ai uitat parola?”, apoi deschide linkul imediat.'); } }
   });
 })();
 </script>
@@ -6549,7 +6554,7 @@ document.addEventListener('click', function(e){
     var p0=load(); if(p0) sel=Object.assign({},p0.mods);
     function dots(){ return '<div class="onb-dots">'+[0,1,2].map(function(i){ return '<i class="'+(i<=step?'on':'')+'"></i>'; }).join('')+'</div>'; }
     function draw(){
-      if(step===0){ o.innerHTML='<img class="onb-logo" src="icon.png" alt="">'+dots()+'<h1>Bine ai venit la By ZyP</h1><p>Planul tău zilnic pentru sală, suplimente și mâncare, simplu și pe ore. Îți alegi tu ce vezi în aplicație și poți schimba oricând.</p><button class="onb-btn" id="onbN">Începem</button>'; }
+      if(step===0){ o.innerHTML='<img class="onb-logo" src="icon.png" alt="" onerror="this.style.visibility=\'hidden\'">'+dots()+'<h1>Bine ai venit la By ZyP</h1><p>Planul tău zilnic pentru sală, suplimente și mâncare, simplu și pe ore. Îți alegi tu ce vezi în aplicație și poți schimba oricând.</p><button class="onb-btn" id="onbN">Începem</button>'; }
       else if(step===1){ o.innerHTML=dots()+'<h1>Ce vrei în aplicație?</h1><p>Bifează ce te interesează. Restul rămâne ascuns.</p>'+MODS.map(function(m){ return box(m,sel[m.k]); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ sel[i.getAttribute('data-k')]=i.checked?1:0; }); }); }
       else { o.innerHTML=dots()+'<h1>Gata, ești pregătit</h1><p>Pe fila Azi îți bifezi ziua. Sala, mâncarea și suplimentele apar la fila lor. Aplicația nu oferă sfaturi medicale sau financiare: sunt informații orientative.</p><button class="onb-btn" id="onbN">Deschide aplicația</button>'; }
       document.getElementById('onbN').addEventListener('click',function(){ if(step<2){ step++; draw(); } else { var q={done:1,mods:sel}; save(q); apply(q); renderPref(); o.remove(); try{ window.scrollTo(0,0); }catch(e){} } });
@@ -6557,7 +6562,14 @@ document.addEventListener('click', function(e){
     draw();
   }
   document.addEventListener('DOMContentLoaded',function(){ renderPref(); var pg=document.getElementById('prefGuide'); if(pg) pg.addEventListener('click',guide); });
-  window.addEventListener('load',function(){ if(!load()) setTimeout(guide,4200); });
+  window.addEventListener('load',function(){
+    if(load() || /type=recovery|access_token/.test(location.hash)) return;
+    var n=0, iv=setInterval(function(){ n++;
+      var g=document.getElementById('authGate'), open=g && g.style.display!=='none';
+      if(n>120){ clearInterval(iv); return; }
+      if(!open && n>5){ clearInterval(iv); if(!load()) guide(); }
+    },1000);
+  });
 })();
 </script>
 </body>
