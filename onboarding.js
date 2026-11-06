@@ -21,6 +21,15 @@
     return { mods:m, habits:h }; }
   function gbox(m,on){ return '<label class="onb-opt"><span class="ic">'+m.ic+'</span><div><b>'+m.n+'</b><span>'+m.d+'</span></div><input type="checkbox" data-g="'+m.k+'"'+(on?' checked':'')+'></label>'; }
   function hbox(m,on){ return '<label class="onb-opt"><span class="ic">'+m.ic+'</span><div><b>'+m.n+'</b><span>'+m.d+'</span></div><input type="checkbox" data-h="'+m.k+'"'+(on?' checked':'')+'></label>'; }
+  var DAYS=[{n:2,ph:5,t:'2 zile',d:'Puțin timp: 2 antrenamente complete'},{n:3,ph:3,t:'3 zile',d:'Tot corpul, simplu și eficient (ideal la început)'},{n:4,ph:4,t:'4 zile',d:'Upper / Lower: sus și jos, de două ori pe săptămână'},{n:5,ph:1,t:'5 zile',d:'Push / Pull / Legs + Upper / Lower'},{n:6,ph:2,t:'6 zile',d:'Push / Pull / Legs de două ori'}];
+  var SPK='byzyp_sport_v1';
+  function curPhase(){ try{ var s=JSON.parse(localStorage.getItem(SPK)||'{}')||{}; return [1,2,3,4,5].indexOf(s.phase)>=0?s.phase:1; }catch(e){ return 1; } }
+  function setPhase(ph){ try{ var s=JSON.parse(localStorage.getItem(SPK)||'{}')||{}; s.phase=ph; localStorage.setItem(SPK,JSON.stringify(s)); }catch(e){} }
+  var LVLS=[{k:'easy',ic:'🟢',t:'Ușor',d:'Mai puține serii, exerciții simple la mașini'},{k:'mid',ic:'🟡',t:'Mediu',d:'3 serii, exerciții simple și eficiente'},{k:'hard',ic:'🔴',t:'Greu',d:'Mai multe serii, exerciții avansate cu haltera și gantere'}];
+  function curLevel(){ try{ var s=JSON.parse(localStorage.getItem(SPK)||'{}')||{}; return (s.level==='easy'||s.level==='hard')?s.level:'mid'; }catch(e){ return 'mid'; } }
+  function setSp(ph,lv){ try{ var s=JSON.parse(localStorage.getItem(SPK)||'{}')||{}; s.phase=ph; s.level=lv; localStorage.setItem(SPK,JSON.stringify(s)); }catch(e){} }
+  function lbox(m,on){ return '<label class="onb-opt"><span class="ic">'+m.ic+'</span><div><b>'+m.t+'</b><span>'+m.d+'</span></div><input type="radio" name="onblvl" data-lv="'+m.k+'"'+(on?' checked':'')+'></label>'; }
+  function dbox(m,on){ return '<label class="onb-opt"><span class="ic">📅</span><div><b>'+m.t+' pe săptămână</b><span>'+m.d+'</span></div><input type="radio" name="onbdays" data-ph="'+m.ph+'"'+(on?' checked':'')+'></label>'; }
   function load(){ try{ var p=JSON.parse(localStorage.getItem(KEY)||'null'); if(p&&p.mods) return p; }catch(e){} return null; }
   function save(p){ try{ localStorage.setItem(KEY,JSON.stringify(p)); }catch(e){} }
   function apply(p){ var r=document.documentElement; MODS.forEach(function(m){ r.classList.toggle('pf-no'+m.k, !(p&&p.mods[m.k])); });
@@ -41,18 +50,19 @@
   }
   function guide(){
     if(document.getElementById('onb')) return;
-    var o=document.createElement('div'); o.className='onb'; o.id='onb'; document.body.appendChild(o); var step=0, sel={sport:1,food:1,supp:1,money:1}, hsel=HKEYS.slice(), gsel=[];
+    var o=document.createElement('div'); o.className='onb'; o.id='onb'; document.body.appendChild(o); var step=0, sel={sport:1,food:1,supp:1,money:1}, hsel=HKEYS.slice(), gsel=[], phsel=curPhase(), ph0=phsel, lvsel=curLevel(), lv0=lvsel, first=!load();
     var p0=load(); if(p0){ sel=Object.assign({},p0.mods); if(Array.isArray(p0.habits)&&p0.habits.length) hsel=p0.habits.slice(); if(Array.isArray(p0.goals)) gsel=p0.goals.slice(); }
-    function dots(){ return '<div class="onb-dots">'+[0,1,2,3,4].map(function(i){ return '<i class="'+(i<=step?'on':'')+'"></i>'; }).join('')+'</div>'; }
+    function dots(){ return '<div class="onb-dots">'+[0,1,2,3,4,5].map(function(i){ return '<i class="'+(i<=step?'on':'')+'"></i>'; }).join('')+'</div>'; }
     function draw(){
       if(step===0){ o.innerHTML='<img class="onb-logo" src="icon.png" alt="">'+dots()+'<h1>Bine ai venit la By ZyP</h1><p>Planul tău zilnic pentru sală, suplimente și mâncare, simplu și pe ore. Îți alegi tu ce vezi în aplicație și poți schimba oricând.</p><button class="onb-btn" id="onbN">Începem</button>'; }
       else if(step===1){ o.innerHTML=dots()+'<h1>Ce contează cel mai mult pentru tine?</h1><p>Alege câte vrei. Îți pregătim aplicația după ce alegi, iar la pașii următori poți modifica.</p>'+GOALS.map(function(g){ return gbox(g,gsel.indexOf(g.k)>=0); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ var k=i.getAttribute('data-g'); gsel=gsel.filter(function(x){ return x!==k; }); if(i.checked) gsel.push(k); }); }); }
       else if(step===2){ o.innerHTML=dots()+'<h1>Ce vrei în aplicație?</h1><p>Bifează ce te interesează. Restul rămâne ascuns.</p>'+MODS.map(function(m){ return box(m,sel[m.k]); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ sel[i.getAttribute('data-k')]=i.checked?1:0; }); }); }
-      else if(step===3){ o.innerHTML=dots()+'<h1>Ce obiceiuri vrei să urmărești?</h1><p>Alegi doar ce ți se potrivește. Poți schimba oricând din Profil.</p>'+HABS.map(function(m){ return hbox(m,hsel.indexOf(m.k)>=0); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ var k=i.getAttribute('data-h'); hsel=hsel.filter(function(x){ return x!==k; }); if(i.checked) hsel.push(k); }); }); }
+      else if(step===3){ o.innerHTML=dots()+'<h1>Câte zile pe săptămână poți merge la sală?</h1><p>Îți punem programul potrivit. Săptămânile vin una după alta, singure. Poți schimba oricând din fila Sală.</p>'+DAYS.map(function(m){ return dbox(m,m.ph===phsel); }).join('')+'<h1 style="font-size:20px;margin-top:18px">Cât de greu vrei să fie?</h1>'+LVLS.map(function(m){ return lbox(m,m.k===lvsel); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ if(i.hasAttribute('data-ph')) phsel=+i.getAttribute('data-ph'); else lvsel=i.getAttribute('data-lv'); }); }); }
+      else if(step===4){ o.innerHTML=dots()+'<h1>Ce obiceiuri vrei să urmărești?</h1><p>Alegi doar ce ți se potrivește. Poți schimba oricând din Profil.</p>'+HABS.map(function(m){ return hbox(m,hsel.indexOf(m.k)>=0); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ var k=i.getAttribute('data-h'); hsel=hsel.filter(function(x){ return x!==k; }); if(i.checked) hsel.push(k); }); }); }
       else { o.innerHTML=dots()+'<h1>Gata, ești pregătit</h1><p>Pe fila Azi îți bifezi ziua. Sala, mâncarea și suplimentele apar la fila lor. Aplicația nu oferă sfaturi medicale sau financiare: sunt informații orientative.</p><button class="onb-btn" id="onbN">Deschide aplicația</button>'; }
       document.getElementById('onbN').addEventListener('click',function(){ if(step===1 && gsel.length){ var pr=goalPreset(gsel); sel=pr.mods; hsel=pr.habits; }
- if(step===3 && !hsel.length){ hsel=HKEYS.slice(); }
- if(step<4){ step++; draw(); } else { var q={done:1,mods:sel,habits:hsel,goals:gsel}; save(q); apply(q); renderPref(); o.remove(); try{ window.scrollTo(0,0); }catch(e){} if(JSON.stringify(hsel.slice().sort())!==JSON.stringify(CURH.slice().sort())) location.reload(); } });
+ if(step===4 && !hsel.length){ hsel=HKEYS.slice(); }
+ if(step<5){ step++; if(step===3 && !sel.sport) step++; draw(); } else { var q={done:1,mods:sel,habits:hsel,goals:gsel}; save(q); apply(q); renderPref(); o.remove(); try{ window.scrollTo(0,0); }catch(e){} var phChanged=(phsel!==ph0 || lvsel!==lv0); if(phChanged) setSp(phsel,lvsel); if(phChanged || JSON.stringify(hsel.slice().sort())!==JSON.stringify(CURH.slice().sort())) location.reload(); } });
     }
     draw();
   }

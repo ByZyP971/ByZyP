@@ -569,7 +569,17 @@
       { code:'f1', name:'Tot corpul A', focus:'Tot corpul', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
       { code:'f2', name:'Tot corpul B', focus:'Tot corpul', img:'', off:1, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
       { code:'f3', name:'Tot corpul C', focus:'Tot corpul', img:'', off:2, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] }
-    ], rest:[1,3,5,6] }
+    ], rest:[1,3,5,6] },
+    4:{ label:'4 zile · Upper / Lower', dayIdx:[0,1,3,4], days:[
+      { code:'u1', name:'Upper A · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['press','c',3,'10–12',0],['rowC','c',3,'10–12',0],['pushdown','i',2,'12–15',0],['bb','i',2,'12–15',0]] },
+      { code:'u2', name:'Lower A · Picioare', focus:'Picioare și abdomen', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0],['crunch','i',3,'12–20',0]] },
+      { code:'u3', name:'Upper B · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:3, slots:[['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat2','i',3,'12–15',0],['rear','i',3,'12–15',0],['pushdown','i',2,'12–15',0],['bb','i',2,'12–15',0]] },
+      { code:'u4', name:'Lower B · Picioare', focus:'Picioare și spate jos', img:'', off:3, slots:[['rdl','c',3,'10–12',0],['quad2','c',3,'10–12',0],['ham','i',3,'12–15',0],['lext','i',2,'12–15',0],['calf','i',3,'15–20',0],['crunch','i',3,'12–20',0]] }
+    ], rest:[2,5,6] },
+    5:{ label:'2 zile · Tot corpul', dayIdx:[0,3], days:[
+      { code:'d1', name:'Tot corpul A', focus:'Tot corpul', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
+      { code:'d2', name:'Tot corpul B', focus:'Tot corpul', img:'', off:2, slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rdl','c',2,'10–12',0],['pushdown','i',2,'12–15',0],['crunch','i',3,'12–20',0]] }
+    ], rest:[1,2,4,5,6] }
   };
   /* ===== desene: cum se face fiecare exercițiu (start / sfârșit) ===== */
   function Lp(pts, c){ return '<polyline class="' + c + '" points="' + pts.map(function(p){ return p[0] + ',' + p[1]; }).join(' ') + '"/>'; }
@@ -897,16 +907,18 @@
     for(var i=0;i<7;i++){ var dd = di ? days[di.indexOf(i)] : days[i]; out.push(dd ? [dd.code, '💪'] : ['rest', '😴']); }
     return out;
   }
-  var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2), 3:buildWEEK(3) };
+  var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2), 3:buildWEEK(3), 4:buildWEEK(4), 5:buildWEEK(5) };
   var WEEK_INFO = { rest:['Odihnă','Corpul crește în zilele de pauză. Somn bun, proteine, plimbare ușoară dacă vrei.'] };
   var PHASE_HINT = { 1:'Program clasic Push / Pull / Legs: Luni Push (piept, umeri, triceps), Marți Pull (spate, biceps), Miercuri Picioare, Joi Upper (sus), Vineri Lower (jos + lombar). Weekend odihnă.',
     2:'Push / Pull / Legs de două ori pe săptămână, cel mai cunoscut program din culturism: Luni Push, Marți Pull, Miercuri Picioare, Joi Push, Vineri Pull, Sâmbătă Picioare. Duminică odihnă.',
-    3:'Tot corpul de 3 ori pe săptămână (Luni, Miercuri, Vineri): cel mai simplu program pentru început. Faci puțin din fiecare grupă, cu zile de odihnă între antrenamente.' };
+    3:'Tot corpul de 3 ori pe săptămână (Luni, Miercuri, Vineri): cel mai simplu program pentru început. Faci puțin din fiecare grupă, cu zile de odihnă între antrenamente.',
+    4:'Upper / Lower de 4 ori pe săptămână: Luni Upper (partea de sus), Marți Lower (picioare), Joi Upper, Vineri Lower. Fiecare grupă o lucrezi de două ori pe săptămână, cu 2–3 zile libere. Echilibrul perfect dacă ai timp de 4 zile.',
+    5:'Tot corpul de 2 ori pe săptămână (Luni și Joi): pentru când ai puțin timp sau reîncepi după o pauză. Două antrenamente complete, fiecare cu exerciții mari pentru tot corpul.' };
   var dayShortS = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
   var SP_KEY = 'byzyp_sport_v1';
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
   function spSave(){ try{ localStorage.setItem(SP_KEY, JSON.stringify(sp)); }catch(e){} }
-  sp.phase = (sp.phase === 2 || sp.phase === 3 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
+  sp.phase = ([2,3,4,5].indexOf(sp.phase) >= 0 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
   function mondayOf(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
   function mKey(d){ return dateKey(d); }
   var thisMon = mondayOf(new Date());
