@@ -726,6 +726,18 @@
     for(var i=0;i<R.length;i++) if(R[i][0].test(n)) return R[i][1];
     return 'bench';
   }
+  // muzică potrivită pentru fiecare tip de exercițiu (doar sugestie + căutare, nu redăm melodii)
+  var MUS = {
+    heavy:['Forță','rock / metal / trap greu','130–150','heavy gym workout rock trap 140 bpm'],
+    pump:['Pump','hip-hop / EDM','120–135','pump workout hip hop edm 128 bpm'],
+    legs:['Ritm constant','EDM / drum & bass','135–150','leg day workout edm 140 bpm'],
+    core:['Concentrare','electronic fără versuri','110–125','focus electronic workout no lyrics 120 bpm']
+  };
+  function musicFor(pat){
+    var g = /^(bench|incline|press|squat|legpress|hinge|row|pulldown|sarm)$/.test(pat) ? 'heavy' : /^(plank|crunch)$/.test(pat) ? 'core' : /^(lcurl|lext|calf|hip|lunge|adduct)$/.test(pat) ? 'legs' : 'pump';
+    return MUS[g];
+  }
+  function musicBtn(pat){ var m = musicFor(pat); return '<a class="yt-btn" style="margin-top:6px" href="https://www.youtube.com/results?search_query=' + encodeURIComponent(m[3]) + '" target="_blank" rel="noopener">🎵 Muzică potrivită: ' + m[0] + ' · ' + m[1] + ' · ' + m[2] + ' BPM</a>'; }
   function figHtml(key){
     var F = FIGS[key]; if(!F) return '';
     function box(svg, lab){ return '<div class="fg-box"><svg viewBox="0 -8 120 84" class="fg">' + svg + '</svg><span>' + lab + '</span></div>'; }
@@ -895,7 +907,7 @@
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
       var nsets = lvl === 'easy' ? Math.max(2, s[2] - 1) : lvl === 'hard' ? (type === 't' ? s[2] : Math.min(5, s[2] + 1)) : s[2];
-      ex.push([p[0], nsets, reps, String(WREST[type][wv]), tip, '', patOf(p[0]), ytUrl(ENP[s[0]][vi])]);
+      ex.push([p[0], nsets, reps, String(WREST[type][wv]), tip, '', patOf(p[0]), ytUrl(ENP[s[0]][vi]), type]);
     });
     return { name: d.name, focus: d.focus, ex: ex, img: '', code: d.code };
   }
@@ -1047,8 +1059,8 @@
         '<div class="ex-top"><span class="ex-bn">' + (fin ? '✓' : (ei+1)) + '</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span>' +
         '<div class="ex-pills"><b>' + e[1] + ' × ' + e[2] + '</b><i>⏱ pauză ' + e[3] + ' s</i></div></div></div>' +
         (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') + kgRow(e[0]) +
-        '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' +
-        '<details class="ex-how"><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
+        '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' + musicBtn(e[6]) +
+        '<details class="ex-how"' + (ei === nowEi ? ' open' : '') + '><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (st[k] ? '✓' : (si+1)) + '</button>'; }
       html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ pauză</button></div>' +
         (fin ? '<button class="ex-fin undo" data-ei="' + ei + '" data-undo="1">↩ Nu e terminat</button>' : '<button class="ex-fin" data-ei="' + ei + '">✅ Am terminat exercițiul · următorul →</button>') + '</div>';
@@ -1136,29 +1148,41 @@
 
   /* ===== Suplimente: lista de azi + notificările vin din push-bot (09:00, 20:00, 22:00) ===== */
   var SUPP_CAT = [
-    { id:'d3k2', g:0, ic:'☀️', n:'Vitamina D3 + K2', d:'Cu micul dejun, cu grăsime. Pentru oase și imunitate.' },
-    { id:'d3', g:0, ic:'🌞', n:'Vitamina D3', d:'Cu micul dejun, cu grăsime. Pentru oase și imunitate.' },
-    { id:'om3', g:0, ic:'🐟', n:'Omega 3', d:'Cu o masă care conține grăsime. Ajută inima și recuperarea.' },
-    { id:'cre', g:0, ic:'⚡', n:'Creatină monohidrat', d:'În fiecare zi, și fără sală, cu apă. Îți crește forța.' },
-    { id:'mv', g:0, ic:'🍊', n:'Multivitamine', d:'Cu micul dejun, cu mâncare. Completează lipsurile din alimentație.' },
-    { id:'vc', g:0, ic:'🍋', n:'Vitamina C', d:'Cu mâncare. Pentru imunitate.' },
-    { id:'vb', g:0, ic:'🧬', n:'Complex vitamina B', d:'Dimineața, cu mâncare. Pentru energie și metabolism.' },
-    { id:'col', g:0, ic:'🦴', n:'Colagen', d:'Oricând, cu apă. Pentru piele și articulații.' },
-    { id:'prob', g:0, ic:'🦠', n:'Probiotice', d:'Dimineața, cum scrie pe etichetă. Pentru digestie.' },
-    { id:'fe', g:0, ic:'🩸', n:'Fier', d:'Doar dacă ai deficit confirmat de analize. Se ia separat de calciu.' },
-    { id:'caf', g:1, ic:'☕', n:'Cafeină', d:'Cu 30–45 minute înainte de sală. Nu după ora 14:00.' },
-    { id:'cit', g:1, ic:'🍉', n:'Citrulină', d:'Cu 30–45 minute înainte de sală. Pentru pump și rezistență.' },
-    { id:'ba', g:1, ic:'🔥', n:'Beta-alanină', d:'Înainte de sală. Poate da furnicături pe piele, e normal.' },
-    { id:'eaa', g:1, ic:'💧', n:'Aminoacizi (EAA / BCAA)', d:'În timpul antrenamentului, în apă.' },
-    { id:'elec', g:1, ic:'🧂', n:'Electroliți', d:'În apă, în zilele cu transpirație multă.' },
-    { id:'whey', g:2, ic:'🥤', n:'Proteină whey', d:'După sală, cu apă sau lapte. Ajută mușchiul să crească.' },
-    { id:'gln', g:2, ic:'🧪', n:'Glutamină', d:'După sală sau seara, în apă.' },
-    { id:'ca', g:3, ic:'🥛', n:'Calciu', d:'Cu cina. Nu în același timp cu fierul sau zincul.' },
-    { id:'zn', g:3, ic:'🛡️', n:'Zinc', d:'Cu cina, nu pe stomacul gol. Pentru imunitate și hormoni.' },
-    { id:'casein', g:4, ic:'🌙', n:'Cazeină', d:'Seara, înainte de somn. Proteină cu eliberare lentă.' },
-    { id:'mg', g:4, ic:'🌙', n:'Magneziu', d:'Seara, la 1–2 ore după zinc. Te ajută la somn și la mușchi.' },
-    { id:'ash', g:4, ic:'🌿', n:'Ashwagandha', d:'Seara. Nu o lua dacă ești însărcinată sau ai probleme de tiroidă, fără medic.' },
-    { id:'mel', g:4, ic:'😴', n:'Melatonină', d:'Cu 30–60 minute înainte de somn, doza mică de pe etichetă. Doar ocazional.' }
+    { id:'d3k2', g:0, ic:'☀️', n:'Vitamina D3 + K2', w:'D3 ajută oasele, mușchii și imunitatea; K2 duce calciul în oase, nu în artere.', d:'Cu micul dejun, cu grăsime.' },
+    { id:'d3', g:0, ic:'🌞', n:'Vitamina D3', w:'Ajută oasele, mușchii și imunitatea. Mulți oameni au puțină iarna, la fel și cei care stau mult în casă.', d:'Cu micul dejun, cu grăsime.' },
+    { id:'vk2', g:0, ic:'🦴', n:'Vitamina K2', w:'Ajută calciul să ajungă în oase și dinți. Se ia de obicei împreună cu D3.', d:'Cu micul dejun, cu grăsime.' },
+    { id:'om3', g:0, ic:'🐟', n:'Omega 3', w:'Grăsimi bune pentru inimă, creier și recuperare. Util dacă mănânci rar pește.', d:'Cu o masă care conține grăsime.' },
+    { id:'cre', g:0, ic:'⚡', n:'Creatină monohidrat', w:'Cel mai studiat supliment pentru forță: mai multe repetări în sală și mușchi mai plini.', d:'În fiecare zi, și fără sală, cu apă.' },
+    { id:'mv', g:0, ic:'🍊', n:'Multivitamine', w:'Completează mici lipsuri din alimentație. Nu înlocuiește mâncarea.', d:'Cu micul dejun, cu mâncare.' },
+    { id:'vc', g:0, ic:'🍋', n:'Vitamina C', w:'Antioxidant care ajută imunitatea, pielea și absorbția fierului din alimente.', d:'Cu mâncare.' },
+    { id:'vb', g:0, ic:'🧬', n:'Complex vitamina B', w:'Ajută corpul să scoată energie din mâncare și susține sistemul nervos.', d:'Dimineața, cu mâncare.' },
+    { id:'b12', g:0, ic:'🧠', n:'Vitamina B12', w:'Pentru sânge, nervi și energie. Importantă mai ales dacă mănânci puțină carne sau deloc.', d:'Dimineața, cu sau fără mâncare.' },
+    { id:'bio', g:0, ic:'💇', n:'Biotină', w:'Susține părul, unghiile și pielea. Efectul se vede abia după câteva luni.', d:'Dimineața, cu mâncare. Spune medicului că o iei înainte de analize de sânge.' },
+    { id:'col', g:0, ic:'🦴', n:'Colagen', w:'Susține pielea și articulațiile. Dovezile sunt modeste, dar mulți oameni îl iau pentru genunchi și piele.', d:'Oricând, cu apă.' },
+    { id:'prob', g:0, ic:'🦠', n:'Probiotice', w:'Bacterii bune pentru digestie. Ajută mai ales după antibiotice sau dacă ai burta sensibilă.', d:'Dimineața, cum scrie pe etichetă.' },
+    { id:'fib', g:0, ic:'🌾', n:'Fibre (psyllium)', w:'Ajută digestia și te țin sătul mai mult timp.', d:'Cu un pahar mare de apă. Ia-le la 2 ore distanță de alte suplimente și medicamente.' },
+    { id:'coq', g:0, ic:'❤️', n:'Coenzima Q10', w:'Ajută celulele să producă energie și susține inima. Mai ales utilă după 40 de ani sau la cei care iau statine, cu sfatul medicului.', d:'Cu o masă cu grăsime.' },
+    { id:'curc', g:0, ic:'🟡', n:'Curcumină', w:'Din turmeric. Poate reduce durerile musculare și articulare după efort.', d:'Cu mâncare și piper negru, ca să se absoarbă.' },
+    { id:'sel', g:0, ic:'🧂', n:'Seleniu', w:'Mineral pentru tiroidă și imunitate. Doza mică de pe etichetă: în exces face rău.', d:'Cu mâncare.' },
+    { id:'thea', g:0, ic:'🍵', n:'L-teanină', w:'Calmează fără să adoarmă. Se ia des împreună cu cafeaua, ca să nu ai nervi.', d:'Dimineața, cu cafeaua.' },
+    { id:'rhod', g:0, ic:'🌸', n:'Rhodiola', w:'Plantă care poate ajuta la oboseală și stres. Dovezile sunt modeste.', d:'Dimineața, pe stomacul gol. Nu seara, poate încurca somnul.' },
+    { id:'fe', g:0, ic:'🩸', n:'Fier', w:'Pentru sânge și energie, dar doar dacă ai deficit.', d:'Doar dacă analizele arată deficit. Se ia separat de calciu.' },
+    { id:'caf', g:1, ic:'☕', n:'Cafeină', w:'Te trezește și îți dă mai multă forță și atenție în sală.', d:'Cu 30–45 minute înainte de sală. Nu după ora 14:00.' },
+    { id:'cit', g:1, ic:'🍉', n:'Citrulină', w:'Mai mult sânge în mușchi: pump mai bun și rezistență la serii lungi.', d:'Cu 30–45 minute înainte de sală.' },
+    { id:'ba', g:1, ic:'🔥', n:'Beta-alanină', w:'Întârzie arsura din mușchi la serii lungi. Poate da furnicături pe piele, e normal.', d:'Înainte de sală.' },
+    { id:'tau', g:1, ic:'💦', n:'Taurină', w:'Ajută hidratarea celulelor și rezistența la efort.', d:'Înainte sau în timpul antrenamentului.' },
+    { id:'carn', g:1, ic:'🏃', n:'L-carnitină', w:'Ajută transportul grăsimilor spre energie. Dovezile pentru slăbit sunt modeste.', d:'Înainte de sală, cu apă.' },
+    { id:'eaa', g:1, ic:'💧', n:'Aminoacizi (EAA / BCAA)', w:'Cărămizile proteinei. Utili dacă antrenezi pe nemâncate; altfel proteina din mâncare e suficientă.', d:'În timpul antrenamentului, în apă.' },
+    { id:'elec', g:1, ic:'🧂', n:'Electroliți', w:'Înlocuiesc sărurile pierdute prin transpirație și previn crampele.', d:'În apă, în zilele cu transpirație multă.' },
+    { id:'whey', g:2, ic:'🥤', n:'Proteină whey', w:'Proteină rapidă, ca să-ți atingi necesarul zilnic. Ajută mușchiul să se refacă.', d:'După sală, cu apă sau lapte.' },
+    { id:'gln', g:2, ic:'🧪', n:'Glutamină', w:'Aminoacid pentru recuperare și intestin. Beneficiile la sală sunt mici.', d:'După sală sau seara, în apă.' },
+    { id:'ca', g:3, ic:'🥛', n:'Calciu', w:'Pentru oase și dinți, dacă mănânci puține lactate.', d:'Cu cina. Nu în același timp cu fierul sau zincul.' },
+    { id:'zn', g:3, ic:'🛡️', n:'Zinc', w:'Ajută imunitatea, pielea și hormonii.', d:'Cu cina, nu pe stomacul gol. Nu împreună cu magneziul.' },
+    { id:'casein', g:4, ic:'🌙', n:'Cazeină', w:'Proteină lentă, hrănește mușchiul pe parcursul nopții.', d:'Seara, înainte de somn.' },
+    { id:'mg', g:4, ic:'🌙', n:'Magneziu', w:'Ajută mușchii să se relaxeze și te ajută la somn.', d:'Seara, la 1–2 ore după zinc.' },
+    { id:'gly', g:4, ic:'😌', n:'Glicină', w:'Aminoacid care poate ajuta la un somn mai adânc. Dovezile sunt modeste.', d:'Cu 30–60 minute înainte de somn.' },
+    { id:'ash', g:4, ic:'🌿', n:'Ashwagandha', w:'Plantă care poate scădea stresul și îmbunătăți somnul.', d:'Seara. Nu o lua dacă ești însărcinată sau ai probleme de tiroidă, fără medic.' },
+    { id:'mel', g:4, ic:'😴', n:'Melatonină', w:'Hormonul somnului: ajută să adormi mai repede, de exemplu la schimbarea fusului orar.', d:'Cu 30–60 minute înainte de somn, doza mică de pe etichetă. Doar ocazional.' }
   ];
   var SUPP_OWN = 'zyp_supps_v1';
   function suppOwn(){ try{ var o = JSON.parse(localStorage.getItem(SUPP_OWN) || 'null'); if(Array.isArray(o)) return o; }catch(e){} return ['d3k2','om3','cre','whey','zn','mg']; }
@@ -1176,7 +1200,7 @@
       var items = SUPPS.filter(function(s){ return s.g === gi; }); if(!items.length) return;
       h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + g.t + '</em></div>';
       items.forEach(function(s){
-        h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d">' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
+        h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Ce face:</em> ' + s.w + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Cum:</em> ' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
       });
     });
     h += '<div class="hint" style="margin:12px 0 0;">🔔 Primești notificare puțin înainte de 09:00, 20:30 și 22:00. Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
@@ -1193,9 +1217,9 @@
   }
   function suppPicker(){
     var el = document.getElementById('suppCard'); if(!el) return; var own = suppOwn().slice();
-    var h = '<div class="card-title">Suplimentele mele</div><div class="hint" style="margin:0 0 12px;">Bifează doar ce ai deja. Nu cumpăra nimic fără motiv. Dozele sunt cele de pe etichetă sau de la medic.</div>';
+    var h = '<div class="card-title">Suplimentele mele</div><div class="hint" style="margin:0 0 12px;">Bifează doar ce ai deja. Nu cumpăra nimic fără motiv și întreabă medicul dacă iei medicamente sau ai o boală. Dozele sunt cele de pe etichetă sau de la medic.</div>';
     SUPP_G.forEach(function(g, gi){ var it = SUPP_CAT.filter(function(s){ return s.g === gi; }); if(!it.length) return; h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + g.t + '</em></div>';
-      it.forEach(function(s){ h += '<label class="onb-opt" style="padding:11px 12px;margin-bottom:6px;"><span class="ic" style="font-size:20px;">' + s.ic + '</span><div><b style="font-size:14px;">' + s.n + '</b><span>' + s.d + '</span></div><input type="checkbox" data-s="' + s.id + '"' + (own.indexOf(s.id) >= 0 ? ' checked' : '') + '></label>'; }); });
+      it.forEach(function(s){ h += '<label class="onb-opt" style="padding:11px 12px;margin-bottom:6px;"><span class="ic" style="font-size:20px;">' + s.ic + '</span><div><b style="font-size:14px;">' + s.n + '</b><span><em style="font-style:normal;font-weight:700;color:var(--gold)">Ce face:</em> ' + s.w + '</span><span style="display:block;margin-top:3px"><em style="font-style:normal;font-weight:700;color:var(--gold)">Cum:</em> ' + s.d + '</span></div><input type="checkbox" data-s="' + s.id + '"' + (own.indexOf(s.id) >= 0 ? ' checked' : '') + '></label>'; }); });
     h += '<button class="onb-btn" id="suppSave" style="width:100%;margin-top:12px;">Salvează</button>';
     el.innerHTML = h;
     el.querySelectorAll('input[data-s]').forEach(function(i){ i.addEventListener('change', function(){ var id = i.getAttribute('data-s'), k = own.indexOf(id); if(i.checked && k < 0) own.push(id); if(!i.checked && k >= 0) own.splice(k, 1); }); });
