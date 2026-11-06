@@ -6498,12 +6498,15 @@ document.addEventListener('click', function(e){
     if(!sub || !window.__byzypDb) return;
     var tz = ''; try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){}
     var mods = null; try{ var pf = JSON.parse(localStorage.getItem('zyp_prefs_v1')||'null'); if(pf && pf.mods) mods = pf.mods; }catch(e){}
-    var txt = JSON.stringify(sub) + '|' + tz + '|' + JSON.stringify(mods); if(txt === lastSaved) return;
-    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: JSON.parse(JSON.stringify(sub)), tz: tz, mods: mods, at: new Date().toISOString() });
+    var obj = JSON.parse(JSON.stringify(sub)), ep = window.__ethPos;
+    if(ep && ep.qty > 0 && ep.invested > 0) obj.eth = { invested: ep.invested, qty: ep.qty, entry: ep.entry, date: ep.date };
+    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods); if(txt === lastSaved) return;
+    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, at: new Date().toISOString() });
       Promise.resolve(pr).then(function(){ lastSaved = txt; cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){}); }catch(e){}
   }
   window.__syncPush = function(){ if(!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
     navigator.serviceWorker.ready.then(function(r){ return r.pushManager.getSubscription(); }).then(saveSub).catch(function(){}); };
+  setTimeout(function(){ try{ window.__syncPush(); }catch(e){} }, 15000); setInterval(function(){ try{ window.__syncPush(); }catch(e){} }, 90000);
   function showSub(sub){
     if(!sub) return;
     ta.value = JSON.stringify(sub);
