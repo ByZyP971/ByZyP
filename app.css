@@ -1486,6 +1486,18 @@
 
 /* raport + țintă */
 .wk-rep{ font-size:12.5px; line-height:1.55; background:linear-gradient(135deg, rgba(212,175,90,.12), transparent); border:1px solid rgba(212,175,90,.28); border-radius:14px; padding:10px 12px; margin:10px 0 4px; }
-.wk-rep b:first-child{ display:block; margin-bottom:3px; font-size:13px; }
+.wk-rep > b:first-child{ display:block; margin-bottom:3px; font-size:13px; }
 .wk-rep i{ font-style:normal; font-weight:800; color:var(--text-dim); } .wk-rep i.up{ color:#4ade80; } .wk-rep i.dn{ color:#f87171; }
 .kg-sug{ flex-basis:100%; font-size:12px; color:var(--text); background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.25); border-radius:10px; padding:7px 10px; margin-top:4px; }
+
+/* nivel următor + test de plasare */
+.wk-up{ font-size:12.5px; line-height:1.5; background:linear-gradient(135deg, rgba(74,222,128,.14), transparent); border:1px solid rgba(74,222,128,.4); border-radius:14px; padding:10px 12px; margin:8px 0 4px; }
+.wk-up > b{ display:block; font-size:13px; margin-bottom:3px; }
+.z-place{ position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.78); display:flex; align-items:flex-end; justify-content:center; }
+.zp-box{ width:100%; max-width:520px; background:#101410; border:1px solid #2b3a22; border-radius:22px 22px 0 0; padding:20px 18px calc(22px + env(safe-area-inset-bottom)); }
+.zp-box h3{ font-size:19px; margin:4px 0 12px; }
+.zp-n{ font-size:11px; font-weight:800; color:#A3FF12; letter-spacing:1px; text-transform:uppercase; }
+.zp-s{ font-size:13px; color:var(--text-dim); line-height:1.5; margin:6px 0 12px; }
+.zp-opt{ display:block; width:100%; text-align:left; font:inherit; font-weight:700; color:var(--text); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:13px 14px; margin-bottom:8px; cursor:pointer; }
+.zp-opt.zp-go{ background:#A3FF12; color:#0a0a0a; border-color:#A3FF12; text-align:center; }
+.zp-x{ display:block; margin:6px auto 0; background:none; border:none; color:var(--text-dim); font:inherit; font-size:13px; cursor:pointer; }

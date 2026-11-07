@@ -856,6 +856,103 @@
       'Hiperextensii culcat (superman)|Ridică brațele și picioarele, ține 2 secunde'],
   };
   Object.keys(POOL2).forEach(function(k){ POOL[k] = POOL[k].concat(POOL2[k]); });
+  // ===== Acasă cu gantere: 8 trepte pe fiecare mișcare, de la cel mai ușor la cel mai greu =====
+  var HOME = {
+    hchest:['Flotări pe genunchi|Genunchii pe podea, corp drept de la genunchi la cap, coboară pieptul aproape de podea',
+      'Flotări clasice|Corp drept ca o scândură, coboară controlat, coatele la 45° de corp',
+      'Împins culcat cu gantere, pe podea|Culcat pe spate, coatele ating ușor podeaua, apoi împingi sus',
+      'Flotări cu mâinile apropiate|Mâinile sub piept, coatele aproape de corp',
+      'Împins cu gantere, cu picioarele ridicate|Culcat pe podea, genunchii îndoiți în aer, împinge ganterele sus',
+      'Flotări cu picioarele pe scaun|Picioarele sus, accent pe pieptul de sus',
+      'Împins alternativ cu o ganteră, pe podea|Pe rând, cu cealaltă mână sus, abdomenul strâns',
+      'Flotări cu pauză jos|Ține 2 secunde jos, apoi urcă exploziv'],
+    hshoul:['Împins umeri cu gantere ușoare, din genunchi|Pe genunchi, abdomenul strâns, împinge ganterele deasupra capului',
+      'Împins umeri cu gantere, așezat|Spatele drept, ganterele de la urechi în sus, fără să arcuiești spatele',
+      'Împins umeri cu gantere, în picioare|Picioarele depărtate cât umerii, fesierii strânși',
+      'Împins umeri alternativ, din genunchi|Pe rând, cealaltă ganteră rămâne la umăr',
+      'Împins umeri cu o ganteră, din genunchi|O mână, corpul stabil, nu te apleca',
+      'Arnold press cu gantere|Începi cu palmele spre tine și le rotești în timp ce împingi',
+      'Împins umeri cu gantere, coborâre lentă|Coboară în 3 secunde, urcă puternic',
+      'Împins umeri într-un picior, cu gantere|Echilibru pe un picior, abdomenul strâns'],
+    hlat:['Ridicări laterale ușoare, din genunchi|Brațele ușor îndoite, ridici până la nivelul umerilor',
+      'Ridicări frontale cu gantere, din genunchi|Ridici ganterele în față până la nivelul umerilor, fără să te legeni',
+      'Ridicări laterale cu gantere, în picioare|Coatele conduc mișcarea, fără să ridici umerii spre urechi',
+      'Ridicări frontale alternative, din genunchi|Pe rând, controlat, fără balans',
+      'Ridicări laterale, coborâre lentă|Urcă în 1 secundă, coboară în 3',
+      'Ridicări frontale cu pauză sus|Ține 2 secunde sus',
+      'Ridicări laterale și frontale combinate|Câte una de fiecare, fără pauză între ele',
+      'Ridicări laterale cu pauză 2 s|Ține 2 secunde sus, simți umărul arzând'],
+    htri:['Extensii triceps peste cap, o ganteră, din genunchi|Coatele spre tavan, coboară ganterea în spatele capului și întinde brațele',
+      'Extensii deasupra capului cu o mână|Cotul sus și fix, doar antebrațul se mișcă',
+      'Flotări pe bancă (triceps), pe scaun|Mâinile pe scaun, coboară fundul, coatele înapoi',
+      'Extensii triceps peste cap, două mâini, așezat|O ganteră ținută în ambele mâini, coatele aproape de cap',
+      'Kickback triceps cu gantere|Aplecat, cotul fix lângă corp, întinde brațul înapoi',
+      'Extensii peste cap, coborâre lentă|Coboară în 3 secunde, urcă controlat',
+      'Flotări cu mâinile apropiate, pentru triceps|Coatele rămân lipite de corp',
+      'Extensii peste cap, o mână, cu pauză|Ține 2 secunde jos, mușchiul lucrează întins'],
+    hbic:['Flexii biceps cu gantere, din genunchi|Coatele lipite de corp, urci fără să te legeni',
+      'Flexii ciocan (hammer) din genunchi|Palmele se privesc, coatele fixe',
+      'Flexii biceps alternative, în picioare|Pe rând, cu răsucirea încheieturii sus',
+      'Flexii concentrate, așezat|Cotul sprijinit pe interiorul genunchiului, mișcare lentă',
+      'Flexii ciocan, coborâre lentă|Urcă în 1 secundă, coboară în 3',
+      'Flexii biceps cu pauză la jumătate|Ține 2 secunde la 90°',
+      'Flexii spider cu gantere|Pieptul sprijinit pe un scaun, brațele atârnă drept în jos',
+      'Flexii biceps 21 (7+7+7)|7 repetări jos, 7 sus, 7 complete, fără pauză'],
+    hrow:['Ramat cu o ganteră, sprijinit pe genunchi și mână|Spatele drept, tragi cotul spre șold, strângi omoplatul',
+      'Ramat cu două gantere, aplecat|Genunchii ușor îndoiți, spatele drept, tragi spre buric',
+      'Ramat cu o ganteră, sprijinit pe scaun|Mână și genunchi pe scaun, spatele paralel cu podeaua',
+      'Ramat din patru labe, alternativ|Pe rând, șoldurile nu se rotesc',
+      'Ramat cu pauză sus|Ține 2 secunde cu omoplații strânși',
+      'Ramat cu două gantere, coborâre lentă|Coboară în 3 secunde, urcă controlat',
+      'Ramat cu o ganteră, picior ridicat|Echilibru pe un picior, spate drept',
+      'Ramat în plank, alternativ|În poziție de flotare, tragi o ganteră fără să rotești șoldurile'],
+    hquad:['Genuflexiuni cu greutatea corpului|Picioarele cât umerii, șezi înapoi ca pe un scaun, genunchii urmează vârfurile',
+      'Genuflexiuni goblet cu o ganteră|Ganterea la piept, coboară adânc, pieptul sus',
+      'Fandări înapoi cu gantere|Un pas lung înapoi, genunchiul aproape de podea',
+      'Genuflexiuni cu pauză jos|Ține 2 secunde jos, apoi urcă puternic',
+      'Fandări bulgare cu gantere|Piciorul din spate pe scaun, coboară drept în jos',
+      'Genuflexiuni goblet, coborâre lentă|Coboară în 3 secunde',
+      'Step-up cu gantere pe scaun|Urci cu un picior, fără să te împingi din cel de jos',
+      'Genuflexiuni pe un picior, asistat|Ține-te de ceva dacă ai nevoie, coboară controlat'],
+    hhip:['Pod pentru fesieri|Culcat pe spate, ridici șoldurile și strângi fesierii sus 2 secunde',
+      'Îndreptări românești cu gantere|Spatele drept, ganterele alunecă pe coapse, șoldurile înapoi',
+      'Hip thrust cu ganteră, pe scaun|Spatele sprijinit pe scaun, ganterea pe șolduri, ridici și strângi',
+      'Îndreptări cu gantere, coborâre lentă|Coboară în 3 secunde, simți spatele coapsei',
+      'Pod pentru fesieri, un picior|Un picior în aer, șoldurile rămân drepte',
+      'Îndreptări pe un picior cu o ganteră|Echilibru, spate drept, piciorul din spate la orizontală',
+      'Hip thrust cu pauză sus|Ține 3 secunde sus, strângi tare',
+      'Îndreptări pe un picior, coborâre lentă|Controlat, fără să te dezechilibrezi'],
+    hcalf:['Ridicări pe vârfuri, la podea|Pe vârfuri sus, ține 1 secundă, coboară lent',
+      'Ridicări pe vârfuri cu gantere|Ganterele pe lângă corp, urcă cât poți de sus',
+      'Ridicări pe vârfuri, pe treaptă|Călcâiele în gol pe marginea treptei, coboară adânc',
+      'Ridicări pe vârfuri, un picior|Pe rând, ține-te de perete',
+      'Ridicări pe vârfuri cu pauză|Ține 2 secunde sus',
+      'Ridicări pe vârfuri, coborâre lentă|Coboară în 3 secunde',
+      'Ridicări pe vârfuri, un picior, cu ganteră|Ganteră într-o mână, cealaltă la perete',
+      'Ridicări pe vârfuri, serie lungă|Până simți arsura în gambe'],
+    hcore:['Plank pe genunchi|Antebrațe pe podea, corp drept de la genunchi la cap|',
+      'Plank clasic|Corp drept, abdomen și fesieri strânși, nu lăsa șoldurile jos',
+      'Crunch clasic|Bărbia departe de piept, ridici doar umerii',
+      'Plank cu atingere de umăr|Atingi alternativ umărul, fără să rotești șoldurile',
+      'Crunch cu picioarele ridicate|Genunchii în aer, ridici bazinul puțin',
+      'Plank lateral|Pe un antebraț, corp drept, ține 20–40 s pe fiecare parte',
+      'Hollow hold|Culcat, brațele și picioarele ridicate, spatele jos lipit de podea',
+      'Plank cu ridicarea unui picior|Ridici alternativ un picior, șoldurile stau drepte']
+  };
+  HOME.hcore[0] = HOME.hcore[0].replace(/\|$/, '');
+  var HOMEENP = {
+    hchest:['knee push up form','push up form','dumbbell floor press form','close grip push up form','dumbbell floor press feet up form','feet elevated push up form','alternating dumbbell floor press form','paused push up form'],
+    hshoul:['kneeling dumbbell shoulder press form','seated dumbbell shoulder press form','standing dumbbell shoulder press form','alternating kneeling dumbbell shoulder press','single arm kneeling dumbbell shoulder press','arnold press form','slow negative dumbbell shoulder press','single leg dumbbell shoulder press'],
+    hlat:['kneeling dumbbell lateral raise form','kneeling dumbbell front raise form','standing dumbbell lateral raise form','alternating dumbbell front raise form','slow negative lateral raise form','paused front raise form','lateral raise to front raise combo','paused lateral raise form'],
+    htri:['kneeling overhead dumbbell triceps extension form','single arm overhead triceps extension form','bench dips on chair form','seated overhead dumbbell triceps extension form','dumbbell triceps kickback form','slow negative overhead triceps extension','diamond push up form','single arm overhead triceps extension pause'],
+    hbic:['kneeling dumbbell bicep curl form','kneeling hammer curl form','alternating dumbbell curl form','concentration curl form','slow negative hammer curl','dumbbell curl half rep pause','spider curl dumbbell form','dumbbell curl 21s form'],
+    hrow:['kneeling single arm dumbbell row form','bent over dumbbell row form','single arm dumbbell row on chair form','quadruped alternating dumbbell row form','dumbbell row with pause form','slow negative dumbbell row','single arm row leg raised form','renegade row form'],
+    hquad:['bodyweight squat form','goblet squat form','dumbbell reverse lunge form','paused squat form','dumbbell bulgarian split squat form','slow tempo goblet squat form','dumbbell step up form','assisted single leg squat form'],
+    hhip:['glute bridge form','dumbbell romanian deadlift form','dumbbell hip thrust on chair form','slow tempo romanian deadlift dumbbell','single leg glute bridge form','single leg dumbbell romanian deadlift form','paused hip thrust form','slow single leg romanian deadlift form'],
+    hcalf:['bodyweight calf raise form','dumbbell calf raise form','step calf raise form','single leg calf raise form','paused calf raise form','slow tempo calf raise form','single leg dumbbell calf raise form','high rep calf raise form'],
+    hcore:['knee plank form','plank form','crunch form','plank shoulder tap form','legs raised crunch form','side plank form','hollow body hold form','plank leg lift form']
+  };
+  Object.keys(HOME).forEach(function(k){ POOL[k] = HOME[k]; ENP[k] = HOMEENP[k]; });
   var ENP2 = {
     benchP:['smith machine bench press form','slow tempo dumbbell bench press','single arm machine chest press','wide grip bench press form'],
     inclP:['smith machine incline press form','slow tempo incline dumbbell press','wide grip incline barbell bench press','single arm incline dumbbell press'],
@@ -910,10 +1007,11 @@
     var wv = ((week - 1) % 4 + 4) % 4, ex = [];
     d.slots.forEach(function(s){
       var vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8;
+      if(plan.home){ var hb = (sp.level === 'easy' ? 0 : sp.level === 'hard' ? 4 : 2); vi = hb + ((week - 1 + (d.off || 0) + (s[4] || 0)) % 4); }
       var HARD = /haltera|T-bar|Pendlay|Arnold|21 \(|Good morning|Deadlift|hexagonală|un picior|bulgăr|mergând|laterale, sprijinit|elastic|cross-body|dinamic|rotație|atârnat|frontale|goblet|split|stiff|între glezne|disc|la bară|alternative|o mână|un braț|pe rând|aplecat|pauză|coborâre lentă|serie lungă|parțiale|stâlp|înclinată \(|Hollow|superman|Plank cu|priză inversă|vârfurile|Pullover cu|cu picioarele ridicate/i;
       var lvl = sp.level || 'mid';
-      if(lvl !== 'hard'){ for(var tr = 0; tr < 8 && HARD.test(POOL[s[0]][vi].split('|')[0]); tr++) vi = (vi + 1) % 8;
-      if(HARD.test(POOL[s[0]][vi].split('|')[0])) vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8; }
+      if(!plan.home && lvl !== 'hard'){ for(var tr = 0; tr < 8 && HARD.test(POOL[s[0]][vi].split('|')[0]); tr++) vi = (vi + 1) % 8;
+      if(!plan.home && HARD.test(POOL[s[0]][vi].split('|')[0])) vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8; }
       var p = POOL[s[0]][vi].split('|');
       var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
       var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
@@ -930,18 +1028,25 @@
     for(var i=0;i<7;i++){ var dd = di ? days[di.indexOf(i)] : days[i]; out.push(dd ? [dd.code, '💪'] : ['rest', '😴']); }
     return out;
   }
-  var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2), 3:buildWEEK(3), 4:buildWEEK(4), 5:buildWEEK(5) };
+  PLANS[6] = { label:'4 zile · Acasă cu gantere', home:true, dayIdx:[0,1,3,4], days:[
+    { code:'h1', name:'Acasă · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['hchest','c',3,'10–12',0],['hshoul','c',3,'10–12',0],['hlat','i',3,'12–15',0],['htri','i',3,'12–15',0],['hcore','t',2,'30–40 s',0]] },
+    { code:'h2', name:'Acasă · Spate, Biceps', focus:'Spate și biceps', img:'', off:1, slots:[['hrow','c',3,'10–12',0],['hrow','c',3,'10–12',2],['hbic','i',3,'12–15',0],['hbic','i',3,'12–15',2],['hcore','i',3,'12–20',2]] },
+    { code:'h3', name:'Acasă · Picioare, Fesieri', focus:'Picioare și fesieri', img:'', off:2, slots:[['hquad','c',3,'10–12',0],['hquad','c',3,'10–12',2],['hhip','c',3,'10–12',0],['hhip','c',3,'10–12',2],['hcalf','i',3,'15–20',0]] },
+    { code:'h4', name:'Acasă · Tot corpul', focus:'Tot corpul', img:'', off:3, slots:[['hchest','c',3,'10–12',2],['hrow','c',3,'10–12',1],['hshoul','c',3,'10–12',2],['hquad','c',3,'10–12',1],['hhip','c',3,'10–12',1],['hcore','t',2,'30–40 s',2]] }
+  ], rest:[2,5,6] };
+  var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2), 3:buildWEEK(3), 4:buildWEEK(4), 5:buildWEEK(5), 6:buildWEEK(6) };
   var WEEK_INFO = { rest:['Odihnă','Corpul crește în zilele de pauză. Somn bun, proteine, plimbare ușoară dacă vrei.'] };
   var PHASE_HINT = { 1:'Program clasic Push / Pull / Legs: Luni Push (piept, umeri, triceps), Marți Pull (spate, biceps), Miercuri Picioare, Joi Upper (sus), Vineri Lower (jos + lombar). Weekend odihnă.',
     2:'Push / Pull / Legs de două ori pe săptămână, cel mai cunoscut program din culturism: Luni Push, Marți Pull, Miercuri Picioare, Joi Push, Vineri Pull, Sâmbătă Picioare. Duminică odihnă.',
     3:'Tot corpul de 3 ori pe săptămână (Luni, Miercuri, Vineri): cel mai simplu program pentru început. Faci puțin din fiecare grupă, cu zile de odihnă între antrenamente.',
     4:'Upper / Lower de 4 ori pe săptămână: Luni Upper (partea de sus), Marți Lower (picioare), Joi Upper, Vineri Lower. Fiecare grupă o lucrezi de două ori pe săptămână, cu 2–3 zile libere. Echilibrul perfect dacă ai timp de 4 zile.',
+    6:'Acasă, doar cu două gantere și o podea: Luni Piept + Umeri + Triceps, Marți Spate + Biceps, Joi Picioare + Fesieri, Vineri Tot corpul. Exercițiile cresc treptat, de la ușor la greu, odată cu tine.',
     5:'Tot corpul de 2 ori pe săptămână (Luni și Joi): pentru când ai puțin timp sau reîncepi după o pauză. Două antrenamente complete, fiecare cu exerciții mari pentru tot corpul.' };
   var dayShortS = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
   var SP_KEY = 'byzyp_sport_v1';
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
   function spSave(){ try{ localStorage.setItem(SP_KEY, JSON.stringify(sp)); }catch(e){} }
-  sp.phase = ([2,3,4,5].indexOf(sp.phase) >= 0 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
+  sp.phase = ([2,3,4,5,6].indexOf(sp.phase) >= 0 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
   function mondayOf(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
   function mKey(d){ return dateKey(d); }
   var thisMon = mondayOf(new Date());
@@ -1022,7 +1127,7 @@
     document.getElementById('phaseHint').textContent = ph;
     document.querySelectorAll('#phasePills .day-pill').forEach(function(p){ p.classList.toggle('active', +p.getAttribute('data-phase') === sp.phase); });
     document.querySelectorAll('#lvlPills .day-pill').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-lvl') === sp.level); });
-    var lh = document.getElementById('lvlHint'); if(lh) lh.textContent = sp.level === 'easy' ? 'Ușor: mai puține serii, doar exerciții simple la mașini.' : sp.level === 'hard' ? 'Greu: mai multe serii și exerciții mai avansate, cu haltera și gantere.' : 'Mediu: 3 serii, exerciții simple și eficiente.';
+    var lh = document.getElementById('lvlHint'); if(lh) lh.textContent = sp.level === 'easy' ? 'Ușor: mai puține serii, doar exerciții simple la mașini.' : sp.level === 'hard' ? 'Greu: mai multe serii și exerciții mai avansate, cu haltera și gantere.' : 'Mediu: 3 serii, exerciții simple și eficiente.'; if(sp.phase === 6) lh.textContent = sp.level === 'easy' ? 'Ușor: începi cu flotări pe genunchi, pod pentru fesieri, plank pe genunchi.' : sp.level === 'hard' ? 'Greu: flotări cu picioarele sus, fandări bulgare, mișcări pe un picior, coborâre lentă.' : 'Mediu: flotări clasice, goblet squat, ramat cu pauză, mai multe variante.';
   }
   document.querySelectorAll('#lvlPills .day-pill').forEach(function(p){
     p.addEventListener('click', function(){ sp.level = p.getAttribute('data-lvl'); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
@@ -1057,6 +1162,48 @@
   function weekCard(){ var a = wkStats(0), b = wkStats(-1); if(!b.s && !a.s) return '';
     function dl(x, y){ var d = x - y; return d > 0 ? ' <i class="up">▲ +' + d + '</i>' : d < 0 ? ' <i class="dn">▼ ' + d + '</i>' : ' <i>=</i>'; }
     return '<div class="wk-rep"><b>📊 Raportul tău</b><div>Săptămâna trecută: <b>' + b.w + '</b> antrenamente · <b>' + b.s + '</b> serii</div><div>Săptămâna asta: <b>' + a.w + '</b> antrenamente' + dl(a.w, b.w) + ' · <b>' + a.s + '</b> serii' + dl(a.s, b.s) + '</div>' + (a.rec ? '<div>🏆 Recorduri noi: <b>' + a.rec + '</b></div>' : '') + '</div>'; }
+  function plannedSets(){ var t = 0; Object.keys(WO).forEach(function(c){ WO[c].ex.forEach(function(e){ t += e[1]; }); }); return t; }
+  var LV_NEXT = { easy:'mid', mid:'hard' }, LV_NAME = { easy:'Ușor', mid:'Mediu', hard:'Greu' };
+  function lvlCard(){
+    var pl = plannedSets(); if(!pl || progWeek() < 3) return '';
+    var a = wkStats(-1).s, b = wkStats(-2).s, since = sp.lvlAt ? weeksBetween(sp.lvlAt, new Date()) : 99;
+    var ok = a >= pl * 0.8 && b >= pl * 0.8 && since >= 2;
+    if(!ok) return '';
+    if(!LV_NEXT[sp.level]) return '<div class="wk-up"><b>🏆 Ești la nivelul maxim</b><div>Două săptămâni la rând ai terminat aproape toate seriile. Continuă să crești greutățile.</div></div>';
+    return '<div class="wk-up"><b>🚀 Ești pregătit de nivelul următor</b><div>Ultimele 2 săptămâni ai terminat aproape toate seriile. Treci de la <b>' + LV_NAME[sp.level] + '</b> la <b>' + LV_NAME[LV_NEXT[sp.level]] + '</b>: exerciții mai grele și mai multe serii.</div><button class="yt-btn" data-lvlup="1" style="margin-top:8px;width:100%">Da, urcă-mă la ' + LV_NAME[LV_NEXT[sp.level]] + '</button></div>';
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('[data-lvlup]'); if(!b || !LV_NEXT[sp.level]) return;
+    sp.level = LV_NEXT[sp.level]; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles();
+  });
+  // test scurt: aplicația alege de unde începi
+  window.zPlace = function(done, opt){
+    var apply = !(opt && opt.apply === false), ans = [], Q = [
+      ['Unde antrenezi?', ['La sală', 'Acasă, cu gantere']],
+      ['Cât timp ai antrenat până acum?', ['Niciodată', 'Sub 6 luni', '6 luni – 2 ani', 'Peste 2 ani']],
+      ['Câte flotări faci la rând?', ['Maxim 5', '6–15', '16–30', 'Peste 30']],
+      ['Câte zile pe săptămână poți antrena?', ['2 zile', '3 zile', '4 zile', '5–6 zile']]];
+    var ov = document.createElement('div'); ov.className = 'z-place'; document.body.appendChild(ov);
+    function close(){ ov.remove(); }
+    function draw(){
+      var i = ans.length;
+      if(i < Q.length){ ov.innerHTML = '<div class="zp-box"><div class="zp-n">Întrebarea ' + (i+1) + ' din ' + Q.length + '</div><h3>' + Q[i][0] + '</h3>' + Q[i][1].map(function(t, k){ return '<button class="zp-opt" data-k="' + k + '">' + t + '</button>'; }).join('') + '<button class="zp-x">Închide</button></div>';
+        ov.querySelectorAll('.zp-opt').forEach(function(b){ b.addEventListener('click', function(){ ans.push(+b.getAttribute('data-k')); draw(); }); });
+        ov.querySelector('.zp-x').addEventListener('click', close); return; }
+      var pts = ans[1] + ans[2], level = pts <= 1 ? 'easy' : pts <= 4 ? 'mid' : 'hard', days = [2,3,4,5][ans[3]];
+      if(level === 'easy' && days > 4) days = 4;
+      var phase = ans[0] === 1 ? 6 : days === 2 ? 5 : days === 3 ? 3 : days === 4 ? 4 : 1;
+      var label = PLANS[phase].label;
+      ov.innerHTML = '<div class="zp-box"><div class="zp-n">Planul tău de start</div><h3>' + label + '</h3><p>Nivel: <b>' + LV_NAME[level] + '</b></p><p class="zp-s">' + (level === 'easy' ? 'Pornești ușor, ca să înveți mișcările corect.' : level === 'mid' ? 'Ai deja baza, mergem pe un ritm serios.' : 'Ai experiență, începi direct cu exerciții avansate.') + ' Crești odată cu aplicația: după 2 săptămâni în care termini aproape toate seriile, îți propun nivelul următor.</p><button class="zp-opt zp-go">Începe așa</button><button class="zp-x">Refă testul</button></div>';
+      ov.querySelector('.zp-go').addEventListener('click', function(){
+        close();
+        if(apply){ sp.phase = phase; sp.level = level; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); }
+        if(done) done({ phase: phase, level: level }); });
+      ov.querySelector('.zp-x').addEventListener('click', function(){ ans = []; draw(); });
+    }
+    draw();
+  };
+  var pbtn = document.getElementById('placeBtn'); if(pbtn) pbtn.addEventListener('click', function(){ window.zPlace(); });
   function kgInfo(n){ var L = (sp.klog && sp.klog[n]) || [], td = todayKey, last = null, best = 0;
     L.forEach(function(x){ if(x.kg > best) best = x.kg; if(x.d !== td) last = x; });
     var cur = L.filter(function(x){ return x.d === td; })[0];
@@ -1073,7 +1220,7 @@
     var pw = progWeek(), wv = (pw - 1) % 4;
     var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + WAVE[wv][0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
-      weekCard() +
+      weekCard() + lvlCard() +
       '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     var nowEi = -1;
