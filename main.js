@@ -1039,13 +1039,31 @@
     pills.querySelectorAll('.day-pill').forEach(function(b){ b.addEventListener('click', function(){ curWo = b.getAttribute('data-wo'); renderWo(); }); });
   }
   var woOpen = {};
+  function wkRange(off){ var m = new Date(thisMon); m.setDate(m.getDate() + 7*off); var e = new Date(m); e.setDate(e.getDate() + 6); return [mKey(m), mKey(e)]; }
+  function wkStats(off){ var r = wkRange(off), days = {}, sets = 0;
+    Object.keys(sp.sets || {}).forEach(function(k){ var d = k.split('|')[0]; if(d < r[0] || d > r[1]) return; var n = 0, o = sp.sets[k] || {}; Object.keys(o).forEach(function(x){ if(o[x]) n++; }); if(n){ sets += n; days[d] = 1; } });
+    var kgs = 0, recs = 0; Object.keys(sp.klog || {}).forEach(function(n){ var L = sp.klog[n] || [], pm = 0; L.forEach(function(x){ if(x.d >= r[0] && x.d <= r[1]){ kgs++; if(pm > 0 && x.kg > pm) recs++; } if(x.d < r[0] && x.kg > pm) pm = x.kg; }); });
+    return { w: Object.keys(days).length, s: sets, kg: kgs, rec: recs, from: r[0] }; }
+  window.__zWeek = function(){ try{ var a = wkStats(0), b = wkStats(-1); var last = ''; Object.keys(sp.sets || {}).forEach(function(k){ var d = k.split('|')[0], any = false; Object.keys(sp.sets[k] || {}).forEach(function(x){ if(sp.sets[k][x]) any = true; }); if(any && d > last) last = d; }); return { cur: a, prev: b, last: last }; }catch(e){ return null; } };
+  function exDone(d, name){ // were all sets of this exercise ticked on that day? (null = unknown)
+    var res = null;
+    Object.keys(sp.sets || {}).forEach(function(k){ if(k.split('|')[0] !== d) return; var code = k.split('|')[1], w = WO && WO[code]; if(!w) return;
+      w.ex.forEach(function(e, ei){ if(e[0] !== name) return; var n = 0; for(var q=0;q<e[1];q++){ if(sp.sets[k][ei + '-' + q]) n++; } res = (n >= e[1]); }); });
+    return res; }
+  function kgSug(n, i){ if(!i.last) return '';
+    var ok = exDone(i.last.d, n), k = i.last.kg, up = k >= 20 ? 2.5 : 1, lw = wkRange(-1), when = (i.last.d >= lw[0] && i.last.d <= lw[1]) ? 'Săptămâna trecută' : 'Data trecută';
+    var tgt = Math.round((k + up) * 2) / 2;
+    return '<div class="kg-sug">🎯 ' + when + ': <b>' + k + ' kg</b> → ' + (ok === false ? 'azi repetă <b>' + k + ' kg</b> și închide toate seriile' : 'azi încearcă <b>' + tgt + ' kg</b>') + '</div>'; }
+  function weekCard(){ var a = wkStats(0), b = wkStats(-1); if(!b.s && !a.s) return '';
+    function dl(x, y){ var d = x - y; return d > 0 ? ' <i class="up">▲ +' + d + '</i>' : d < 0 ? ' <i class="dn">▼ ' + d + '</i>' : ' <i>=</i>'; }
+    return '<div class="wk-rep"><b>📊 Raportul tău</b><div>Săptămâna trecută: <b>' + b.w + '</b> antrenamente · <b>' + b.s + '</b> serii</div><div>Săptămâna asta: <b>' + a.w + '</b> antrenamente' + dl(a.w, b.w) + ' · <b>' + a.s + '</b> serii' + dl(a.s, b.s) + '</div>' + (a.rec ? '<div>🏆 Recorduri noi: <b>' + a.rec + '</b></div>' : '') + '</div>'; }
   function kgInfo(n){ var L = (sp.klog && sp.klog[n]) || [], td = todayKey, last = null, best = 0;
     L.forEach(function(x){ if(x.kg > best) best = x.kg; if(x.d !== td) last = x; });
     var cur = L.filter(function(x){ return x.d === td; })[0];
     return { cur: cur ? cur.kg : (last ? last.kg : ''), last: last, best: best }; }
   function kgRow(n){ var i = kgInfo(n), t = '';
     if(i.last) t += 'Ultima dată: <b>' + i.last.kg + ' kg</b>'; if(i.best) t += (t ? ' · ' : '') + 'Record: <b>' + i.best + ' kg</b>';
-    return '<div class="kg-row"><label>Greutate</label><input class="kg-in" type="number" inputmode="decimal" step="0.5" min="0" max="500" placeholder="kg" value="' + i.cur + '" data-n="' + String(n).replace(/"/g,'&quot;') + '"><span class="kg-t">' + (t || 'Notează greutatea și îți arăt progresul.') + '</span></div>'; }
+    return '<div class="kg-row"><label>Greutate</label><input class="kg-in" type="number" inputmode="decimal" step="0.5" min="0" max="500" placeholder="kg" value="' + i.cur + '" data-n="' + String(n).replace(/"/g,'&quot;') + '"><span class="kg-t">' + (t || 'Notează greutatea și îți arăt progresul.') + '</span></div>' + kgSug(n, i); }
   function renderWo(){
     renderWoPills();
     var w = WO[curWo], key = todayKey + '|' + curWo;
@@ -1055,6 +1073,7 @@
     var pw = progWeek(), wv = (pw - 1) % 4;
     var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + WAVE[wv][0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
+      weekCard() +
       '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     var nowEi = -1;

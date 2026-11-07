@@ -16,8 +16,10 @@
     var mods = null; try{ var pf = JSON.parse(localStorage.getItem('zyp_prefs_v1')||'null'); if(pf && pf.mods) mods = pf.mods; }catch(e){}
     var obj = JSON.parse(JSON.stringify(sub)), ep = window.__ethPos;
     if(ep && ep.qty > 0 && ep.invested > 0) obj.eth = { invested: ep.invested, qty: ep.qty, entry: ep.entry, date: ep.date };
-    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods); if(txt === lastSaved) return;
-    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, at: new Date().toISOString() });
+    var stats = null; try{ var wk = window.__zWeek && window.__zWeek(), zs = window.__zStats && window.__zStats();
+      if(wk) stats = { w: wk.cur.w, s: wk.cur.s, pw: wk.prev.w, ps: wk.prev.s, rec: wk.cur.rec, la: wk.last || '', st: zs ? (zs.streak|0) : 0, sc: zs ? (zs.score|0) : 0 }; }catch(e){}
+    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods) + '|' + JSON.stringify(stats); if(txt === lastSaved) return;
+    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, stats: stats, at: new Date().toISOString() });
       Promise.resolve(pr).then(function(){ lastSaved = txt; cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){}); }catch(e){}
   }
   window.__syncPush = function(){ if(!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;

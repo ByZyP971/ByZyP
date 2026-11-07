@@ -289,6 +289,34 @@ if (KEY) {
     if (on('food') && U.hm >= 13 * 60 && U.hm < 13 * 60 + 40) todo.push(['food', up(UFOOD)]);
     if (U.hm >= 14 * 60 + 30 && U.hm < 14 * 60 + 70) todo.push(['joke', [up(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei'], 1), up(FUNU)]]);
     if (on('supp')) for (const q of USUPP) if (U.hm >= q.h - 15 && U.hm < q.h + 50) todo.push(['s-' + q.k, [up(q.t), up(q.b, 1)]]);
+    // ---- personalized by THIS account's own results (stats saved by the phone) ----
+    const S = u.stats && typeof u.stats === 'object' ? u.stats : null;
+    if (S && on('sport')) {
+      const num = (x) => Math.max(0, Math.min(9999, +x || 0));
+      const mon = new Date(Date.parse(U.date + 'T00:00:00Z') - ((['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(U.wd)) * 86400000)).toISOString().slice(0, 10);
+      const stale = !String(u.at || '').slice(0, 10) || String(u.at).slice(0, 10) < mon;   // phone not opened this week -> this week counts as 0
+      const w = stale ? 0 : num(S.w), s2 = stale ? 0 : num(S.s), pw = stale ? num(S.w) : num(S.pw), ps = stale ? num(S.s) : num(S.ps);
+      const rec = stale ? 0 : num(S.rec), st = num(S.st);
+      const la = /^\d{4}-\d\d-\d\d$/.test(S.la || '') ? S.la : '';
+      const gap = la ? Math.round((dn - Math.floor(Date.parse(la + 'T00:00:00Z') / 86400000))) : 99;
+      if (U.wd === 'Sun' && U.hm >= 19 * 60 && U.hm < 19 * 60 + 40) {
+        let t, b;
+        if (w === 0 && pw === 0) { t = '📊 Raportul săptămânii'; b = 'Zero antrenamente săptămâna asta și zero și cea trecută. Luni începem cu stângul sau cu dreptul, dar începem!'; }
+        else if (w === 0) { t = '📊 Raportul tău: săptămână liberă?'; b = `Săptămâna trecută ai făcut ${pw} antrenamente (${ps} serii). Asta... nimic. Gantera a întrebat de tine. Luni revenim!`; }
+        else if (w > pw) { t = '📈 Raportul tău: ai crescut!'; b = `${w} antrenamente și ${s2} serii săptămâna asta, față de ${pw} și ${ps} cea trecută. Așa se face!` + (rec ? ` Plus ${rec} recorduri noi 🏆` : ''); }
+        else if (w === pw) { t = '📊 Raportul tău: constant'; b = `${w} antrenamente și ${s2} serii, la fel de serios ca săptămâna trecută (${ps} serii).` + (s2 > ps ? ' Ba chiar cu mai multe serii!' : ' Săptămâna viitoare încearcă o serie în plus la fiecare exercițiu.') + (rec ? ` Recorduri noi: ${rec} 🏆` : ''); }
+        else { t = '📊 Raportul tău: puțin sub ritm'; b = `${w} antrenamente săptămâna asta, față de ${pw} cea trecută. Nicio dramă, luni refacem ritmul.`; }
+        todo.push(['wk', [t, b]]);
+      }
+      const gi = todo.findIndex(x => x[0] === 'gym');
+      if (gi >= 0) {
+        if (la === U.date) todo.splice(gi, 1);                                   // already trained today: no nagging
+        else if (gap >= 7 && gap < 90) todo[gi] = ['gym', ['🦍 Unde ai dispărut?', `Au trecut ${gap} zile de la ultimul antrenament. Gantera s-a mutat în altă relație. Hai înapoi azi!`]];
+        else if (gap >= 3 && gap < 7) todo[gi] = ['gym', ['🏋️ Nu te-am mai văzut', `Ultimul antrenament: acum ${gap} zile. Mușchii au început să uite cine ești. Deschide planul de azi.`]];
+        else if (st >= 3) todo[gi] = ['gym', [`🔥 ${st} zile la rând!`, `Nu rupe seria acum. Planul de azi te așteaptă, durează cât o pauză de cafea.`]];
+        else if (pw > 0 && w < pw) todo[gi] = ['gym', ['💪 Hai să egalezi săptămâna trecută', `Ai ${w} antrenamente săptămâna asta față de ${pw} cea trecută. Azi mai bifezi unul?`]];
+      }
+    }
     for (const [k, [title, body]] of todo) {
       const key = `u-${id}-${U.date}-${k}`;
       if (sent[key]) continue;
