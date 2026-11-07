@@ -1028,6 +1028,12 @@
     for(var i=0;i<7;i++){ var dd = di ? days[di.indexOf(i)] : days[i]; out.push(dd ? [dd.code, '💪'] : ['rest', '😴']); }
     return out;
   }
+  // ===== sistem de niveluri: fiecare nivel deblochează programe =====
+  var LV_RANK = { easy:0, mid:1, hard:2 };
+  var PH_LV = { 5:'easy', 3:'easy', 6:'easy', 4:'mid', 1:'hard', 2:'hard' };   // nivelul minim pentru fiecare program
+  var LV_TXT = { easy:'Ușor', mid:'Mediu', hard:'Greu' }, LV_IC = { easy:'🟢', mid:'🟡', hard:'🔴' };
+  function phOpen(ph){ return !!sp.legacy || LV_RANK[sp.level || 'mid'] >= LV_RANK[PH_LV[ph]]; }
+  function phMaxDays(lv){ return lv === 'easy' ? 3 : lv === 'mid' ? 4 : 6; }
   PLANS[6] = { label:'4 zile · Acasă cu gantere', home:true, dayIdx:[0,1,3,4], days:[
     { code:'h1', name:'Acasă · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['hchest','c',3,'10–12',0],['hshoul','c',3,'10–12',0],['hlat','i',3,'12–15',0],['htri','i',3,'12–15',0],['hcore','t',2,'30–40 s',0]] },
     { code:'h2', name:'Acasă · Spate, Biceps', focus:'Spate și biceps', img:'', off:1, slots:[['hrow','c',3,'10–12',0],['hrow','c',3,'10–12',2],['hbic','i',3,'12–15',0],['hbic','i',3,'12–15',2],['hcore','i',3,'12–20',2]] },
@@ -1047,6 +1053,7 @@
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
   function spSave(){ try{ localStorage.setItem(SP_KEY, JSON.stringify(sp)); }catch(e){} }
   sp.phase = ([2,3,4,5,6].indexOf(sp.phase) >= 0 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
+  if(sp.phase && sp.level && !sp.legacy && !sp.placed){ var _lr = { easy:0, mid:1, hard:2 }, _pl = { 5:'easy', 3:'easy', 6:'easy', 4:'mid', 1:'hard', 2:'hard' }; if(_lr[sp.level] < _lr[_pl[sp.phase]]) sp.legacy = 1; }
   function mondayOf(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
   function mKey(d){ return dateKey(d); }
   var thisMon = mondayOf(new Date());
@@ -1127,13 +1134,31 @@
     document.getElementById('phaseHint').textContent = ph;
     document.querySelectorAll('#phasePills .day-pill').forEach(function(p){ p.classList.toggle('active', +p.getAttribute('data-phase') === sp.phase); });
     document.querySelectorAll('#lvlPills .day-pill').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-lvl') === sp.level); });
-    var lh = document.getElementById('lvlHint'); if(lh) lh.textContent = sp.level === 'easy' ? 'Ușor: mai puține serii, doar exerciții simple la mașini.' : sp.level === 'hard' ? 'Greu: mai multe serii și exerciții mai avansate, cu haltera și gantere.' : 'Mediu: 3 serii, exerciții simple și eficiente.'; if(sp.phase === 6) lh.textContent = sp.level === 'easy' ? 'Ușor: începi cu flotări pe genunchi, pod pentru fesieri, plank pe genunchi.' : sp.level === 'hard' ? 'Greu: flotări cu picioarele sus, fandări bulgare, mișcări pe un picior, coborâre lentă.' : 'Mediu: flotări clasice, goblet squat, ramat cu pauză, mai multe variante.';
+    var lh = document.getElementById('lvlHint'); if(lh) lh.textContent = sp.level === 'easy' ? 'Ușor: mai puține serii, doar exerciții simple la mașini.' : sp.level === 'hard' ? 'Greu: mai multe serii și exerciții mai avansate, cu haltera și gantere.' : 'Mediu: 3 serii, exerciții simple și eficiente.'; if(sp.phase === 6) lh.textContent = sp.level === 'easy' ? 'Ușor: începi cu flotări pe genunchi, pod pentru fesieri, plank pe genunchi.' : sp.level === 'hard' ? 'Greu: flotări cu picioarele sus, fandări bulgare, mișcări pe un picior, coborâre lentă.' : 'Mediu: flotări clasice, goblet squat, ramat cu pauză, mai multe variante.'; renderLvlGate();
   }
-  document.querySelectorAll('#lvlPills .day-pill').forEach(function(p){
-    p.addEventListener('click', function(){ sp.level = p.getAttribute('data-lvl'); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
-  });
+  function renderLvlGate(){
+    var lp = document.getElementById('lvlPills'); if(lp) lp.style.display = 'none';
+    var lt = document.querySelector('#lvlPills'); var tt = lt && lt.previousElementSibling; if(tt && tt.classList.contains('hint')) tt.style.display = 'none';
+    var lhh = document.getElementById('lvlHint'); if(lhh) lhh.style.display = 'none';
+    document.querySelectorAll('#phasePills .day-pill').forEach(function(p){
+      var ph = +p.getAttribute('data-phase'), open = phOpen(ph);
+      p.classList.toggle('locked', !open);
+      var base = p.getAttribute('data-t') || p.textContent.replace(/^🔒 /, ''); p.setAttribute('data-t', base);
+      p.textContent = (open ? '' : '🔒 ') + base;
+    });
+    var bd = document.getElementById('lvlBadge'); if(!bd) return;
+    var pl = plannedSets(), lvl = sp.level || 'mid', nxt = LV_NEXT[lvl], cur = wkStats(0).s, a = wkStats(-1).s, b = wkStats(-2).s;
+    var q = (pl && a >= pl*0.8 ? 1 : 0) + (pl && b >= pl*0.8 ? 1 : 0);
+    var locked = Object.keys(PH_LV).filter(function(k){ return !phOpen(+k); }).map(function(k){ return PLANS[k].label; });
+    bd.innerHTML = '<div class="lb-top"><span class="lb-ic">' + LV_IC[lvl] + '</span><div><b>Nivelul tău: ' + LV_TXT[lvl] + '</b><span>' + (nxt ? 'Spre ' + LV_TXT[nxt] + ': ' + q + '/2 săptămâni cu aproape toate seriile terminate' : 'Nivel maxim: ai toate programele deblocate') + '</span></div></div>' +
+      (nxt && pl ? '<div class="lb-bar"><i style="width:' + Math.min(100, Math.round(100 * Math.min(cur, pl) / pl)) + '%"></i></div><div class="lb-s">Săptămâna asta: ' + Math.min(cur, pl) + ' din ' + pl + ' serii</div>' : '') +
+      (locked.length ? '<div class="lb-s">🔒 Se deblochează: ' + locked.join(' · ') + '</div>' : '');
+  }
   document.querySelectorAll('#phasePills .day-pill').forEach(function(p){
-    p.addEventListener('click', function(){ sp.phase = +p.getAttribute('data-phase'); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
+    p.addEventListener('click', function(){
+      var ph = +p.getAttribute('data-phase');
+      if(!phOpen(ph)){ var h = document.getElementById('phaseHint'); if(h) h.textContent = '🔒 Acest program se deblochează la nivelul ' + LV_TXT[PH_LV[ph]] + '. Termină 2 săptămâni la rând cu aproape toate seriile bifate ca să urci de nivel.'; return; }
+      sp.phase = ph; spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
   });
 
   function renderWoPills(){
@@ -1174,7 +1199,7 @@
   }
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('[data-lvlup]'); if(!b || !LV_NEXT[sp.level]) return;
-    sp.level = LV_NEXT[sp.level]; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles();
+    sp.level = LV_NEXT[sp.level]; sp.lvlAt = mKey(thisMon); sp.placed = 1; spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles();
   });
   // test scurt: aplicația alege de unde începi
   window.zPlace = function(done, opt){
@@ -1191,13 +1216,13 @@
         ov.querySelectorAll('.zp-opt').forEach(function(b){ b.addEventListener('click', function(){ ans.push(+b.getAttribute('data-k')); draw(); }); });
         ov.querySelector('.zp-x').addEventListener('click', close); return; }
       var pts = ans[1] + ans[2], level = pts <= 1 ? 'easy' : pts <= 4 ? 'mid' : 'hard', days = [2,3,4,5][ans[3]];
-      if(level === 'easy' && days > 4) days = 4;
+      if(days > phMaxDays(level)) days = phMaxDays(level);
       var phase = ans[0] === 1 ? 6 : days === 2 ? 5 : days === 3 ? 3 : days === 4 ? 4 : 1;
       var label = PLANS[phase].label;
-      ov.innerHTML = '<div class="zp-box"><div class="zp-n">Planul tău de start</div><h3>' + label + '</h3><p>Nivel: <b>' + LV_NAME[level] + '</b></p><p class="zp-s">' + (level === 'easy' ? 'Pornești ușor, ca să înveți mișcările corect.' : level === 'mid' ? 'Ai deja baza, mergem pe un ritm serios.' : 'Ai experiență, începi direct cu exerciții avansate.') + ' Crești odată cu aplicația: după 2 săptămâni în care termini aproape toate seriile, îți propun nivelul următor.</p><button class="zp-opt zp-go">Începe așa</button><button class="zp-x">Refă testul</button></div>';
+      ov.innerHTML = '<div class="zp-box"><div class="zp-n">Planul tău de start</div><h3>' + label + '</h3><p>Nivel: <b>' + LV_NAME[level] + '</b></p><p class="zp-s">' + (level === 'easy' ? 'Pornești ușor, ca să înveți mișcările corect.' : level === 'mid' ? 'Ai deja baza, mergem pe un ritm serios.' : 'Ai experiență, începi direct cu exerciții avansate.') + ' Vezi doar ce e pentru nivelul tău, restul se deblochează pe rând. Crești odată cu aplicația: după 2 săptămâni în care termini aproape toate seriile, îți propun nivelul următor.</p><button class="zp-opt zp-go">Începe așa</button><button class="zp-x">Refă testul</button></div>';
       ov.querySelector('.zp-go').addEventListener('click', function(){
         close();
-        if(apply){ sp.phase = phase; sp.level = level; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); }
+        if(apply){ sp.phase = phase; sp.level = level; sp.placed = 1; delete sp.legacy; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); }
         if(done) done({ phase: phase, level: level }); });
       ov.querySelector('.zp-x').addEventListener('click', function(){ ans = []; draw(); });
     }
