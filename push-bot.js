@@ -288,7 +288,23 @@ if (KEY) {
     if (on('sport') && ['Mon','Tue','Wed','Thu','Fri'].includes(U.wd) && U.hm >= 17 * 60 + 30 && U.hm < 17 * 60 + 70) todo.push(['gym', up(UGYM)]);
     if (on('food') && U.hm >= 13 * 60 && U.hm < 13 * 60 + 40) todo.push(['food', up(UFOOD)]);
     if (U.hm >= 14 * 60 + 30 && U.hm < 14 * 60 + 70) todo.push(['joke', [up(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei'], 1), up(FUNU)]]);
-    if (on('supp')) for (const q of USUPP) if (U.hm >= q.h - 15 && U.hm < q.h + 50) todo.push(['s-' + q.k, [up(q.t), up(q.b, 1)]]);
+    const SC = u.supps && typeof u.supps === 'object' && Array.isArray(u.supps.g) ? u.supps : null;
+    if (on('supp') && SC) {
+      // the user's own schedule: only the supplements he chose, at the time he chose, a few minutes before
+      if (SC.on !== false) {
+        const lead = [5, 10, 15, 20, 30].includes(+SC.lead) ? +SC.lead : 15;
+        const clean = (x) => String(x || '').replace(/[^\p{L}\p{N} +\-.,()]/gu, '').slice(0, 40);
+        SC.g.slice(0, 6).forEach((g, gi) => {
+          const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(g && g.t || '')); if (!m || !Array.isArray(g.n)) return;
+          const names = g.n.slice(0, 12).map(clean).filter(Boolean); if (!names.length) return;
+          const at = (+m[1]) * 60 + (+m[2]), fire = at - lead;
+          if (fire >= 0 && U.hm >= fire && U.hm < fire + 25) {
+            const list = names.length > 4 ? names.slice(0, 4).join(', ') + ' și încă ' + (names.length - 4) : names.join(', ');
+            todo.push(['sp' + gi + '-' + m[1] + m[2], [up(['💊 Ora suplimentelor', '🤦 Hei, vitaminele!', '🧟 Zombie, bagă vitaminele!', '🐟 Nu uita de suplimente'], gi), 'La ' + m[1] + ':' + m[2] + ': ' + list + '. Doza e cea de pe ambalaj sau de la medic.']]);
+          }
+        });
+      }
+    } else if (on('supp')) for (const q of USUPP) if (U.hm >= q.h - 15 && U.hm < q.h + 50) todo.push(['s-' + q.k, [up(q.t), up(q.b, 1)]]);
     // ---- personalized by THIS account's own results (stats saved by the phone) ----
     const S = u.stats && typeof u.stats === 'object' ? u.stats : null;
     if (S && on('sport')) {

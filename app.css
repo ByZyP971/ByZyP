@@ -1537,3 +1537,6 @@
 .ft-msg{ max-width:88%; font-size:13.5px; line-height:1.5; padding:9px 12px; border-radius:14px; } .ft-msg.me{ align-self:flex-end; background:#A3FF12; color:#0a0a0a; } .ft-msg.bot{ align-self:flex-start; background:rgba(255,255,255,.07); }
 .ft-ask{ display:flex; gap:8px; } .ft-ask button{ font:inherit; font-weight:800; background:#A3FF12; color:#0a0a0a; border:none; border-radius:12px; padding:0 16px; cursor:pointer; }
 .ft-count{ font-size:54px; font-weight:900; text-align:center; color:#A3FF12; margin:8px 0 14px; }
+
+  .sp-tm{ font-family:var(--mono); font-size:12px; } .sp-tm input{ background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font:inherit; }
+  .sp-notif{ margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg-card-2); font-size:13.5px; } .sp-notif select{ background:var(--bg-card); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font:inherit; margin-left:6px; } .sp-notif > div{ margin-top:8px; }

@@ -18,8 +18,9 @@
     if(ep && ep.qty > 0 && ep.invested > 0) obj.eth = { invested: ep.invested, qty: ep.qty, entry: ep.entry, date: ep.date };
     var stats = null; try{ var wk = window.__zWeek && window.__zWeek(), zs = window.__zStats && window.__zStats();
       if(wk) stats = { w: wk.cur.w, s: wk.cur.s, pw: wk.prev.w, ps: wk.prev.s, rec: wk.cur.rec, la: wk.last || '', st: zs ? (zs.streak|0) : 0, sc: zs ? (zs.score|0) : 0 }; }catch(e){}
-    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods) + '|' + JSON.stringify(stats); if(txt === lastSaved) return;
-    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, stats: stats, at: new Date().toISOString() });
+    var supps = null; try{ supps = window.__zSupps && window.__zSupps(); }catch(e){}
+    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods) + '|' + JSON.stringify(stats) + '|' + JSON.stringify(supps); if(txt === lastSaved) return;
+    try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, stats: stats, supps: supps, at: new Date().toISOString() });
       Promise.resolve(pr).then(function(){ lastSaved = txt; cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){}); }catch(e){}
   }
   window.__syncPush = function(){ if(!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;

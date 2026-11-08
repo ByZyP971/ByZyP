@@ -1403,6 +1403,12 @@
   var SUPPS = SUPP_CAT.filter(function(s){ return suppOwn().indexOf(s.id) >= 0; });
   var SUPP_G = [ { t:'09:00', l:'La micul dejun', ic:'🌅' }, { t:'17:30', l:'Înainte de sală', ic:'⚡' }, { t:'19:30', l:'După sală', ic:'💪' }, { t:'20:30', l:'La cină', ic:'🍽️' }, { t:'22:00', l:'Înainte de somn', ic:'🌙' } ];
   var SUPP_KEY = 'byzyp_supp_v1';
+  var SUPP_CFG = 'zyp_supp_cfg_v1';
+  function suppCfg(){ var c = null; try{ c = JSON.parse(localStorage.getItem(SUPP_CFG) || 'null'); }catch(e){} if(!c || typeof c !== 'object') c = {}; if(!c.times || typeof c.times !== 'object') c.times = {}; if(c.on === undefined) c.on = true; var l = +c.lead; c.lead = [5,10,15,20,30].indexOf(l) >= 0 ? l : 15; return c; }
+  function gTime(gi){ var t = suppCfg().times[gi]; return /^([01]\d|2[0-3]):[0-5]\d$/.test(t || '') ? t : SUPP_G[gi].t; }
+  window.__zSupps = function(){ var c = suppCfg(), cur = suppOwn(), g = [];
+    SUPP_G.forEach(function(x, gi){ var n = SUPP_CAT.filter(function(s){ return s.g === gi && cur.indexOf(s.id) >= 0; }).map(function(s){ return s.n; }); if(n.length) g.push({ t: gTime(gi), n: n, l: x.l }); });
+    return { on: !!c.on, lead: c.lead, g: g }; };
   function suppLoad(){ try{ return JSON.parse(localStorage.getItem(SUPP_KEY) || '{}') || {}; }catch(e){ return {}; } }
   function renderSupp(){
     var el = document.getElementById('suppCard'); if(!el) return;
@@ -1412,12 +1418,12 @@
       '<div class="sp-ring" style="--p:' + pct + '"><b>' + pct + '%</b></div></div><div class="sp-bar"><i style="width:' + pct + '%"></i></div>';
     SUPP_G.forEach(function(g, gi){
       var items = SUPPS.filter(function(s){ return s.g === gi; }); if(!items.length) return;
-      h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + g.t + '</em></div>';
+      h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + gTime(gi) + '</em></div>';
       items.forEach(function(s){
         h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Ce face:</em> ' + s.w + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Cum:</em> ' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
       });
     });
-    h += '<div class="hint" style="margin:12px 0 0;">🔔 Primești notificare puțin înainte de 09:00, 20:30 și 22:00. Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
+    h += '<div class="hint" style="margin:12px 0 0;">' + (suppCfg().on ? '🔔 Primești notificare cu ' + suppCfg().lead + ' minute înainte de orele tale. Le schimbi la „Alege suplimentele mele”.' : '🔕 Notificările pentru suplimente sunt oprite.') + ' Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
     if(!SUPPS.length) h += '<div class="hint" style="margin:12px 0 0;">Nu ai ales niciun supliment. Apasă mai jos și alege-le pe ale tale.</div>';
     h += '<button class="onb-skip" id="suppPick" style="display:block;margin:10px 0 0;color:var(--gold);font-weight:700;">✏️ Alege suplimentele mele</button>';
     el.innerHTML = h;
@@ -1432,12 +1438,14 @@
   function suppPicker(){
     var el = document.getElementById('suppCard'); if(!el) return; var own = suppOwn().slice();
     var h = '<div class="card-title">Suplimentele mele</div><div class="hint" style="margin:0 0 12px;">Bifează doar ce ai deja. Nu cumpăra nimic fără motiv și întreabă medicul dacă iei medicamente sau ai o boală. Dozele sunt cele de pe etichetă sau de la medic.</div>';
-    SUPP_G.forEach(function(g, gi){ var it = SUPP_CAT.filter(function(s){ return s.g === gi; }); if(!it.length) return; h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><em>' + g.t + '</em></div>';
+    SUPP_G.forEach(function(g, gi){ var it = SUPP_CAT.filter(function(s){ return s.g === gi; }); if(!it.length) return; h += '<div class="sp-g"><span>' + g.ic + ' ' + g.l + '</span><span class="sp-tm">🕒 <input type="time" data-tg="' + gi + '" value="' + gTime(gi) + '"></span></div>';
       it.forEach(function(s){ h += '<label class="onb-opt" style="padding:11px 12px;margin-bottom:6px;"><span class="ic" style="font-size:20px;">' + s.ic + '</span><div><b style="font-size:14px;">' + s.n + '</b><span><em style="font-style:normal;font-weight:700;color:var(--gold)">Ce face:</em> ' + s.w + '</span><span style="display:block;margin-top:3px"><em style="font-style:normal;font-weight:700;color:var(--gold)">Cum:</em> ' + s.d + '</span></div><input type="checkbox" data-s="' + s.id + '"' + (own.indexOf(s.id) >= 0 ? ' checked' : '') + '></label>'; }); });
+    var cf = suppCfg();
+    h += '<div class="sp-notif"><label><input type="checkbox" id="suppOn"' + (cf.on ? ' checked' : '') + '> 🔔 Vreau notificare pentru suplimente</label><div>Cu câte minute înainte? <select id="suppLead">' + [5,10,15,20,30].map(function(m){ return '<option value="' + m + '"' + (cf.lead === m ? ' selected' : '') + '>' + m + ' min</option>'; }).join('') + '</select></div><div class="hint" style="margin:6px 0 0;">Alege ora la care vrei să iei fiecare grup, lângă titlu. Notificarea vine doar pentru ce ai bifat. Pe telefon poate întârzia câteva minute.</div></div>';
     h += '<button class="onb-btn" id="suppSave" style="width:100%;margin-top:12px;">Salvează</button>';
     el.innerHTML = h;
     el.querySelectorAll('input[data-s]').forEach(function(i){ i.addEventListener('change', function(){ var id = i.getAttribute('data-s'), k = own.indexOf(id); if(i.checked && k < 0) own.push(id); if(!i.checked && k >= 0) own.splice(k, 1); }); });
-    document.getElementById('suppSave').addEventListener('click', function(){ try{ localStorage.setItem(SUPP_OWN, JSON.stringify(own)); }catch(e){} SUPPS = SUPP_CAT.filter(function(s){ return own.indexOf(s.id) >= 0; }); renderSupp(); });
+    document.getElementById('suppSave').addEventListener('click', function(){ try{ localStorage.setItem(SUPP_OWN, JSON.stringify(own)); var c2 = suppCfg(); c2.on = document.getElementById('suppOn').checked; c2.lead = +document.getElementById('suppLead').value; el.querySelectorAll('input[data-tg]').forEach(function(i){ if(/^([01]\d|2[0-3]):[0-5]\d$/.test(i.value)) c2.times[i.getAttribute('data-tg')] = i.value; }); localStorage.setItem(SUPP_CFG, JSON.stringify(c2)); if(window.__syncPush) setTimeout(window.__syncPush, 300); }catch(e){} SUPPS = SUPP_CAT.filter(function(s){ return own.indexOf(s.id) >= 0; }); renderSupp(); });
   }
   renderSupp();
   function renderSport(){ renderSpToday(); renderWeek(); if(document.querySelector('[data-sseg-card="gym"].seg-show')) renderWo(); }
