@@ -1179,6 +1179,14 @@
     var kgs = 0, recs = 0; Object.keys(sp.klog || {}).forEach(function(n){ var L = sp.klog[n] || [], pm = 0; L.forEach(function(x){ if(x.d >= r[0] && x.d <= r[1]){ kgs++; if(pm > 0 && x.kg > pm) recs++; } if(x.d < r[0] && x.kg > pm) pm = x.kg; }); });
     return { w: Object.keys(days).length, s: sets, kg: kgs, rec: recs, from: r[0] }; }
   window.__zWeek = function(){ try{ var a = wkStats(0), b = wkStats(-1); var last = ''; Object.keys(sp.sets || {}).forEach(function(k){ var d = k.split('|')[0], any = false; Object.keys(sp.sets[k] || {}).forEach(function(x){ if(sp.sets[k][x]) any = true; }); if(any && d > last) last = d; }); return { cur: a, prev: b, last: last }; }catch(e){ return null; } };
+  // date pentru modulele Corp / Recuperare / Antrenor (fit.js)
+  window.__zData = function(){ try{
+    var W = nuKgNow(), P = nuProf(), D = W ? nuCalc(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal) : null;
+    var ws = Object.keys(data).filter(function(k){ var e = data[k]; return e && e.weight != null && +e.weight >= 20 && +e.weight <= 400; }).sort().map(function(k){ return { d:k, v:+data[k].weight }; });
+    return { weights:ws, kg:W ? W.kg : null, cm:P.cm, age:P.age, sex:nu.sex, goal:nu.goal, kcal:D ? Math.round(D.kcal) : null, prot:D ? Math.round(D.P) : null,
+      week:window.__zWeek(), planned:plannedSets(), level:sp.level || 'mid', phase:sp.phase || 1, klog:sp.klog || {}, sets:sp.sets || {}, todayKey:todayKey };
+  }catch(e){ return null; } };
+  window.__zGoal = function(g){ if(['gain','maintain','lose'].indexOf(g) < 0) return; nu.goal = g; try{ nuSaveCfg(); nuRender(); }catch(e){} };
   function exDone(d, name){ // were all sets of this exercise ticked on that day? (null = unknown)
     var res = null;
     Object.keys(sp.sets || {}).forEach(function(k){ if(k.split('|')[0] !== d) return; var code = k.split('|')[1], w = WO && WO[code]; if(!w) return;

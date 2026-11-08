@@ -1509,3 +1509,31 @@
 .lb-top b{ display:block; font-size:15px; } .lb-top span{ font-size:12px; color:var(--text-dim); }
 .lb-bar{ height:8px; border-radius:6px; background:rgba(255,255,255,.1); overflow:hidden; margin-top:10px; } .lb-bar i{ display:block; height:100%; background:#A3FF12; border-radius:6px; }
 .lb-s{ font-size:11.5px; color:var(--text-dim); margin-top:6px; line-height:1.4; }
+
+/* Corp · Recuperare · Antrenor */
+.ft-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:6px 0 8px; }
+.ft-grid > div{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:10px 12px; }
+.ft-grid b{ display:block; font-size:19px; color:var(--accent,#A3FF12); } .ft-grid span{ font-size:11.5px; color:var(--text-dim); }
+.ft-note{ font-size:12px; color:var(--text-dim); line-height:1.5; margin:8px 0; }
+.ft-sub{ font-size:12px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--text-dim); margin:14px 0 6px; }
+.ft-pills{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; }
+.ft-pills button, .ft-chips button{ font:inherit; font-size:13px; font-weight:700; color:var(--text); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:7px 12px; cursor:pointer; }
+.ft-pills button.on{ background:#A3FF12; color:#0a0a0a; border-color:#A3FF12; }
+.ft-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.ft-row3{ display:flex; gap:8px; margin:8px 0; } .ft-row3 label{ flex:1; font-size:11.5px; color:var(--text-dim); display:flex; flex-direction:column; gap:4px; }
+.ft-row3 input, .ft-ask input{ font:inherit; font-size:15px; color:var(--text); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:10px; width:100%; min-width:0; }
+.ft-svg{ display:block; margin:8px 0 2px; } .ft-line{ stroke:#A3FF12; stroke-width:2.2; } .ft-dot{ fill:#A3FF12; } .ft-goal{ stroke:#f5c542; stroke-dasharray:4 3; stroke-width:1.2; }
+.ft-lbl{ fill:var(--text-dim); font-size:9px; } .ft-val{ fill:var(--text); font-size:11px; font-weight:800; } .ft-val.sm{ font-size:8.5px; }
+.ft-bar{ fill:rgba(163,255,18,.45); } .ft-bar.ok{ fill:#A3FF12; } .ft-bar.none{ fill:rgba(255,255,255,.06); }
+.ft-empty{ font-size:13px; color:var(--text-dim); padding:10px 0; }
+.ft-ready{ display:flex; flex-direction:column; gap:4px; } .ft-ready b{ font-size:16px; } .ft-ready span{ font-size:13px; color:var(--text-dim); line-height:1.45; }
+.ft-det{ border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:10px 12px; margin:8px 0; } .ft-det summary{ font-weight:800; cursor:pointer; font-size:14px; }
+.ft-det ol{ margin:10px 0 10px 18px; padding:0; font-size:13px; line-height:1.5; } .ft-det li{ margin-bottom:8px; } .ft-det li span{ color:var(--text-dim); font-size:12px; }
+.ft-ul{ margin:6px 0 6px 18px; padding:0; font-size:13px; line-height:1.55; } .ft-ul li{ margin-bottom:5px; }
+.ft-warn{ background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.35); border-radius:14px; padding:10px 12px; margin:10px 0; font-size:13px; } .ft-warn ul{ margin:6px 0 0 18px; padding:0; }
+.ft-ins{ display:flex; gap:10px; padding:10px 0; border-top:1px solid rgba(255,255,255,.07); } .ft-ins:first-of-type{ border-top:none; } .ft-ins > span{ font-size:22px; }
+.ft-ins b{ font-size:14px; } .ft-ins p{ margin:3px 0 0; font-size:13px; color:var(--text-dim); line-height:1.5; } .ft-ins p b{ color:var(--text); }
+.ft-chat{ display:flex; flex-direction:column; gap:8px; max-height:340px; overflow:auto; margin-bottom:8px; }
+.ft-msg{ max-width:88%; font-size:13.5px; line-height:1.5; padding:9px 12px; border-radius:14px; } .ft-msg.me{ align-self:flex-end; background:#A3FF12; color:#0a0a0a; } .ft-msg.bot{ align-self:flex-start; background:rgba(255,255,255,.07); }
+.ft-ask{ display:flex; gap:8px; } .ft-ask button{ font:inherit; font-weight:800; background:#A3FF12; color:#0a0a0a; border:none; border-radius:12px; padding:0 16px; cursor:pointer; }
+.ft-count{ font-size:54px; font-weight:900; text-align:center; color:#A3FF12; margin:8px 0 14px; }

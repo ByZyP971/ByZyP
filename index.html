@@ -27,7 +27,7 @@
 <meta name="twitter:description" content="Planul tău zilnic pentru sală, suplimente și mâncare.">
 <meta name="twitter:image" content="https://byzyp971.github.io/ByZyP/og.png">
 
-<link rel="stylesheet" href="app.css?v=11">
+<link rel="stylesheet" href="app.css?v=12">
 </head>
 <body>
 <div id="authGate" class="auth-gate" style="display:none;">
@@ -180,7 +180,12 @@
       <div class="seg" id="sportSeg">
         <button class="seg-btn active" data-sseg="plan">📅 Program</button>
         <button class="seg-btn" data-sseg="gym">🏋️ Sală</button>
+        <button class="seg-btn" data-sseg="rec">😴 Recuperare</button>
+        <button class="seg-btn" data-sseg="coach">🧠 Antrenor</button>
       </div>
+
+      <div data-sseg-card="rec"><div id="recRoot"></div></div>
+      <div data-sseg-card="coach"><div id="coachRoot"></div></div>
 
       <div data-sseg-card="plan">
         <div class="card sp-today" id="spToday"></div>
@@ -585,6 +590,11 @@
         <div class="hint">Se completează automat din fila „Azi”, când notezi greutatea acolo.</div>
       </div>
 
+      <div class="card" id="bodyCard">
+        <div class="card-title">Corp: grăsime și masă musculară</div>
+        <div id="bodyRoot"></div>
+      </div>
+
       <div class="card">
         <div class="card-title">Poze de progres</div>
         <div class="gallery" id="gallery"></div>
@@ -626,12 +636,13 @@
 
 <script src="core.js?v=2"></script>
 <script src="cloud.js?v=2"></script>
-<script src="main.js?v=12"></script>
+<script src="main.js?v=13"></script>
 <script src="notify.js?v=3"></script>
 <script src="auth-ui.js?v=2"></script>
 <script src="onboarding.js?v=6"></script>
 <script src="admin.js?v=1"></script>
 <script src="community.js?v=2"></script>
 <script src="music.js?v=4"></script>
+  <script src="fit.js?v=1"></script>
 </body>
 </html>
