@@ -1540,3 +1540,11 @@
 
   .sp-tm{ font-family:var(--mono); font-size:12px; } .sp-tm input{ background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font:inherit; }
   .sp-notif{ margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg-card-2); font-size:13.5px; } .sp-notif select{ background:var(--bg-card); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font:inherit; margin-left:6px; } .sp-notif > div{ margin-top:8px; }
+
+  .fr-card{ margin-top:12px; } .fr-btn{ display:block; margin:0; font-weight:700; } .fr-age{ display:flex; gap:8px; align-items:flex-start; font-size:13px; color:var(--text-dim,#9aa3a0); }
+  .fr-row{ display:flex; align-items:center; gap:8px; padding:10px 0; border-top:1px solid var(--line); flex-wrap:wrap; } .fr-row b{ font-size:15px; } .fr-row span{ flex:1; font-size:12.5px; color:var(--text-faint); min-width:120px; }
+  .fr-row button,.fr-map{ background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:999px; padding:6px 11px; font:inherit; font-size:12.5px; font-weight:700; text-decoration:none; }
+  .fr-ok{ color:#A3FF12 !important; border-color:#A3FF12 !important; } .fr-sub{ margin:12px 0 2px; font-size:12px; font-weight:700; color:var(--gold); }
+  .fr-add{ display:flex; gap:8px; margin-top:12px; } .fr-add input{ flex:1; background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit; } .fr-add button{ width:auto; padding:0 18px; }
+  .fr-radar{ width:100%; max-width:260px; display:block; margin:6px auto; } .fr-r{ fill:none; stroke:var(--line); } .fr-me{ fill:#6aa8ff; } .fr-dot{ fill:#A3FF12; } .fr-t{ fill:var(--text-faint); font-size:9px; font-family:Inter,sans-serif; } .fr-scale{ text-align:center; font-size:11.5px; color:var(--text-faint); margin-bottom:6px; }
+  .fr-add input{ min-width:0; } .fr-add button{ flex:none; width:auto !important; white-space:nowrap; padding:10px 18px !important; }

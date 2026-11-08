@@ -51,14 +51,14 @@
       '<div class="top-bar"><i style="width:' + progress(me.score, lv) + '%"></i></div>' +
       '<div class="top-me-meta">' + me.score + ' puncte · Locul #' + me.rank + (me.streak ? ' · 🔥 ' + me.streak : '') + '</div>' +
       '<button class="top-edit" data-prof="' + esc(me.nick) + '">✏️ Profilul meu</button></div></div>' +
-      '<div class="seg" id="topSeg"><button class="seg-btn' + (seg==='rank'?' active':'') + '" data-tseg="rank">🏆 Clasament</button><button class="seg-btn' + (seg==='chat'?' active':'') + '" data-tseg="chat">💬 Chat global</button></div>' +
+      '<div class="seg" id="topSeg"><button class="seg-btn' + (seg==='rank'?' active':'') + '" data-tseg="rank">🏆 Clasament</button><button class="seg-btn' + (seg==='chat'?' active':'') + '" data-tseg="chat">💬 Chat global</button><button class="seg-btn' + (seg==='fr'?' active':'') + '" data-tseg="fr">📍 Prieteni</button></div>' +
       '<div id="topBody"></div>' +
       '<div class="top-foot">Puncte: obiceiuri bifate, antrenamente făcute, zile perfecte. Poți câștiga cel mult 600 pe zi.</div>';
     root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('active', x===b); }); showSeg(); }); });
     showSeg();
     startScoreTimer();
   }
-  function showSeg(){ stopChat(); if(seg === 'chat') renderChat(); else renderBoard(); }
+  function showSeg(){ stopChat(); if(window.zFriends) window.zFriends.leave(); if(seg === 'chat') renderChat(); else if(seg === 'fr' && window.zFriends){ var fb = document.getElementById('topBody'); if(fb) window.zFriends.render(fb); } else renderBoard(); }
 
   // ---------- clasament ----------
   function row(r){
