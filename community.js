@@ -65,7 +65,7 @@
   function renderMain(){
     var lv = me.level || lvOf(me.score), t = tier(lv);
     root.innerHTML =
-      '<div class="sn-me"><div class="sn-me-av" data-prof="' + esc(me.nick) + '">' + avEl(me.nick, lv, 92, 'ring') + '<span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' +
+      '<div class="sn-me"><div class="sn-me-av" data-prof="' + esc(me.nick) + '">' + ((window.zAvatar && window.zAvatar.has()) ? '<div class="sn-full">' + window.zAvatar.svg(window.zAvatar.load(), 120, 'full') + '</div>' : avEl(me.nick, lv, 92, 'ring')) + '<span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' +
       '<div class="sn-me-n">' + esc(me.nick) + '</div><div class="sn-me-t" style="color:' + t[2] + '">' + esc(t[1]) + ' · Nivel ' + lv + '</div>' +
       '<div class="sn-bar"><i style="width:' + progress(me.score, lv) + '%;background:' + t[2] + '"></i></div>' +
       '<div class="sn-stats"><div><b>#' + me.rank + '</b><span>Locul tău</span></div><div><b>' + me.score + '</b><span>Puncte</span></div><div><b>' + (me.streak || 0) + '🔥</b><span>Zile la rând</span></div></div>' +

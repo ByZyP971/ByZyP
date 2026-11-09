@@ -6,35 +6,54 @@
   var HAIRC = ['#1B1B1B','#3B2417','#6B4226','#A5672B','#D9A441','#F1D27A','#B83A2E','#8E8E93','#4C6FFF','#E85AA8'];
   var EYEC = ['#3B2417','#2E6FD8','#2F9E5F','#7C8A3A','#6B6B72'];
   var TOPC = ['#A3FF12','#111111','#FFFFFF','#E5483C','#2E6FD8','#F5B800','#8E44D8','#12B5A6','#E85AA8','#6B7280'];
-  var BGC = ['#1F3A12','#10223F','#3A1424','#3A2F10','#24124A','#0F3A38','#2B2B2B','#FFD84D'];
+  var BGC = [['#2f5d12','#0e1f08'],['#2a5db0','#0c1a36'],['#c2406a','#3a1224'],['#e0a526','#4a3208'],['#7a47d6','#1c0f40'],['#1fb5a6','#0a2e2b'],['#4a4a52','#151518'],['#ffd84d','#ff8a3d'],['#ff7eb3','#7a5cff'],['#6dd5ed','#2193b0']];
+  var PANTC = ['#2B4C8C','#111111','#6B7280','#3B2F2F','#A3FF12','#E5483C','#F2F2F2','#556B2F'];
+  var SHOEC = ['#FFFFFF','#111111','#E5483C','#A3FF12','#2E6FD8','#F5B800'];
   var OPT = {
-    hair: [['bald','Fără'],['buzz','Tuns scurt'],['short','Scurt'],['quiff','Moț'],['long','Lung'],['bun','Coc'],['curly','Creț'],['mohawk','Creastă']],
+    hair: [['bald','Fără'],['afro','Afro'],['pony','Coadă'],['side','Cu cărare'],['buzz','Tuns scurt'],['short','Scurt'],['quiff','Moț'],['long','Lung'],['bun','Coc'],['curly','Creț'],['mohawk','Creastă']],
     eyes: [['round','Rotunzi'],['narrow','Mici'],['happy','Veseli'],['wink','Clipește']],
     brows: [['normal','Normale'],['thick','Groase'],['angry','Încruntate'],['raised','Ridicate'],['none','Fără']],
     mouth: [['smile','Zâmbet'],['grin','Rânjet'],['neutral','Serios'],['smirk','Șmecher'],['open','Uimit']],
     beard: [['none','Fără'],['stubble','Barbă rară'],['mustache','Mustață'],['goatee','Barbișon'],['beard','Barbă']],
     glasses: [['none','Fără'],['round','Rotunzi'],['square','Pătrați'],['sun','De soare']],
     top: [['tee','Tricou'],['hoodie','Hanorac'],['tank','Maiou'],['shirt','Cămașă'],['jacket','Geacă'],['turtle','Helancă']],
+    pants: [['jeans','Blugi'],['jogger','Jogger'],['shorts','Șort'],['skirt','Fustă']],
+    face: [['none','Fără'],['freckles','Pistrui'],['blush','Obraji roz'],['mole','Aluniță']],
     acc: [['none','Nimic'],['cap','Șapcă'],['beanie','Căciulă'],['phones','Căști'],['band','Bentiță'],['chain','Lanț'],['ear','Cercel']]
   };
-  var DEF = { skin: 2, hair: 'short', hairc: 1, eyes: 'round', eyec: 0, brows: 'normal', mouth: 'smile', beard: 'none', glasses: 'none', top: 'hoodie', topc: 0, acc: 'none', accc: 3, bg: 0 };
+  var DEF = { skin: 2, hair: 'short', hairc: 1, eyes: 'round', eyec: 0, brows: 'normal', mouth: 'smile', beard: 'none', glasses: 'none', top: 'hoodie', topc: 0, acc: 'none', accc: 3, bg: 0, pants: 'jeans', pantc: 0, shoec: 0, face: 'none' };
 
   function clamp(v, a){ v = +v; return v >= 0 && v < a ? Math.floor(v) : 0; }
   function inList(k, v){ return OPT[k].some(function(o){ return o[0] === v; }) ? v : OPT[k][0][0]; }
   function norm(c){ c = c || {}; return { skin: clamp(c.skin, SKIN.length), hair: inList('hair', c.hair), hairc: clamp(c.hairc, HAIRC.length), eyes: inList('eyes', c.eyes), eyec: clamp(c.eyec, EYEC.length), brows: inList('brows', c.brows),
-    mouth: inList('mouth', c.mouth), beard: inList('beard', c.beard), glasses: inList('glasses', c.glasses), top: inList('top', c.top), topc: clamp(c.topc, TOPC.length), acc: inList('acc', c.acc), accc: clamp(c.accc, TOPC.length), bg: clamp(c.bg, BGC.length) }; }
+    mouth: inList('mouth', c.mouth), beard: inList('beard', c.beard), glasses: inList('glasses', c.glasses), top: inList('top', c.top), topc: clamp(c.topc, TOPC.length), acc: inList('acc', c.acc), accc: clamp(c.accc, TOPC.length), bg: clamp(c.bg, BGC.length), pants: inList('pants', c.pants), pantc: clamp(c.pantc, PANTC.length), shoec: clamp(c.shoec, SHOEC.length), face: inList('face', c.face) }; }
   function mix(h, a){ var n = parseInt(h.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, t = a < 0 ? 0 : 255, p = Math.abs(a);
     r = Math.round(r + (t - r) * p); g = Math.round(g + (t - g) * p); b = Math.round(b + (t - b) * p); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); }
 
-  function svg(cfg, px){
-    var c = norm(cfg), skin = SKIN[c.skin], sd = mix(skin, -.18), hc = HAIRC[c.hairc], hd = mix(hc, -.25), tc = TOPC[c.topc], td = mix(tc, -.25), ac = TOPC[c.accc], bg = BGC[c.bg];
+  var UID = 0;
+  function svg(cfg, px, mode){
+    var full = mode === 'full', H = full ? 330 : 200, gid = 'avg' + (++UID);
+    var c = norm(cfg), skin = SKIN[c.skin], sd = mix(skin, -.18), hc = HAIRC[c.hairc], hd = mix(hc, -.25), tc = TOPC[c.topc], td = mix(tc, -.25), ac = TOPC[c.accc], bg = BGC[c.bg], pc = PANTC[c.pantc], pd = mix(pc, -.22);
     var ink = '#241a14', o = [];
-    o.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="' + px + '" height="' + px + '"><rect width="200" height="200" fill="' + bg + '"/>');
+    o.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 ' + H + '" width="' + px + '" height="' + Math.round(px * H / 200) + '"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs><rect width="200" height="' + H + '" fill="url(#' + gid + ')"/>');
+    if(full) o.push('<circle cx="100" cy="120" r="96" fill="#fff" opacity=".07"/><ellipse cx="100" cy="320" rx="86" ry="12" fill="#fff" opacity=".1"/><ellipse cx="100" cy="318" rx="60" ry="7" fill="#000" opacity=".28"/>');
     // păr din spate
     if(c.hair === 'long') o.push('<path d="M52 96C46 40 78 30 100 30C124 30 156 40 148 96C152 130 146 160 132 176L68 176C54 160 48 130 52 96Z" fill="' + hc + '"/>');
+    if(c.hair === 'afro') o.push('<ellipse cx="100" cy="66" rx="60" ry="54" fill="' + hc + '"/>');
+    if(c.hair === 'pony') o.push('<path d="M138 56C180 52 190 104 166 138C172 104 160 86 136 82Z" fill="' + hc + '"/>');
     if(c.hair === 'bun') o.push('<circle cx="100" cy="30" r="16" fill="' + hc + '"/>');
     if(c.top === 'hoodie') o.push('<path d="M60 152C52 118 74 110 100 110C126 110 148 118 140 152Z" fill="' + td + '"/>');
     // gât + umeri
+    if(full){
+      if(c.pants === 'jeans' || c.pants === 'jogger') o.push('<path d="M44 236H156L152 304H104L100 262L96 304H48Z" fill="' + pc + '"/><path d="M100 240V262" stroke="' + pd + '" stroke-width="3"/>' + (c.pants === 'jogger' ? '<rect x="46" y="292" width="52" height="12" rx="6" fill="' + pd + '"/><rect x="102" y="292" width="52" height="12" rx="6" fill="' + pd + '"/>' : '<path d="M56 250L58 296M144 250L142 296" stroke="' + pd + '" stroke-width="2" opacity=".6"/>'));
+      if(c.pants === 'shorts') o.push('<rect x="56" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><rect x="106" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><path d="M44 236H156L152 276H104L100 258L96 276H48Z" fill="' + pc + '"/><path d="M100 240V258" stroke="' + pd + '" stroke-width="3"/>');
+      if(c.pants === 'skirt') o.push('<rect x="62" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><rect x="106" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><path d="M46 236H154L174 292H26Z" fill="' + pc + '"/><path d="M46 236H154" stroke="' + pd + '" stroke-width="6"/>');
+      var sc = SHOEC[c.shoec];
+      o.push('<path d="M38 304C38 294 94 294 100 304V316C100 324 38 324 38 316Z" fill="' + sc + '"/><path d="M100 304C106 294 162 294 162 304V316C162 324 100 324 100 316Z" fill="' + sc + '"/><path d="M38 315H100M100 315H162" stroke="#000" stroke-opacity=".28" stroke-width="3.5"/><path d="M52 303L64 303M136 303L148 303" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>');
+      o.push('<path d="M32 196H168L164 246H36Z" fill="' + (c.top === 'tank' ? skin : tc) + '"/>');
+      if(c.top === 'hoodie') o.push('<rect x="32" y="236" width="136" height="12" rx="5" fill="' + td + '"/><rect x="76" y="212" width="48" height="24" rx="9" fill="' + td + '" opacity=".55"/>');
+      if(c.top === 'turtle' || c.top === 'tee' || c.top === 'shirt') o.push('<rect x="32" y="240" width="136" height="6" fill="' + td + '" opacity=".35"/>');
+    }
     o.push('<rect x="85" y="120" width="30" height="40" rx="8" fill="' + sd + '"/>');
     o.push('<path d="M18 200C18 168 56 152 100 152C144 152 182 168 182 200Z" fill="' + (c.top === 'tank' ? skin : tc) + '"/>');
     if(c.top === 'tank') o.push('<path d="M44 200C50 176 72 158 82 152C90 166 110 166 118 152C128 158 150 176 156 200Z" fill="' + tc + '"/><path d="M82 152C90 168 110 168 118 152Z" fill="' + sd + '"/>');
@@ -43,10 +62,22 @@
     if(c.top === 'shirt') o.push('<path d="M82 152L100 180L118 152Z" fill="' + sd + '"/><path d="M78 150L100 182L122 150L112 148L100 166L88 148Z" fill="#fff"/><path d="M100 182L100 200" stroke="' + td + '" stroke-width="2"/><circle cx="100" cy="190" r="1.8" fill="' + td + '"/>');
     if(c.top === 'jacket') o.push('<path d="M82 152L100 200L118 152Z" fill="' + (tc === '#FFFFFF' ? '#d8d8d8' : '#f2f2f2') + '"/><path d="M82 152L100 200M118 152L100 200" stroke="' + td + '" stroke-width="3" fill="none"/><path d="M84 150L100 172L116 150" stroke="' + td + '" stroke-width="4" fill="none" stroke-linejoin="round"/>');
     if(c.top === 'turtle') o.push('<rect x="80" y="126" width="40" height="32" rx="12" fill="' + td + '"/><path d="M82 140H118M82 148H118" stroke="' + tc + '" stroke-width="2" opacity=".5"/>');
+    if(full){
+      var longS = c.top === 'hoodie' || c.top === 'shirt' || c.top === 'jacket' || c.top === 'turtle';
+      [12, 164].forEach(function(x){
+        o.push('<rect x="' + x + '" y="184" width="24" height="92" rx="12" fill="' + skin + '"/>');
+        if(c.top !== 'tank') o.push('<rect x="' + (x - 2) + '" y="176" width="28" height="' + (longS ? 100 : 42) + '" rx="13" fill="' + tc + '"/>');
+        if(longS) o.push('<rect x="' + (x - 2) + '" y="262" width="28" height="12" rx="6" fill="' + td + '"/>');
+        o.push('<circle cx="' + (x + 12) + '" cy="284" r="12" fill="' + skin + '"/>');
+      });
+    }
     // cap + urechi
     o.push('<circle cx="58" cy="96" r="8" fill="' + skin + '"/><circle cx="142" cy="96" r="8" fill="' + skin + '"/><circle cx="58" cy="96" r="4" fill="' + sd + '" opacity=".5"/><circle cx="142" cy="96" r="4" fill="' + sd + '" opacity=".5"/>');
     o.push('<ellipse cx="100" cy="90" rx="42" ry="48" fill="' + skin + '"/>');
     o.push('<ellipse cx="72" cy="110" rx="8" ry="5" fill="#ff6b6b" opacity=".18"/><ellipse cx="128" cy="110" rx="8" ry="5" fill="#ff6b6b" opacity=".18"/>');
+    if(c.face === 'freckles') o.push('<g fill="' + sd + '" opacity=".7"><circle cx="70" cy="106" r="1.6"/><circle cx="76" cy="110" r="1.6"/><circle cx="82" cy="106" r="1.6"/><circle cx="118" cy="106" r="1.6"/><circle cx="124" cy="110" r="1.6"/><circle cx="130" cy="106" r="1.6"/></g>');
+    if(c.face === 'blush') o.push('<ellipse cx="70" cy="110" rx="11" ry="7" fill="#ff5c7a" opacity=".38"/><ellipse cx="130" cy="110" rx="11" ry="7" fill="#ff5c7a" opacity=".38"/>');
+    if(c.face === 'mole') o.push('<circle cx="116" cy="112" r="2.4" fill="#3a2418"/>');
     // barbă
     if(c.beard === 'stubble') o.push('<path d="M60 100C60 142 140 142 140 100C132 128 68 128 60 100Z" fill="' + hd + '" opacity=".35"/>');
     if(c.beard === 'beard') o.push('<path d="M57 98C52 152 148 152 143 98C136 128 120 134 100 134C80 134 64 128 57 98Z" fill="' + hc + '"/>');
@@ -82,6 +113,9 @@
     if(c.glasses === 'sun') o.push('<g fill="#111" stroke="#111" stroke-width="3" stroke-linejoin="round"><path d="M64 82H98V96C98 104 90 106 82 106C72 106 64 102 64 94Z"/><path d="M102 82H136V94C136 102 128 106 118 106C110 106 102 104 102 96Z"/></g><path d="M98 86H102M64 86L58 84M136 86L142 84" stroke="#111" stroke-width="3" fill="none"/><path d="M70 86L78 86M108 86L116 86" stroke="#fff" stroke-width="2" opacity=".35"/>');
     // păr față
     var h = c.hair;
+    if(h === 'afro') o.push('<path d="M58 88C54 54 80 40 100 40C122 40 146 54 142 88C134 68 120 60 100 62C80 64 66 70 58 88Z" fill="' + hc + '"/>');
+    if(h === 'pony') o.push('<path d="M57 90C52 48 80 33 100 33C124 33 150 48 143 90C138 70 124 60 100 61C76 61 62 70 57 90Z" fill="' + hc + '"/>');
+    if(h === 'side') o.push('<path d="M57 92C50 50 82 32 108 34C136 36 150 58 143 92C142 72 134 58 112 56C94 56 78 62 70 80C68 84 64 90 57 92Z" fill="' + hc + '"/><path d="M66 78C84 60 106 54 124 56" stroke="' + hd + '" stroke-width="2.5" fill="none" opacity=".5"/>');
     if(h === 'buzz') o.push('<path d="M60 82C60 52 80 42 100 42C120 42 140 52 140 82C132 64 118 58 100 58C82 58 68 64 60 82Z" fill="' + hc + '"/>');
     if(h === 'short' || h === 'bun') o.push('<path d="M57 90C52 48 80 33 100 33C124 33 150 48 143 90C138 70 124 60 100 61C76 61 62 70 57 90Z" fill="' + hc + '"/>');
     if(h === 'quiff') o.push('<path d="M56 90C50 48 76 32 104 33C132 33 150 52 144 90C140 66 126 56 108 56C94 52 78 58 72 70C68 76 62 84 56 90Z" fill="' + hc + '"/><path d="M80 46C86 20 122 22 130 40C116 34 98 36 80 46Z" fill="' + hc + '"/>');
@@ -106,21 +140,21 @@
     var im = new Image(); im.onload = function(){ var cv = document.createElement('canvas'); cv.width = cv.height = 256; cv.getContext('2d').drawImage(im, 0, 0, 256, 256); try{ res(cv.toDataURL('image/jpeg', 0.88)); }catch(e){ rej(e); } };
     im.onerror = rej; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(c, 256)); }); }
 
-  var TABS = [['skin','🧑 Piele'],['hair','💇 Păr'],['hairc','🎨 Culoare păr'],['eyes','👀 Ochi'],['eyec','🔵 Culoare ochi'],['brows','🤨 Sprâncene'],['mouth','👄 Gură'],['beard','🧔 Barbă'],['glasses','🕶️ Ochelari'],['top','👕 Haine'],['topc','🎨 Culoare haine'],['acc','🧢 Accesorii'],['accc','🎨 Culoare accesoriu'],['bg','🖼️ Fundal']];
-  var PAL = { skin: SKIN, hairc: HAIRC, eyec: EYEC, topc: TOPC, accc: TOPC, bg: BGC };
+  var TABS = [['skin','🧑 Piele'],['hair','💇 Păr'],['hairc','🎨 Culoare păr'],['eyes','👀 Ochi'],['eyec','🔵 Culoare ochi'],['brows','🤨 Sprâncene'],['mouth','👄 Gură'],['beard','🧔 Barbă'],['glasses','🕶️ Ochelari'],['face','✨ Față'],['top','👕 Bluză'],['topc','🎨 Culoare bluză'],['pants','👖 Pantaloni'],['pantc','🎨 Culoare pantaloni'],['shoec','👟 Pantofi'],['acc','🧢 Accesorii'],['accc','🎨 Culoare accesoriu'],['bg','🖼️ Fundal']];
+  var PAL = { skin: SKIN, hairc: HAIRC, eyec: EYEC, topc: TOPC, accc: TOPC, bg: BGC, pantc: PANTC, shoec: SHOEC };
 
-  function ensureCss(){ if(document.getElementById('av-css')) return; var st = document.createElement('style'); st.id = 'av-css'; st.textContent = "  .av-ov{ position:fixed; inset:0; z-index:5000; background:rgba(0,0,0,.82); display:flex; align-items:flex-end; justify-content:center; }   .av-box{ width:100%; max-width:520px; max-height:94vh; overflow-y:auto; background:var(--bg-card,#101410); border:1px solid var(--line); border-radius:24px 24px 0 0; padding:14px 14px calc(18px + env(safe-area-inset-bottom)); }   .av-top{ display:flex; justify-content:space-between; align-items:center; font-size:17px; } .av-x{ background:none; border:none; color:var(--text); font-size:20px; padding:6px 10px; }   .av-prev{ width:190px; height:190px; border-radius:50%; overflow:hidden; margin:8px auto 10px; border:3px solid var(--gold,#A3FF12); } .av-prev svg{ display:block; }   .av-tabs{ display:flex; gap:6px; overflow-x:auto; padding:4px 0 8px; } .av-tab{ flex:none; background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:999px; padding:7px 12px; font:inherit; font-size:12.5px; font-weight:700; white-space:nowrap; } .av-tab.on{ background:var(--gold,#A3FF12); color:#000; border-color:transparent; }   .av-opts{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; min-height:84px; padding:4px 0; }   .av-op{ display:flex; flex-direction:column; align-items:center; gap:3px; background:var(--bg-card-2); border:2px solid transparent; border-radius:14px; padding:6px; color:var(--text); font:inherit; font-size:11px; width:78px; } .av-op svg{ border-radius:50%; } .av-op.on{ border-color:var(--gold,#A3FF12); }   .av-sw{ width:42px; height:42px; border-radius:50%; border:3px solid transparent; box-shadow:0 0 0 1px var(--line); } .av-sw.on{ border-color:#fff; box-shadow:0 0 0 3px var(--gold,#A3FF12); }   .av-act{ display:flex; gap:10px; margin-top:12px; } .av-act button{ flex:1; border-radius:14px; padding:13px; font:inherit; font-weight:800; border:1px solid var(--line); background:var(--bg-card-2); color:var(--text); } .av-act .av-ok{ background:var(--gold,#A3FF12); color:#000; border:none; }   .av-hint{ margin-top:10px; font-size:12px; color:var(--text-faint); text-align:center; } "; document.head.appendChild(st); }
+  function ensureCss(){ if(document.getElementById('av-css')) return; var st = document.createElement('style'); st.id = 'av-css'; st.textContent = "  .av-ov{ position:fixed; inset:0; z-index:5000; background:rgba(0,0,0,.82); display:flex; align-items:flex-end; justify-content:center; }   .av-box{ width:100%; max-width:520px; max-height:94vh; overflow-y:auto; background:var(--bg-card,#101410); border:1px solid var(--line); border-radius:24px 24px 0 0; padding:14px 14px calc(18px + env(safe-area-inset-bottom)); }   .av-top{ display:flex; justify-content:space-between; align-items:center; font-size:17px; } .av-x{ background:none; border:none; color:var(--text); font-size:20px; padding:6px 10px; }   .av-prev{ width:150px; height:248px; border-radius:26px; overflow:hidden; margin:8px auto 10px; border:3px solid var(--gold,#A3FF12); } .av-prev svg{ display:block; }   .av-tabs{ display:flex; gap:6px; overflow-x:auto; padding:4px 0 8px; } .av-tab{ flex:none; background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:999px; padding:7px 12px; font:inherit; font-size:12.5px; font-weight:700; white-space:nowrap; } .av-tab.on{ background:var(--gold,#A3FF12); color:#000; border-color:transparent; }   .av-opts{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; min-height:84px; padding:4px 0; }   .av-op{ display:flex; flex-direction:column; align-items:center; gap:3px; background:var(--bg-card-2); border:2px solid transparent; border-radius:14px; padding:6px; color:var(--text); font:inherit; font-size:11px; width:78px; } .av-op svg{ border-radius:50%; } .av-op.fl svg{ border-radius:12px; } .av-op.on{ border-color:var(--gold,#A3FF12); }   .av-sw{ width:42px; height:42px; border-radius:50%; border:3px solid transparent; box-shadow:0 0 0 1px var(--line); } .av-sw.on{ border-color:#fff; box-shadow:0 0 0 3px var(--gold,#A3FF12); }   .av-act{ display:flex; gap:10px; margin-top:12px; } .av-act button{ flex:1; border-radius:14px; padding:13px; font:inherit; font-weight:800; border:1px solid var(--line); background:var(--bg-card-2); color:var(--text); } .av-act .av-ok{ background:var(--gold,#A3FF12); color:#000; border:none; }   .av-hint{ margin-top:10px; font-size:12px; color:var(--text-faint); text-align:center; } "; document.head.appendChild(st); }
   function open(done){
     ensureCss();
     var cfg = load(), tab = 'top', ov = document.createElement('div'); ov.className = 'av-ov';
     ov.innerHTML = '<div class="av-box"><div class="av-top"><b>🧑‍🎨 Avatarul tău</b><button class="av-x" aria-label="Închide">✕</button></div><div class="av-prev"></div><div class="av-tabs"></div><div class="av-opts"></div><div class="av-act"><button class="av-rnd">🎲 Aleator</button><button class="av-ok">✅ Gata</button></div><div class="av-hint">Avatarul devine poza ta de profil și apare în clasament, chat și pe hartă.</div></div>';
     document.body.appendChild(ov);
     var $ = function(s){ return ov.querySelector(s); };
-    function prev(){ $('.av-prev').innerHTML = svg(cfg, 190); }
+    function prev(){ $('.av-prev').innerHTML = svg(cfg, 150, 'full'); }
     function tabs(){ var h = ''; TABS.forEach(function(t){ h += '<button class="av-tab' + (t[0] === tab ? ' on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</button>'; }); $('.av-tabs').innerHTML = h; }
     function opts(){ var h = '';
-      if(PAL[tab]) PAL[tab].forEach(function(col, i){ h += '<button class="av-sw' + (cfg[tab] === i ? ' on' : '') + '" data-i="' + i + '" style="background:' + col + '" aria-label="Culoare ' + (i + 1) + '"></button>'; });
-      else OPT[tab].forEach(function(p){ var t = JSON.parse(JSON.stringify(cfg)); t[tab] = p[0]; h += '<button class="av-op' + (cfg[tab] === p[0] ? ' on' : '') + '" data-v="' + p[0] + '">' + svg(t, 62) + '<span>' + p[1] + '</span></button>'; });
+      if(PAL[tab]) PAL[tab].forEach(function(col, i){ h += '<button class="av-sw' + (cfg[tab] === i ? ' on' : '') + '" data-i="' + i + '" style="background:' + (Array.isArray(col) ? 'linear-gradient(' + col[0] + ',' + col[1] + ')' : col) + '" aria-label="Culoare ' + (i + 1) + '"></button>'; });
+      else OPT[tab].forEach(function(p){ var t = JSON.parse(JSON.stringify(cfg)); t[tab] = p[0]; var fl = (tab === 'pants'); h += '<button class="av-op' + (cfg[tab] === p[0] ? ' on' : '') + (fl ? ' fl' : '') + '" data-v="' + p[0] + '">' + svg(t, fl ? 54 : 62, fl ? 'full' : '') + '<span>' + p[1] + '</span></button>'; });
       $('.av-opts').innerHTML = h; }
     function all(){ prev(); tabs(); opts(); }
     all();
@@ -129,9 +163,9 @@
       var s = e.target.closest('.av-sw'); if(s){ cfg[tab] = +s.getAttribute('data-i'); cfg = norm(cfg); prev(); opts(); return; }
       var p = e.target.closest('.av-op'); if(p){ cfg[tab] = p.getAttribute('data-v'); cfg = norm(cfg); prev(); opts(); return; }
       if(e.target.closest('.av-x')){ ov.remove(); return; }
-      if(e.target.closest('.av-rnd')){ var r = function(n){ return Math.floor(Math.random() * n); }; cfg = norm({ skin: r(SKIN.length), hair: OPT.hair[r(OPT.hair.length)][0], hairc: r(HAIRC.length), eyes: OPT.eyes[r(OPT.eyes.length)][0], eyec: r(EYEC.length), brows: OPT.brows[r(OPT.brows.length)][0], mouth: OPT.mouth[r(OPT.mouth.length)][0], beard: Math.random() < .35 ? OPT.beard[r(OPT.beard.length)][0] : 'none', glasses: Math.random() < .3 ? OPT.glasses[r(OPT.glasses.length)][0] : 'none', top: OPT.top[r(OPT.top.length)][0], topc: r(TOPC.length), acc: Math.random() < .4 ? OPT.acc[r(OPT.acc.length)][0] : 'none', accc: r(TOPC.length), bg: r(BGC.length) }); all(); return; }
+      if(e.target.closest('.av-rnd')){ var r = function(n){ return Math.floor(Math.random() * n); }; cfg = norm({ skin: r(SKIN.length), hair: OPT.hair[r(OPT.hair.length)][0], hairc: r(HAIRC.length), eyes: OPT.eyes[r(OPT.eyes.length)][0], eyec: r(EYEC.length), brows: OPT.brows[r(OPT.brows.length)][0], mouth: OPT.mouth[r(OPT.mouth.length)][0], beard: Math.random() < .35 ? OPT.beard[r(OPT.beard.length)][0] : 'none', glasses: Math.random() < .3 ? OPT.glasses[r(OPT.glasses.length)][0] : 'none', top: OPT.top[r(OPT.top.length)][0], topc: r(TOPC.length), acc: Math.random() < .4 ? OPT.acc[r(OPT.acc.length)][0] : 'none', accc: r(TOPC.length), bg: r(BGC.length), pants: OPT.pants[r(OPT.pants.length)][0], pantc: r(PANTC.length), shoec: r(SHOEC.length), face: Math.random() < .3 ? OPT.face[r(OPT.face.length)][0] : 'none' }); all(); return; }
       if(e.target.closest('.av-ok')){ save(cfg); toJpeg(cfg).then(function(d){ ov.remove(); if(done) done(d, cfg); }).catch(function(){ alert('Nu am putut crea poza. Încearcă din nou.'); }); }
     });
   }
-  window.zAvatar = { svg: svg, open: open, load: load, norm: norm };
+  window.zAvatar = { svg: svg, open: open, load: load, norm: norm, has: function(){ try{ return !!localStorage.getItem(KEY); }catch(e){ return false; } } };
 })();
