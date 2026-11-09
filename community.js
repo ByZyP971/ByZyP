@@ -23,6 +23,25 @@
   function saveBlocked(){ try{ localStorage.setItem('zyp_blocked', JSON.stringify(blocked.slice(-200))); }catch(e){} }
   function active(){ var v = document.getElementById('view-top'); return !!(v && v.classList.contains('active')); }
 
+
+  // ---------- avatare (stil Snap) ----------
+  var AV_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+  var AVC = {}, AVQ = {}, avObs = null;
+  function avFetch(nick){
+    var k = nick.toLowerCase(); if(AVC[k] !== undefined) return Promise.resolve(AVC[k]); if(AVQ[k]) return AVQ[k];
+    AVQ[k] = rpc('get_public_profile', { p_nick: nick }).then(function(p){ AVC[k] = (p && p.avatar && AV_RE.test(p.avatar)) ? p.avatar : ''; delete AVQ[k]; return AVC[k]; }).catch(function(){ AVC[k] = ''; delete AVQ[k]; return ''; });
+    return AVQ[k]; }
+  function avPaint(el){ var n = el.getAttribute('data-av'); if(!n || el.getAttribute('data-done')) return; el.setAttribute('data-done', '1');
+    avFetch(n).then(function(a){ if(a && el.isConnected){ var im = document.createElement('img'); im.alt = ''; im.src = a; el.textContent = ''; el.appendChild(im); } }); }
+  function avHydrate(scope){
+    var els = (scope || root).querySelectorAll('.sn-av[data-av]:not([data-done])');
+    if(!('IntersectionObserver' in window)){ for(var i = 0; i < Math.min(els.length, 30); i++) avPaint(els[i]); return; }
+    if(!avObs) avObs = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ avObs.unobserve(e.target); avPaint(e.target); } }); }, { rootMargin: '120px' });
+    els.forEach(function(e){ avObs.observe(e); }); }
+  function avEl(nick, lv, px, cls){
+    var t = tier(lv || 1), k = String(nick || '?'), c = AVC[k.toLowerCase()];
+    return '<span class="sn-av ' + (cls || '') + '" data-av="' + esc(k) + '"' + (c ? ' data-done="1"' : '') + ' style="--px:' + px + 'px;--c:' + t[2] + '">' + (c ? '<img alt="" src="' + c + '">' : esc(k.charAt(0).toUpperCase())) + '</span>'; }
+
   // ---------- ecran de intrare ----------
   function renderJoin(){
     stopTimers();
@@ -46,15 +65,20 @@
   function renderMain(){
     var lv = me.level || lvOf(me.score), t = tier(lv);
     root.innerHTML =
-      '<div class="card top-me"><div class="top-me-em">' + emblem(lv, 74) + '</div><div class="top-me-in">' +
-      '<div class="top-me-nick">' + esc(me.nick) + '</div><div class="top-me-sub" style="color:' + t[2] + '">Nivel ' + lv + ' · ' + esc(t[1]) + '</div>' +
-      '<div class="top-bar"><i style="width:' + progress(me.score, lv) + '%"></i></div>' +
-      '<div class="top-me-meta">' + me.score + ' puncte · Locul #' + me.rank + (me.streak ? ' · 🔥 ' + me.streak : '') + '</div>' +
-      '<button class="top-edit" data-prof="' + esc(me.nick) + '">✏️ Profilul meu</button></div></div>' +
-      '<div class="seg" id="topSeg"><button class="seg-btn' + (seg==='rank'?' active':'') + '" data-tseg="rank">🏆 Clasament</button><button class="seg-btn' + (seg==='chat'?' active':'') + '" data-tseg="chat">💬 Chat global</button><button class="seg-btn' + (seg==='fr'?' active':'') + '" data-tseg="fr">📍 Prieteni</button></div>' +
+      '<div class="sn-me"><div class="sn-me-av" data-prof="' + esc(me.nick) + '">' + avEl(me.nick, lv, 92, 'ring') + '<span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' +
+      '<div class="sn-me-n">' + esc(me.nick) + '</div><div class="sn-me-t" style="color:' + t[2] + '">' + esc(t[1]) + ' · Nivel ' + lv + '</div>' +
+      '<div class="sn-bar"><i style="width:' + progress(me.score, lv) + '%;background:' + t[2] + '"></i></div>' +
+      '<div class="sn-stats"><div><b>#' + me.rank + '</b><span>Locul tău</span></div><div><b>' + me.score + '</b><span>Puncte</span></div><div><b>' + (me.streak || 0) + '🔥</b><span>Zile la rând</span></div></div>' +
+      '<div class="sn-acts"><button class="sn-b" data-prof="' + esc(me.nick) + '">✏️ Profil</button><button class="sn-b alt" id="snAvt">🧑‍🎨 Avatar</button></div></div>' +
+      '<div class="sn-nav" id="topSeg"><button class="' + (seg==='rank'?'on':'') + '" data-tseg="rank"><i>🏆</i>Clasament</button><button class="' + (seg==='chat'?'on':'') + '" data-tseg="chat"><i>💬</i>Chat</button><button class="' + (seg==='fr'?'on':'') + '" data-tseg="fr"><i>📍</i>Prieteni</button></div>' +
       '<div id="topBody"></div>' +
       '<div class="top-foot">Puncte: obiceiuri bifate, antrenamente făcute, zile perfecte. Poți câștiga cel mult 600 pe zi.</div>';
-    root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('active', x===b); }); showSeg(); }); });
+    root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('on', x===b); }); showSeg(); }); });
+    var ab = document.getElementById('snAvt'); if(ab) ab.addEventListener('click', function(){
+      if(!window.zAvatar){ toast('Avatarul nu e disponibil'); return; }
+      rpc('get_public_profile', { p_nick: me.nick }).then(function(p){ window.zAvatar.open(function(d){
+        rpc('set_my_extra', { p_bio: (p && p.bio) || '', p_avatar: d, p_clear_avatar: false }).then(function(){ AVC[me.nick.toLowerCase()] = d; toast('Avatar salvat!'); renderMain(); }).catch(function(e){ toast(errMsg(e)); }); }); }).catch(function(e){ toast(errMsg(e)); }); });
+    avHydrate(root);
     showSeg();
     startScoreTimer();
   }
@@ -63,13 +87,13 @@
   // ---------- clasament ----------
   function row(r){
     var t = tier(r.level);
-    return '<div class="top-row' + (r.me ? ' me' : '') + '" data-prof="' + esc(r.nick) + '"><span class="top-rk">' + r.rank + '</span><span class="top-em">' + emblem(r.level, 34) + '</span>' +
-      '<span class="top-rn"><b>' + esc(r.nick) + '</b><small>Nivel ' + r.level + ' · <span style="color:' + t[2] + '">' + esc(t[1]) + '</span>' + (r.streak ? ' · 🔥 ' + r.streak : '') + '</small></span><span class="top-sc">' + r.score + '</span></div>';
+    return '<div class="sn-row' + (r.me ? ' me' : '') + '" data-prof="' + esc(r.nick) + '"><span class="sn-rk">' + r.rank + '</span>' + avEl(r.nick, r.level, 48) +
+      '<span class="sn-rn"><b>' + esc(r.nick) + (r.me ? ' <em>tu</em>' : '') + '</b><small><span style="color:' + t[2] + '">● ' + esc(t[1]) + '</span> · Nivel ' + r.level + (r.streak ? ' · 🔥 ' + r.streak : '') + '</small></span><span class="sn-sc">' + r.score + '<small>pct</small></span></div>';
   }
   function podium(r, place){
-    if(!r) return '<div class="top-pod p' + place + '"></div>';
-    var t = tier(r.level);
-    return '<div class="top-pod p' + place + '" data-prof="' + esc(r.nick) + '"><div class="top-pod-em">' + emblem(r.level, place===1 ? 58 : 46) + '</div><div class="top-pod-n">' + esc(r.nick) + '</div><div class="top-pod-s">' + r.score + '</div><div class="top-pod-b"><span>' + place + '</span></div></div>';
+    if(!r) return '<div class="sn-pod p' + place + '"></div>';
+    return '<div class="sn-pod p' + place + '" data-prof="' + esc(r.nick) + '">' + (place === 1 ? '<span class="sn-crown">👑</span>' : '') + avEl(r.nick, r.level, place === 1 ? 84 : 66, 'ring m' + place) +
+      '<div class="sn-pn">' + esc(r.nick) + '</div><div class="sn-ps">' + r.score + ' pct</div><div class="sn-pb"><span>' + place + '</span></div></div>';
   }
   function renderBoard(){
     var b = document.getElementById('topBody'); if(!b) return;
@@ -77,13 +101,13 @@
     rpc('get_leaderboard', {p_limit:100}).then(function(d){
       board = d; me = d.me || me; if(!document.getElementById('topBody') || seg !== 'rank') return;
       var top = d.top || [], html = '';
-      html += '<div class="top-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
-      html += '<div class="top-list">' + top.slice(3).map(row).join('') + '</div>';
+      html += '<div class="sn-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
+      html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
       var inTop = top.some(function(r){ return r.me; });
-      if(me && !inTop) html += '<div class="top-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
+      if(me && !inTop) html += '<div class="sn-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
       if(!top.length) html = '<div class="top-load">Nimeni încă. Fii primul! 🏆</div>';
       html += '<div class="top-foot">' + (d.total || top.length) + ' conturi în clasament</div>';
-      document.getElementById('topBody').innerHTML = html;
+      document.getElementById('topBody').innerHTML = html; avHydrate(document.getElementById('topBody'));
     }).catch(function(e){ var bb = document.getElementById('topBody'); if(bb) bb.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
   }
 
@@ -94,22 +118,22 @@
     var t = tier(m.lvl);
     var acts = m.mine ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge">🗑</button>' :
       '<button class="top-ma" data-rep="' + m.id + '" title="Raportează">🚩</button><button class="top-ma" data-blk="' + esc(m.nick) + '" title="Blochează">🚫</button>' + (isAdmin ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge (admin)">🗑</button><button class="top-ma" data-ban="' + esc(m.nick) + '" title="Blochează cont">⛔</button>' : '');
-    return '<div class="top-msg' + (m.mine ? ' mine' : '') + '" data-id="' + m.id + '"><span class="top-msg-em">' + emblem(m.lvl, 26) + '</span><div class="top-msg-c">' +
-      '<div class="top-msg-h"><b style="color:' + t[2] + '">' + esc(m.nick) + '</b><small>' + esc(fmtT(m.at)) + '</small><span class="top-msg-a">' + acts + '</span></div>' +
-      '<div class="top-msg-b">' + esc(m.body) + '</div></div></div>';
+    return '<div class="sn-msg' + (m.mine ? ' mine' : '') + '" data-id="' + m.id + '">' + (m.mine ? '' : '<span data-prof="' + esc(m.nick) + '">' + avEl(m.nick, m.lvl, 34) + '</span>') +
+      '<div class="sn-mc">' + (m.mine ? '' : '<div class="sn-mh" style="color:' + t[2] + '">' + esc(m.nick) + '</div>') + '<div class="sn-bub">' + esc(m.body) + '</div>' +
+      '<div class="sn-mf"><small>' + esc(fmtT(m.at)) + '</small><span class="sn-ma">' + acts + '</span></div></div></div>';
   }
   function renderChat(){
     var b = document.getElementById('topBody'); if(!b) return;
     lastId = 0;
-    b.innerHTML = '<div class="card top-chat"><div class="top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
-      '<div class="top-send"><input id="topMsgIn" class="top-in" maxlength="300" autocomplete="off" placeholder="Scrie un mesaj…"><button class="top-btn" id="topSend">Trimite</button></div>' +
+    b.innerHTML = '<div class="sn-chat"><div class="sn-msgs top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
+      '<div class="sn-send"><input id="topMsgIn" maxlength="300" autocomplete="off" placeholder="Trimite un mesaj…"><button id="topSend" aria-label="Trimite">➤</button></div>' +
       '<div class="top-err" id="topCErr"></div><div class="top-hint">Fără link-uri. Fii respectuos. 🚩 raportează, 🚫 blochează un utilizator.</div></div>';
     var box = document.getElementById('topMsgs');
     box.addEventListener('click', function(ev){
       var el = ev.target.closest('button'); if(!el) return;
       var id = el.getAttribute('data-rep') || el.getAttribute('data-del'), nk = el.getAttribute('data-blk') || el.getAttribute('data-ban');
       if(el.hasAttribute('data-rep')){ if(confirm('Raportezi acest mesaj?')) rpc('report_chat', {p_id:+id}).then(function(){ toast('Mesaj raportat. Mulțumim!'); }).catch(function(e){ toast(errMsg(e)); }); }
-      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi ' + nk + '? Nu îi mai vezi mesajele.')){ blocked.push(nk.toLowerCase()); saveBlocked(); box.querySelectorAll('.top-msg').forEach(function(x){ var h = x.querySelector('b'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
+      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi ' + nk + '? Nu îi mai vezi mesajele.')){ blocked.push(nk.toLowerCase()); saveBlocked(); box.querySelectorAll('.sn-msg').forEach(function(x){ var h = x.querySelector('.sn-mh'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
       else if(el.hasAttribute('data-del')){ if(confirm('Ștergi mesajul?')) rpc('delete_chat', {p_id:+id}).then(function(){ var x = box.querySelector('[data-id="' + id + '"]'); if(x) x.remove(); }).catch(function(e){ toast(errMsg(e)); }); }
       else if(el.hasAttribute('data-ban')){ if(confirm('Blochezi contul ' + nk + '?')) rpc('admin_ban', {p_nick:nk, p_on:true}).then(function(){ toast('Cont blocat'); }).catch(function(e){ toast(errMsg(e)); }); }
     });
@@ -132,13 +156,12 @@
       var near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
       var html = msgs.map(msgHtml).join(''); lastId = msgs[msgs.length-1].id;
       box.insertAdjacentHTML('beforeend', html);
-      if(scroll || near) box.scrollTop = box.scrollHeight;
+      if(scroll || near) box.scrollTop = box.scrollHeight; avHydrate(box);
     }).catch(function(){});
   }
   function stopChat(){ if(chatTimer){ clearInterval(chatTimer); chatTimer = null; } }
 
   // ---------- profil public ----------
-  var AV_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
   function avatarHtml(p, px){
     var t = tier(p.level);
     if(p.avatar && AV_RE.test(p.avatar)) return '<img class="top-pf-img" style="width:'+px+'px;height:'+px+'px" alt="" src="' + p.avatar + '">';
