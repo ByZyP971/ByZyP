@@ -191,6 +191,7 @@
     box.innerHTML =
       '<div class="top-pf"><div id="pfAv">' + avatarHtml(p, 112) + '</div>' +
       '<div class="top-pf-acts"><button class="top-pf-rep" id="pfPick">📷 Alege poză</button><button class="top-pf-rep" id="pfDel">Șterge poza</button></div>' +
+      (window.zAvatar ? '<button class="top-btn top-pf-btn" id="pfAvt" style="margin-top:10px">🧑‍🎨 Creează-ți avatarul</button>' : '') + +
       '<input type="file" id="pfFile" accept="image/*" style="display:none">' +
       '<textarea id="pfBio" class="top-in top-pf-ta" maxlength="150" rows="3" placeholder="Bio (max 150 caractere, fără link-uri)">' + esc(p.bio || '') + '</textarea>' +
       '<div class="top-hint" id="pfCnt" style="text-align:right">' + (p.bio||'').length + '/150</div>' +
@@ -203,6 +204,7 @@
       var f = this.files && this.files[0]; if(!f) return;
       toJpeg(f).then(function(d){ newAv = d; clear = false; document.getElementById('pfAv').innerHTML = avatarHtml({avatar:d, nick:p.nick, level:p.level}, 112); }).catch(function(){ document.getElementById('pfErr').textContent = 'Nu am putut citi poza.'; });
     });
+    var avb = document.getElementById('pfAvt'); if(avb) avb.addEventListener('click', function(){ window.zAvatar.open(function(d){ newAv = d; clear = false; document.getElementById('pfAv').innerHTML = avatarHtml({avatar:d, nick:p.nick, level:p.level}, 112); toast('Avatar creat. Apasă Salvează.'); }); });
     document.getElementById('pfDel').addEventListener('click', function(){ newAv = null; clear = true; document.getElementById('pfAv').innerHTML = avatarHtml({avatar:null, nick:p.nick, level:p.level}, 112); });
     document.getElementById('pfCancel').addEventListener('click', function(){ renderProfile(p); });
     document.getElementById('pfSave').addEventListener('click', function(){
