@@ -63,10 +63,12 @@
   // ---------- ecran principal ----------
   function progress(score, lv){ var a = 25*(lv-1)*(lv-1), b = 25*lv*lv; return Math.max(0, Math.min(100, Math.round((score-a)/(b-a)*100))); }
   function renderMain(){
-    var lv = me.level || lvOf(me.score), t = tier(lv);
+    var lv = me.level || lvOf(me.score), t = tier(lv), heroOn = !!(window.zAvatar && window.zAvatar.has());
     root.innerHTML =
-      '<div class="sn-me"><div class="sn-me-av" data-prof="' + esc(me.nick) + '">' + ((window.zAvatar && window.zAvatar.has()) ? '<div class="sn-full">' + window.zAvatar.svg(window.zAvatar.load(), 120, 'full') + '</div>' : avEl(me.nick, lv, 92, 'ring')) + '<span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' +
-      '<div class="sn-me-n">' + esc(me.nick) + '</div><div class="sn-me-t" style="color:' + t[2] + '">' + esc(t[1]) + ' · Nivel ' + lv + '</div>' +
+      '<div class="sn-me">' + (heroOn ?
+        '<div class="sn-hero" data-prof="' + esc(me.nick) + '">' + window.zAvatar.svg(window.zAvatar.load(), 390, 'hero') + '<div class="sn-hero-ov"><div class="sn-me-n">' + esc(me.nick) + '</div><div class="sn-me-t" style="color:' + t[2] + '">' + esc(t[1]) + ' · Nivel ' + lv + '</div></div><span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' :
+        '<div class="sn-me-av" data-prof="' + esc(me.nick) + '">' + avEl(me.nick, lv, 92, 'ring') + '<span class="sn-lv" style="--c:' + t[2] + '">' + lv + '</span></div>' +
+        '<div class="sn-me-n">' + esc(me.nick) + '</div><div class="sn-me-t" style="color:' + t[2] + '">' + esc(t[1]) + ' · Nivel ' + lv + '</div>') +
       '<div class="sn-bar"><i style="width:' + progress(me.score, lv) + '%;background:' + t[2] + '"></i></div>' +
       '<div class="sn-stats"><div><b>#' + me.rank + '</b><span>Locul tău</span></div><div><b>' + me.score + '</b><span>Puncte</span></div><div><b>' + (me.streak || 0) + '🔥</b><span>Zile la rând</span></div></div>' +
       '<div class="sn-acts"><button class="sn-b" data-prof="' + esc(me.nick) + '">✏️ Profil</button><button class="sn-b alt" id="snAvt">🧑‍🎨 Avatar</button></div></div>' +
