@@ -416,18 +416,18 @@
   });
 
   /* ===== sport tab ===== */
-  /* ===== SPORT: doar sală · programe din pozele tale · variante noi în fiecare săptămână ===== */
+  /* ===== SPORT: doar sală · programe proprii · variante noi în fiecare săptămână ===== */
   // fiecare exercițiu are 4 variante; în fiecare săptămână se folosește alta, ca mușchii să nu se obișnuiască
   var POOL = {
-    benchP:['Împins la piept cu haltera (plat)|Picioarele pe podea, bara coboară la mijlocul pieptului, coatele la 45–70°, fără să sari cu bara|wo-c1.jpg',
+    benchP:['Împins la piept cu haltera (plat)|Picioarele pe podea, bara coboară la mijlocul pieptului, coatele la 45–70°, fără să sari cu bara',
       'Împins plat cu gantere|Ganterele în linie cu pieptul, coboară lent, strânge pieptul sus',
       'Împins la piept la mașină|Spatele lipit de spătar, împinge fără să blochezi coatele',
       'Împins cu haltera, pauză 1 s pe piept|Oprește bara 1 secundă pe piept, apoi împinge puternic'],
-    inclP:['Împins înclinat cu gantere|Bancă la 30°, împinge deasupra pieptului de sus, coboară lent|wo-c2.jpg',
+    inclP:['Împins înclinat cu gantere|Bancă la 30°, împinge deasupra pieptului de sus, coboară lent',
       'Împins înclinat cu haltera|Bancă la 30°, bara coboară spre claviculă',
       'Împins înclinat la mașină|Reglează scaunul ca mânerele să fie la nivelul pieptului de sus',
       'Împins înclinat cu gantere, priză neutră|Palmele față în față, coatele aproape de corp'],
-    fly:['Fluturări la peck deck|Coatele ușor îndoite, strânge pieptul în față 1 s|wo-c3.jpg',
+    fly:['Fluturări la peck deck|Coatele ușor îndoite, strânge pieptul în față 1 s',
       'Fluturări la cabluri (la mijloc)|Un pas înainte, strânge mâinile în fața pieptului',
       'Fluturări înclinate cu gantere|Coboară larg până simți întinderea, urcă în arc',
       'Fluturări la mașină, o mână pe rând|Concentrează-te pe strângerea pieptului'],
@@ -435,7 +435,7 @@
       'Cable crossover, de jos în sus|Trage de jos spre bărbie, lucrează pieptul de sus',
       'Flotări cu coborâre lentă|Coboară în 3 secunde, corp drept; pune greutate pe spate dacă e ușor',
       'Împins la scripete, o mână|Stai în pas, împinge înainte fără să rotești trunchiul'],
-    pushdown:['Extensii triceps la scripete, cu coarda|Coatele lipite de corp, desparte coarda jos|wo-c6.jpg',
+    pushdown:['Extensii triceps la scripete, cu coarda|Coatele lipite de corp, desparte coarda jos',
       'Extensii triceps cu bara dreaptă|Coatele fixe, extinde complet',
       'Extensii triceps la scripete, o mână|Controlat, fără să te legeni',
       'Extensii la scripete, priză inversă|Palma în sus, coatele lipite'],
@@ -519,11 +519,11 @@
       'Genuflexiuni sumo cu ganteră|Picioarele larg, genunchii în afară',
       'Adductori la scripete|Trage piciorul spre cel de sprijin',
       'Adductori la mașină, lent|Pauză 1 s când strângi'],
-    press:['Împins umeri cu gantere|Așezat, fără să arcuiești spatele, ganterele deasupra capului|wo-c4.jpg',
+    press:['Împins umeri cu gantere|Așezat, fără să arcuiești spatele, ganterele deasupra capului',
       'Arnold press|Rotește palmele în timpul împinsului',
       'Împins umeri la mașină|Reglează scaunul, coatele sub încheieturi',
       'Împins umeri cu haltera, așezat|Bara coboară la bărbie, apoi împinge sus'],
-    lat2:['Ridicări laterale cu gantere|Coatele ușor îndoite, urcă până la nivelul umerilor|wo-c5.jpg',
+    lat2:['Ridicări laterale cu gantere|Coatele ușor îndoite, urcă până la nivelul umerilor',
       'Ridicări laterale la scripete|Tensiune constantă, fără balans',
       'Ridicări laterale la mașină|Strânge sus 1 s',
       'Ridicări laterale, sprijinit de un stâlp|Te ții cu o mână, ridici cu cealaltă'],
@@ -1079,7 +1079,6 @@
   function woLabel(code){ return WO[code] ? WO[code].name : WEEK_INFO[code][0]; }
   function woSub(code){ return WO[code] ? WO[code].focus + ' · ' + WO[code].ex.length + ' exerciții' : WEEK_INFO[code][1]; }
   function woGymCodes(){ return PLANS[sp.phase].days.map(function(d){ return d.code; }); }
-  function imgBtn(src, alt){ return '<img class="wo-img" loading="lazy" src="' + src + '" alt="' + alt + '" data-big="' + src + '">'; }
   function bindImgs(root){
     root.querySelectorAll('[data-big]').forEach(function(im){ im.addEventListener('click', function(ev){ ev.stopPropagation(); openBig(im.getAttribute('data-big')); }); });
   }
@@ -1407,7 +1406,8 @@
   function suppCfg(){ var c = null; try{ c = JSON.parse(localStorage.getItem(SUPP_CFG) || 'null'); }catch(e){} if(!c || typeof c !== 'object') c = {}; if(!c.times || typeof c.times !== 'object') c.times = {}; if(c.on === undefined) c.on = true; var l = +c.lead; c.lead = [5,10,15,20,30].indexOf(l) >= 0 ? l : 15; return c; }
   function gTime(gi){ var t = suppCfg().times[gi]; return /^([01]\d|2[0-3]):[0-5]\d$/.test(t || '') ? t : SUPP_G[gi].t; }
   window.__zSupps = function(){ var c = suppCfg(), cur = suppOwn(), g = [];
-    SUPP_G.forEach(function(x, gi){ var n = SUPP_CAT.filter(function(s){ return s.g === gi && cur.indexOf(s.id) >= 0; }).map(function(s){ return s.n; }); if(n.length) g.push({ t: gTime(gi), n: n, l: x.l }); });
+    var day = (suppLoad()[todayKey]) || {};
+    SUPP_G.forEach(function(x, gi){ var it = SUPP_CAT.filter(function(s){ return s.g === gi && cur.indexOf(s.id) >= 0; }); if(it.length) g.push({ t: gTime(gi), n: it.map(function(s){ return s.n; }), p: it.filter(function(s){ return !day[s.id]; }).map(function(s){ return s.n; }), d: todayKey, l: x.l }); });
     return { on: !!c.on, lead: c.lead, g: g }; };
   function suppLoad(){ try{ return JSON.parse(localStorage.getItem(SUPP_KEY) || '{}') || {}; }catch(e){ return {}; } }
   function renderSupp(){
@@ -1432,7 +1432,7 @@
       var a = suppLoad(), d = a[todayKey] || {}; d[r.getAttribute('data-id')] = !d[r.getAttribute('data-id')]; a[todayKey] = d;
       Object.keys(a).sort().slice(0, -30).forEach(function(k){ delete a[k]; });
       try{ localStorage.setItem(SUPP_KEY, JSON.stringify(a)); }catch(e){}
-      renderSupp();
+      renderSupp(); if(window.__syncPush) setTimeout(window.__syncPush, 400);
     }); });
   }
   function suppPicker(){

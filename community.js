@@ -24,7 +24,7 @@
   function active(){ var v = document.getElementById('view-top'); return !!(v && v.classList.contains('active')); }
 
 
-  // ---------- avatare (stil Snap) ----------
+  // ---------- avatare ----------
   var AV_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
   var AVC = {}, AVQ = {}, avObs = null;
   function avFetch(nick){
