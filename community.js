@@ -218,7 +218,7 @@
     box.innerHTML =
       '<div class="top-pf"><div id="pfAv">' + avatarHtml(p, 112) + '</div>' +
       '<div class="top-pf-acts"><button class="top-pf-rep" id="pfPick">📷 Alege poză</button><button class="top-pf-rep" id="pfDel">Șterge poza</button></div>' +
-      (window.zAvatar ? '<button class="top-btn top-pf-btn" id="pfAvt" style="margin-top:10px">🧑‍🎨 Creează-ți avatarul</button>' : '') + +
+      (window.zAvatar ? '<button class="top-btn top-pf-btn" id="pfAvt" style="margin-top:10px">🧑‍🎨 Creează-ți avatarul</button>' : '') +
       '<input type="file" id="pfFile" accept="image/*" style="display:none">' +
       '<textarea id="pfBio" class="top-in top-pf-ta" maxlength="150" rows="3" placeholder="Bio (max 150 caractere, fără link-uri)">' + esc(p.bio || '') + '</textarea>' +
       '<div class="top-hint" id="pfCnt" style="text-align:right">' + (p.bio||'').length + '/150</div>' +
