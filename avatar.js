@@ -83,59 +83,76 @@
   }
   var UID = 0;
   function svg(cfg, px, mode){
-    var full = mode === 'full' || mode === 'hero', hero = mode === 'hero', H = full ? 330 : 200, gid = 'avg' + (++UID);
+    var cut = mode === 'cut', full = mode === 'full' || mode === 'hero' || cut, hero = mode === 'hero', H = full ? 330 : 200, gid = 'avg' + (++UID);
     var c = norm(cfg), skin = SKIN[c.skin], sd = mix(skin, -.18), hc = HAIRC[c.hairc], hd = mix(hc, -.25), tc = TOPC[c.topc], td = mix(tc, -.25), ac = TOPC[c.accc], bg = BGC[c.bg], pc = PANTC[c.pantc], pd = mix(pc, -.22);
     var ink = '#241a14', o = [];
     o.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + (hero ? '0 0 200 330' : '0 0 200 ' + H) + '" width="' + px + '" height="' + (hero ? Math.round(px * 1.9) : Math.round(px * H / 200)) + '"' + (hero ? ' preserveAspectRatio="xMidYMin slice"' : '') + '><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient>' +
       '<radialGradient id="' + gid + 's" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="' + mix(skin, .22) + '"/><stop offset=".6" stop-color="' + skin + '"/><stop offset="1" stop-color="' + mix(skin, -.16) + '"/></radialGradient>' +
       '<linearGradient id="' + gid + 'h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + mix(hc, .28) + '"/><stop offset=".5" stop-color="' + hc + '"/><stop offset="1" stop-color="' + mix(hc, -.3) + '"/></linearGradient>' +
-      sceneDefs(c.scene, gid) + '<linearGradient id="' + gid + 't" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="' + mix(tc, .18) + '"/><stop offset=".5" stop-color="' + tc + '"/><stop offset="1" stop-color="' + mix(tc, -.28) + '"/></linearGradient></defs><rect width="200" height="' + H + '" fill="url(#' + gid + ')"/>');
-    var scn = (c.scene === 'photo' && !photo()) ? 'none' : c.scene; if(scn !== 'none') o.push(sceneSvg(scn, gid));
-    if(full && scn === 'none') o.push('<circle cx="100" cy="120" r="96" fill="#fff" opacity=".07"/>');
-    if(full) o.push('<ellipse cx="100" cy="320" rx="86" ry="12" fill="#fff" opacity=".1"/><ellipse cx="100" cy="318" rx="60" ry="7" fill="#000" opacity=".28"/>');
+      sceneDefs(c.scene, gid) +
+      '<filter id="' + gid + 'b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter><filter id="' + gid + 'b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.3"/></filter>' +
+      '<clipPath id="' + gid + 'fc"><path d="M57 86C57 56 78 41 100 41C122 41 143 56 143 86C143 112 127 137 100 141C73 137 57 112 57 86Z"/></clipPath>' +
+      '<pattern id="' + gid + 'hp" width="5" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(14)"><path d="M1 0Q2.4 17 1 34" stroke="#fff" stroke-opacity=".13" stroke-width=".8" fill="none"/><path d="M3.5 0Q2.2 17 3.5 34" stroke="#000" stroke-opacity=".2" stroke-width=".9" fill="none"/></pattern>' +
+      '<linearGradient id="' + gid + 't" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="' + mix(tc, .18) + '"/><stop offset=".5" stop-color="' + tc + '"/><stop offset="1" stop-color="' + mix(tc, -.28) + '"/></linearGradient></defs>' + (cut ? '' : '<rect width="200" height="' + H + '" fill="url(#' + gid + ')"/>'));
+    var scn = (c.scene === 'photo' && !photo()) ? 'none' : c.scene; if(scn !== 'none' && !cut) o.push(sceneSvg(scn, gid));
+    if(full && !cut && scn === 'none') o.push('<circle cx="100" cy="120" r="96" fill="#fff" opacity=".07"/>');
+    if(full) o.push('<ellipse cx="100" cy="320" rx="86" ry="12" fill="#fff" opacity="' + (cut ? '0' : '.1') + '"/><ellipse cx="100" cy="318" rx="60" ry="7" fill="#000" opacity=".28"/>');
+    if(full) o.push('<g transform="translate(100 320) scale(1.17) translate(-100 -320)">');
+    if(full) o.push('<g transform="translate(100 148) scale(.66) translate(-100 -148)">');
     // păr din spate
     if(c.hair === 'long') o.push('<path d="M52 96C46 40 78 30 100 30C124 30 156 40 148 96C152 130 146 160 132 176L68 176C54 160 48 130 52 96Z" fill="url(#' + gid + 'h)"/>');
     if(c.hair === 'afro') o.push('<ellipse cx="100" cy="66" rx="60" ry="54" fill="url(#' + gid + 'h)"/>');
     if(c.hair === 'pony') o.push('<path d="M138 56C180 52 190 104 166 138C172 104 160 86 136 82Z" fill="url(#' + gid + 'h)"/>');
     if(c.hair === 'bun') o.push('<circle cx="100" cy="30" r="16" fill="url(#' + gid + 'h)"/>');
+    if(full) o.push('</g><g transform="translate(31 0) scale(.69 1)">');
     if(c.top === 'hoodie') o.push('<path d="M60 152C52 118 74 110 100 110C126 110 148 118 140 152Z" fill="' + td + '"/>');
     // gât + umeri
     if(full){
-      if(c.pants === 'jeans' || c.pants === 'jogger') o.push('<path d="M44 236H156L152 304H104L100 262L96 304H48Z" fill="' + pc + '"/><path d="M100 240V262" stroke="' + pd + '" stroke-width="3"/>' + (c.pants === 'jogger' ? '<rect x="46" y="292" width="52" height="12" rx="6" fill="' + pd + '"/><rect x="102" y="292" width="52" height="12" rx="6" fill="' + pd + '"/>' : '<path d="M56 250L58 296M144 250L142 296" stroke="' + pd + '" stroke-width="2" opacity=".6"/>'));
-      if(c.pants === 'shorts') o.push('<rect x="56" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><rect x="106" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><path d="M44 236H156L152 276H104L100 258L96 276H48Z" fill="' + pc + '"/><path d="M100 240V258" stroke="' + pd + '" stroke-width="3"/>');
-      if(c.pants === 'skirt') o.push('<rect x="62" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><rect x="106" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><path d="M46 236H154L174 292H26Z" fill="' + pc + '"/><path d="M46 236H154" stroke="' + pd + '" stroke-width="6"/>');
+      if(c.pants === 'jeans' || c.pants === 'jogger') o.push('<path d="M50 238H150L149 304H104L100 264L96 304H51Z" fill="' + pc + '"/><path d="M100 240V262" stroke="' + pd + '" stroke-width="3"/>' + (c.pants === 'jogger' ? '<rect x="49" y="292" width="49" height="12" rx="6" fill="' + pd + '"/><rect x="102" y="292" width="49" height="12" rx="6" fill="' + pd + '"/>' : '<path d="M60 252L61 296M140 252L139 296" stroke="' + pd + '" stroke-width="2" opacity=".6"/>'));
+      if(c.pants === 'shorts') o.push('<rect x="56" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><rect x="106" y="268" width="38" height="38" rx="14" fill="' + skin + '"/><path d="M50 238H150L149 276H104L100 260L96 276H51Z" fill="' + pc + '"/><path d="M100 240V258" stroke="' + pd + '" stroke-width="3"/>');
+      if(c.pants === 'skirt') o.push('<rect x="62" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><rect x="106" y="280" width="32" height="28" rx="12" fill="' + skin + '"/><path d="M50 238H150L166 292H34Z" fill="' + pc + '"/><path d="M50 238H150" stroke="' + pd + '" stroke-width="6"/>');
       var sc = SHOEC[c.shoec];
       o.push('<path d="M38 304C38 294 94 294 100 304V316C100 324 38 324 38 316Z" fill="' + sc + '"/><path d="M100 304C106 294 162 294 162 304V316C162 324 100 324 100 316Z" fill="' + sc + '"/><path d="M38 315H100M100 315H162" stroke="#000" stroke-opacity=".28" stroke-width="3.5"/><path d="M52 303L64 303M136 303L148 303" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>');
-      o.push('<path d="M32 196H168L164 246H36Z" fill="' + (c.top === 'tank' ? skin : 'url(#' + gid + 't)') + '"/>');
-      if(c.top === 'hoodie') o.push('<rect x="32" y="236" width="136" height="12" rx="5" fill="' + td + '"/><rect x="76" y="212" width="48" height="24" rx="9" fill="' + td + '" opacity=".55"/>');
-      if(c.top === 'turtle' || c.top === 'tee' || c.top === 'shirt') o.push('<rect x="32" y="240" width="136" height="6" fill="' + td + '" opacity=".35"/>');
+      o.push('<path d="M34 190H166C166 214 156 232 151 248H49C44 232 34 214 34 190Z" fill="' + (c.top === 'tank' ? skin : 'url(#' + gid + 't)') + '"/>');
+      if(c.top === 'tank') o.push('<path d="M48 196H152C152 216 150 234 149 248H51C50 234 48 216 48 196Z" fill="url(#' + gid + 't)"/>');
+      if(c.top === 'hoodie') o.push('<rect x="48" y="238" width="104" height="11" rx="5" fill="' + td + '"/><rect x="78" y="212" width="44" height="22" rx="9" fill="' + td + '" opacity=".55"/>');
+      if(c.top === 'turtle' || c.top === 'tee' || c.top === 'shirt') o.push('<rect x="49" y="242" width="102" height="6" fill="' + td + '" opacity=".35"/>');
     }
     o.push('<rect x="85" y="120" width="30" height="40" rx="8" fill="' + sd + '"/>');
-    o.push('<path d="M18 200C18 168 56 152 100 152C144 152 182 168 182 200Z" fill="' + (c.top === 'tank' ? skin : 'url(#' + gid + 't)') + '"/>');
-    if(c.top === 'tank') o.push('<path d="M44 200C50 176 72 158 82 152C90 166 110 166 118 152C128 158 150 176 156 200Z" fill="url(#' + gid + 't)"/><path d="M82 152C90 168 110 168 118 152Z" fill="' + sd + '"/>');
+    o.push('<path d="M26 200C22 178 40 162 68 158C82 156 90 152 100 152C110 152 118 156 132 158C160 162 178 178 174 200Z" fill="' + (c.top === 'tank' ? skin : 'url(#' + gid + 't)') + '"/>');
+    o.push('<path d="M66 184Q84 200 100 188Q116 200 134 184" stroke="' + (c.top === 'tank' ? sd : td) + '" stroke-width="2.2" fill="none" opacity=".4" stroke-linecap="round"/><ellipse cx="82" cy="180" rx="15" ry="7" fill="#fff" opacity=".1" filter="url(#' + gid + 'b2)"/><ellipse cx="118" cy="180" rx="15" ry="7" fill="#fff" opacity=".07" filter="url(#' + gid + 'b2)"/><ellipse cx="100" cy="196" rx="30" ry="4" fill="#000" opacity=".14" filter="url(#' + gid + 'b2)"/>');
+    if(full) o.push('<path d="M100 200V236M86 212H114M87 224H113" stroke="' + (c.top === 'tank' ? td : td) + '" stroke-width="1.6" fill="none" opacity="' + (c.top === 'tank' ? '.22' : '0') + '" stroke-linecap="round"/>');
+    if(c.top === 'tank') o.push('<path d="M48 200C52 178 72 160 82 152C90 166 110 166 118 152C128 160 148 178 152 200Z" fill="url(#' + gid + 't)"/><path d="M82 152C90 168 110 168 118 152Z" fill="' + sd + '"/>');
     if(c.top === 'tee') o.push('<path d="M78 152C84 168 116 168 122 152Z" fill="' + sd + '"/>');
-    if(c.top === 'hoodie') o.push('<path d="M80 152C88 172 112 172 120 152Z" fill="' + sd + '"/><path d="M90 168L88 188M110 168L112 188" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M60 152C58 168 56 184 54 200M140 152C142 168 144 184 146 200" stroke="' + td + '" stroke-width="2" fill="none"/>');
+    if(c.top === 'hoodie') o.push('<path d="M80 152C88 172 112 172 120 152Z" fill="' + sd + '"/><path d="M90 168L88 188M110 168L112 188" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M62 158C60 172 58 186 57 200M138 158C140 172 142 186 143 200" stroke="' + td + '" stroke-width="2" fill="none"/>');
     if(c.top === 'shirt') o.push('<path d="M82 152L100 180L118 152Z" fill="' + sd + '"/><path d="M78 150L100 182L122 150L112 148L100 166L88 148Z" fill="#fff"/><path d="M100 182L100 200" stroke="' + td + '" stroke-width="2"/><circle cx="100" cy="190" r="1.8" fill="' + td + '"/>');
     if(c.top === 'jacket') o.push('<path d="M82 152L100 200L118 152Z" fill="' + (tc === '#FFFFFF' ? '#d8d8d8' : '#f2f2f2') + '"/><path d="M82 152L100 200M118 152L100 200" stroke="' + td + '" stroke-width="3" fill="none"/><path d="M84 150L100 172L116 150" stroke="' + td + '" stroke-width="4" fill="none" stroke-linejoin="round"/>');
     if(c.top === 'turtle') o.push('<rect x="80" y="126" width="40" height="32" rx="12" fill="' + td + '"/><path d="M82 140H118M82 148H118" stroke="' + tc + '" stroke-width="2" opacity=".5"/>');
     if(full){
       var longS = c.top === 'hoodie' || c.top === 'shirt' || c.top === 'jacket' || c.top === 'turtle';
-      [12, 164].forEach(function(x){
-        o.push('<rect x="' + x + '" y="184" width="24" height="92" rx="12" fill="' + skin + '"/>');
-        if(c.top !== 'tank') o.push('<rect x="' + (x - 2) + '" y="176" width="28" height="' + (longS ? 100 : 42) + '" rx="13" fill="url(#' + gid + 't)"/>');
-        if(longS) o.push('<rect x="' + (x - 2) + '" y="262" width="28" height="12" rx="6" fill="' + td + '"/>');
-        o.push('<circle cx="' + (x + 12) + '" cy="284" r="12" fill="' + skin + '"/>');
-      });
+      var armS = '<path d="M12 198C4 214 6 232 13 244C11 256 13 268 16 276L34 276C37 266 38 254 35 244C41 230 40 212 36 198C32 186 16 186 12 198Z" fill="' + skin + '"/><path d="M14 222Q22 232 34 224" stroke="' + sd + '" stroke-width="1.6" fill="none" opacity=".5"/><ellipse cx="20" cy="212" rx="5" ry="10" fill="#fff" opacity=".14" filter="url(#' + gid + 'b2)"/>' +
+        '<path d="M14 274C10 286 14 298 25 299C35 299 39 288 36 274Z" fill="' + skin + '"/><path d="M34 279C39 281 40 289 36 292" stroke="' + sd + '" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M20 291V297M25 292V298M30 291V297" stroke="' + sd + '" stroke-width="1.2" opacity=".7"/>' +
+        (c.top !== 'tank' ? '<path d="' + (longS ? 'M10 198C2 214 4 232 11 244C9 256 11 268 14 277L36 277C39 266 40 254 37 244C43 230 42 212 38 198C33 184 15 184 10 198Z' : 'M10 198C4 208 4 218 7 226L40 226C42 216 41 206 38 198C33 184 15 184 10 198Z') + '" fill="url(#' + gid + 't)"/><ellipse cx="19" cy="210" rx="5" ry="9" fill="#fff" opacity=".12" filter="url(#' + gid + 'b2)"/>' : '') +
+        (longS ? '<path d="M13 267H37V277C37 281 13 281 13 277Z" fill="' + td + '"/><path d="M12 240Q24 248 37 240" stroke="' + td + '" stroke-width="1.6" fill="none" opacity=".45"/>' : '') +
+        '<ellipse cx="34" cy="236" rx="3" ry="30" fill="#000" opacity=".1" filter="url(#' + gid + 'b2)"/>';
+      o.push(armS + '<g transform="translate(200 0) scale(-1 1)">' + armS + '</g>');
+      o.push('<ellipse cx="50" cy="226" rx="4" ry="20" fill="#000" opacity=".1" filter="url(#' + gid + 'b)"/><ellipse cx="150" cy="226" rx="4" ry="20" fill="#000" opacity=".14" filter="url(#' + gid + 'b)"/><ellipse cx="88" cy="204" rx="26" ry="12" fill="#fff" opacity=".07" filter="url(#' + gid + 'b)"/><rect x="52" y="246" width="96" height="6" fill="#000" opacity=".25" filter="url(#' + gid + 'b2)"/>');
     }
     o.push('<ellipse cx="100" cy="157" rx="26" ry="6" fill="#000" opacity=".1"/>');
-    o.push('<path d="M46 178Q56 166 70 160M154 178Q144 166 130 160" stroke="' + td + '" stroke-width="2" fill="none" opacity=".35"/><path d="M62 190Q66 200 60 200M138 190Q134 200 140 200" stroke="' + td + '" stroke-width="2" fill="none" opacity=".3"/>');
+    o.push('<path d="M44 180Q54 168 66 163M156 180Q146 168 134 163" stroke="' + td + '" stroke-width="2" fill="none" opacity=".35"/><path d="M62 190Q66 200 60 200M138 190Q134 200 140 200" stroke="' + td + '" stroke-width="2" fill="none" opacity=".3"/>');
+    if(full) o.push('</g><g transform="translate(100 148) scale(.66) translate(-100 -148)">');
     // cap + urechi
     o.push('<circle cx="58" cy="96" r="8" fill="' + skin + '"/><circle cx="142" cy="96" r="8" fill="' + skin + '"/><ellipse cx="59" cy="97" rx="3" ry="5" fill="' + sd + '" opacity=".55"/><ellipse cx="141" cy="97" rx="3" ry="5" fill="' + sd + '" opacity=".55"/>');
     o.push('<ellipse cx="100" cy="140" rx="24" ry="7" fill="#000" opacity=".13"/>');
     o.push('<path d="M57 86C57 56 78 41 100 41C122 41 143 56 143 86C143 112 127 137 100 141C73 137 57 112 57 86Z" fill="url(#' + gid + 's)"/>');
-    o.push('<path d="M60 98C62 126 80 139 100 140C120 139 138 126 140 98C134 120 118 131 100 131C82 131 66 120 60 98Z" fill="' + sd + '" opacity=".22"/>');
-    o.push('<ellipse cx="73" cy="110" rx="9" ry="6" fill="#ff6b6b" opacity=".16"/><ellipse cx="127" cy="110" rx="9" ry="6" fill="#ff6b6b" opacity=".16"/>');
-    o.push('<ellipse cx="90" cy="64" rx="22" ry="9" fill="#fff" opacity=".1"/>');
+    o.push('<g clip-path="url(#' + gid + 'fc)">' +
+      '<ellipse cx="56" cy="96" rx="11" ry="44" fill="' + mix(skin, -.42) + '" opacity=".42" filter="url(#' + gid + 'b)"/><ellipse cx="146" cy="96" rx="13" ry="46" fill="' + mix(skin, -.45) + '" opacity=".5" filter="url(#' + gid + 'b)"/>' +
+      '<ellipse cx="100" cy="142" rx="34" ry="10" fill="' + mix(skin, -.45) + '" opacity=".45" filter="url(#' + gid + 'b)"/>' +
+      '<ellipse cx="82" cy="85" rx="13" ry="6" fill="' + mix(skin, -.4) + '" opacity=".3" filter="url(#' + gid + 'b2)"/><ellipse cx="118" cy="85" rx="13" ry="6" fill="' + mix(skin, -.4) + '" opacity=".3" filter="url(#' + gid + 'b2)"/>' +
+      '<ellipse cx="92" cy="62" rx="24" ry="10" fill="#fff" opacity=".2" filter="url(#' + gid + 'b)"/>' +
+      '<ellipse cx="76" cy="106" rx="9" ry="5" fill="#fff" opacity=".13" filter="url(#' + gid + 'b2)"/><ellipse cx="124" cy="106" rx="8" ry="5" fill="#fff" opacity=".1" filter="url(#' + gid + 'b2)"/>' +
+      '<ellipse cx="73" cy="112" rx="10" ry="6" fill="#ff5a5a" opacity=".13" filter="url(#' + gid + 'b2)"/><ellipse cx="127" cy="112" rx="10" ry="6" fill="#ff5a5a" opacity=".13" filter="url(#' + gid + 'b2)"/>' +
+      '<ellipse cx="100" cy="134" rx="9" ry="3.5" fill="#fff" opacity=".12" filter="url(#' + gid + 'b2)"/><ellipse cx="100" cy="128.5" rx="9" ry="2.6" fill="' + mix(skin, -.5) + '" opacity=".3" filter="url(#' + gid + 'b2)"/></g>');
     if(c.face === 'freckles') o.push('<g fill="' + sd + '" opacity=".7"><circle cx="70" cy="106" r="1.6"/><circle cx="76" cy="110" r="1.6"/><circle cx="82" cy="106" r="1.6"/><circle cx="118" cy="106" r="1.6"/><circle cx="124" cy="110" r="1.6"/><circle cx="130" cy="106" r="1.6"/></g>');
     if(c.face === 'blush') o.push('<ellipse cx="70" cy="110" rx="11" ry="7" fill="#ff5c7a" opacity=".38"/><ellipse cx="130" cy="110" rx="11" ry="7" fill="#ff5c7a" opacity=".38"/>');
     if(c.face === 'mole') o.push('<circle cx="116" cy="112" r="2.4" fill="#3a2418"/>');
@@ -145,26 +162,35 @@
     if(c.beard === 'goatee') o.push('<path d="M88 126C90 144 110 144 112 126C106 131 94 131 88 126Z" fill="url(#' + gid + 'h)"/>');
     if(c.beard === 'mustache' || c.beard === 'beard' || c.beard === 'goatee') o.push('<path d="M80 114C90 106 100 111 100 111C100 111 110 106 120 114C110 119 100 116 100 116C100 116 90 119 80 114Z" fill="url(#' + gid + 'h)"/>');
     // nas
-    o.push('<path d="M98 88C97 98 95 104 93 107" stroke="' + sd + '" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/><path d="M93 108C96 111 104 111 107 108" stroke="' + mix(skin, -.32) + '" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="95.5" cy="108.5" rx="1.6" ry="1.1" fill="' + mix(skin, -.5) + '" opacity=".8"/><ellipse cx="104.5" cy="108.5" rx="1.6" ry="1.1" fill="' + mix(skin, -.5) + '" opacity=".8"/><ellipse cx="101" cy="100" rx="2.4" ry="5" fill="#fff" opacity=".13"/>');
+    var nd = mix(skin, -.38);
+    o.push('<path d="M96 86C94 96 92 102 91 106" stroke="' + nd + '" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".28" filter="url(#' + gid + 'b2)"/>' +
+      '<ellipse cx="100.5" cy="98" rx="2.6" ry="8" fill="#fff" opacity=".2" filter="url(#' + gid + 'b2)"/><ellipse cx="100" cy="106" rx="4.4" ry="3.4" fill="#fff" opacity=".16" filter="url(#' + gid + 'b2)"/>' +
+      '<path d="M91.5 108.5C89.5 105 91.5 102 94.5 103.5M108.5 108.5C110.5 105 108.5 102 105.5 103.5" stroke="' + nd + '" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".75"/>' +
+      '<path d="M92 109C95 112.6 105 112.6 108 109C105 110.4 95 110.4 92 109Z" fill="' + mix(skin, -.5) + '" opacity=".8"/><ellipse cx="96" cy="109.6" rx="1.7" ry="1" fill="#2a1410" opacity=".7"/><ellipse cx="104" cy="109.6" rx="1.7" ry="1" fill="#2a1410" opacity=".7"/>' +
+      '<ellipse cx="100" cy="114.5" rx="7" ry="2.4" fill="' + nd + '" opacity=".3" filter="url(#' + gid + 'b2)"/>');
     // gură
     var m = c.mouth, lip = mix('#c0504d', c.skin > 4 ? -.35 : 0), lipd = mix(lip, -.3);
-    if(m === 'smile') o.push('<path d="M85 117Q100 130 115 117Q100 125 85 117Z" fill="' + lipd + '"/><path d="M90 123Q100 133 110 123Q100 127 90 123Z" fill="' + lip + '"/><path d="M84 116.5Q100 128 116 116.5" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M93 126Q100 129 107 126" stroke="#fff" stroke-width="1.4" fill="none" opacity=".4"/>');
+    if(m === 'smile') o.push('<path d="M85 118.5Q93 115.5 100 118Q107 115.5 115 118.5Q100 127 85 118.5Z" fill="' + lipd + '"/><path d="M88 121.5Q100 133.5 112 121.5Q100 127.5 88 121.5Z" fill="' + lip + '"/><path d="M84.5 118.2Q100 127 115.5 118.2" stroke="#3a1614" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="100" cy="127.6" rx="5" ry="1.5" fill="#fff" opacity=".35" filter="url(#' + gid + 'b2)"/><path d="M83.5 117.5q-1.5 .5 -2 2M116.5 117.5q1.5 .5 2 2" stroke="' + nd + '" stroke-width="1.2" fill="none" opacity=".6"/>');
     if(m === 'grin') o.push('<path d="M82 115Q100 141 118 115Z" fill="#fff" stroke="' + lipd + '" stroke-width="3.4" stroke-linejoin="round"/><path d="M85 121H115" stroke="#ddd" stroke-width="1.2"/><path d="M88 129Q100 137 112 129Q100 133 88 129Z" fill="#c8605e" opacity=".55"/>');
-    if(m === 'neutral') o.push('<path d="M88 122Q100 119 112 122Q100 127 88 122Z" fill="' + lipd + '"/><path d="M89 123H111" stroke="' + ink + '" stroke-width="2" stroke-linecap="round"/><path d="M92 124Q100 129 108 124Q100 127 92 124Z" fill="' + lip + '"/>');
+    if(m === 'neutral') o.push('<path d="M88 121.5Q94 117.5 100 120Q106 117.5 112 121.5Q100 124 88 121.5Z" fill="' + lipd + '"/><path d="M89.5 122.2Q100 131 110.5 122.2Q100 125 89.5 122.2Z" fill="' + lip + '"/><path d="M88 121.8Q100 124 112 121.8" stroke="#3a1614" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="100" cy="126" rx="4.5" ry="1.4" fill="#fff" opacity=".35" filter="url(#' + gid + 'b2)"/>');
     if(m === 'smirk') o.push('<path d="M86 122Q104 128 116 114" stroke="' + lipd + '" stroke-width="4.6" fill="none" stroke-linecap="round"/><path d="M86 122Q104 128 116 114" stroke="' + ink + '" stroke-width="1.8" fill="none" stroke-linecap="round"/>');
     if(m === 'open') o.push('<ellipse cx="100" cy="123" rx="9" ry="10" fill="#4a1414" stroke="' + lipd + '" stroke-width="3.4"/><ellipse cx="100" cy="130" rx="5" ry="3.4" fill="#d9605c"/><path d="M93 117H107" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>');
     // ochi
     var ec = EYEC[c.eyec];
     function eye(x, kind){
       if(kind === 'happy') return '<path d="M' + (x - 9) + ' 95Q' + x + ' 82 ' + (x + 9) + ' 95" stroke="' + ink + '" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M' + (x - 8) + ' 98Q' + x + ' 104 ' + (x + 8) + ' 98" stroke="' + sd + '" stroke-width="1.6" fill="none" opacity=".5"/>';
-      var ry = kind === 'narrow' ? 5.4 : 9, ir = kind === 'narrow' ? 4.3 : 6, top = 92 - ry;
-      return '<ellipse cx="' + x + '" cy="92" rx="9.4" ry="' + (ry + 2.4) + '" fill="' + sd + '" opacity=".28"/>' +
-        '<ellipse cx="' + x + '" cy="92" rx="8.8" ry="' + ry + '" fill="#fbfbf8"/>' +
-        '<circle cx="' + x + '" cy="92.5" r="' + ir + '" fill="' + ec + '"/><circle cx="' + x + '" cy="92.5" r="' + ir + '" fill="none" stroke="' + mix(ec, -.4) + '" stroke-width="1.3"/>' +
-        '<path d="M' + (x - ir + 1) + ' 93Q' + x + ' ' + (92 + ir) + ' ' + (x + ir - 1) + ' 93" stroke="' + mix(ec, .45) + '" stroke-width="1.4" fill="none" opacity=".7"/>' +
-        '<circle cx="' + x + '" cy="92.5" r="2.5" fill="#0d0d0d"/><circle cx="' + (x + 2.2) + '" cy="90.2" r="1.7" fill="#fff"/><circle cx="' + (x - 2) + '" cy="94.5" r=".9" fill="#fff" opacity=".7"/>' +
-        '<path d="M' + (x - 9.5) + ' ' + (top + 3) + 'Q' + x + ' ' + (top - 5) + ' ' + (x + 9.5) + ' ' + (top + 3) + 'L' + (x + 9.5) + ' ' + (top + 5) + 'Q' + x + ' ' + (top - 1) + ' ' + (x - 9.5) + ' ' + (top + 5) + 'Z" fill="' + ink + '"/>' +
-        '<path d="M' + (x - 8) + ' ' + (92 + ry - .5) + 'Q' + x + ' ' + (92 + ry + 2) + ' ' + (x + 8) + ' ' + (92 + ry - .5) + '" stroke="' + sd + '" stroke-width="1.2" fill="none" opacity=".6"/>';
+      var up = kind === 'narrow' ? 87.6 : 84.6, lo = kind === 'narrow' ? 96.4 : 99, ir = kind === 'narrow' ? 4.4 : 5.4, cid = gid + 'e' + x;
+      var shape = 'M' + (x - 10) + ' 92.6Q' + x + ' ' + up + ' ' + (x + 10) + ' 92.6Q' + x + ' ' + lo + ' ' + (x - 10) + ' 92.6Z';
+      return '<clipPath id="' + cid + '"><path d="' + shape + '"/></clipPath>' +
+        '<path d="' + shape + '" fill="#f6f3ee"/>' +
+        '<g clip-path="url(#' + cid + ')"><circle cx="' + x + '" cy="91.8" r="' + ir + '" fill="' + ec + '"/><circle cx="' + x + '" cy="91.8" r="' + ir + '" fill="none" stroke="' + mix(ec, -.5) + '" stroke-width="1.4"/>' +
+        '<path d="M' + (x - ir + 1.2) + ' 93Q' + x + ' ' + (91.8 + ir - .4) + ' ' + (x + ir - 1.2) + ' 93" stroke="' + mix(ec, .5) + '" stroke-width="1.5" fill="none" opacity=".75"/>' +
+        '<circle cx="' + x + '" cy="91.8" r="2.3" fill="#0b0b0b"/><circle cx="' + (x + 1.9) + '" cy="89.9" r="1.5" fill="#fff"/><circle cx="' + (x - 1.8) + '" cy="93.6" r=".8" fill="#fff" opacity=".65"/>' +
+        '<ellipse cx="' + x + '" cy="' + (up + 1.5) + '" rx="11" ry="3.6" fill="#000" opacity=".3" filter="url(#' + gid + 'b2)"/><circle cx="' + (x < 100 ? x + 9 : x - 9) + '" cy="93" r="1.6" fill="#e9a3a0" opacity=".7"/></g>' +
+        '<path d="M' + (x - 10.5) + ' 93Q' + x + ' ' + (up - 1) + ' ' + (x + 10.5) + ' 93" stroke="' + ink + '" stroke-width="2.3" fill="none" stroke-linecap="round"/>' +
+        '<path d="M' + (x < 100 ? (x - 10.5) + ' 93l-2.6 -1.6' : (x + 10.5) + ' 93l2.6 -1.6') + '" stroke="' + ink + '" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<path d="M' + (x - 8.5) + ' ' + (up - 1.4) + 'Q' + x + ' ' + (up - 6) + ' ' + (x + 8.5) + ' ' + (up - 1.4) + '" stroke="' + nd + '" stroke-width="1.1" fill="none" opacity=".55"/>' +
+        '<path d="M' + (x - 8) + ' ' + (lo - 2.6) + 'Q' + x + ' ' + (lo + .8) + ' ' + (x + 8) + ' ' + (lo - 2.6) + '" stroke="' + nd + '" stroke-width="1" fill="none" opacity=".5"/>';
     }
     o.push(eye(82, c.eyes === 'wink' ? 'round' : c.eyes));
     o.push(eye(118, c.eyes === 'wink' ? 'happy' : c.eyes));
@@ -200,8 +226,10 @@
     if(A === 'band') o.push('<path d="M57 68C80 56 120 56 143 68L143 77C120 66 80 66 57 77Z" fill="' + ac + '"/>');
     if(A === 'chain') o.push('<path d="M78 156C88 182 112 182 122 156" stroke="#f5c542" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="100" cy="177" r="5" fill="#f5c542"/>');
     if(A === 'ear') o.push('<circle cx="58" cy="108" r="3.6" fill="#f5c542"/><circle cx="142" cy="108" r="3.6" fill="#f5c542"/>');
+    if(full) o.push('</g></g>');
     o.push('</svg>');
-    return o.join('');
+    var out = o.join(''), re = new RegExp('<(path|ellipse|circle)([^>]*?) fill="url\\(#' + gid + 'h\\)"/>', 'g');
+    return out.replace(re, function(m, tag, rest){ return m + '<' + tag + rest + ' fill="url(#' + gid + 'hp)"/>'; });
   }
 
   function load(){ try{ return norm(JSON.parse(localStorage.getItem(KEY) || 'null') || DEF); }catch(e){ return norm(DEF); } }

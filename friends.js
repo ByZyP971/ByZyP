@@ -21,10 +21,15 @@
   function agoTxt(s){ if(s < 90) return 'acum'; var m = Math.round(s/60); return 'acum ' + m + ' min'; }
 
   // ---------- trimitere locație ----------
+  var noCfg = false;
+  function myCfg(){ try{ if(window.zAvatar && window.zAvatar.has()){ var c = window.zAvatar.load(); if(c.scene === 'photo') c.scene = 'none'; return c; } }catch(e){} return null; }
   function send(pos){
     mine = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if(box){ try{ updateMap(); }catch(e){} }
     var now = Date.now(); if(now - lastSent < 15000) return; lastSent = now;
-    rpc('loc_set', { p_lat: mine.lat, p_lng: mine.lng, p_acc: Math.round(pos.coords.accuracy || 0) }).catch(function(){});
+    var args = { p_lat: mine.lat, p_lng: mine.lng, p_acc: Math.round(pos.coords.accuracy || 0) }, cf = myCfg();
+    if(cf && !noCfg){ var a2 = { p_lat: args.p_lat, p_lng: args.p_lng, p_acc: args.p_acc, p_cfg: cf }; rpc('loc_set', a2).catch(function(){ noCfg = true; rpc('loc_set', args).catch(function(){}); }); }
+    else rpc('loc_set', args).catch(function(){});
   }
   function startWatch(){
     if(watchId !== null || !navigator.geolocation) return;
@@ -45,58 +50,86 @@
   // ---------- hartă cu prieteni ----------
   var map = null, mapWrap = null, dyn = null, markers = {}, meMarker = null, avatars = {}, fitted = false, tile = null;
   function lettersOf(n){ return String(n||'?').slice(0,1).toUpperCase(); }
-  function pinEl(nick, cls){
-    var w = document.createElement('div'); w.className = 'fr-pin ' + (cls||'');
-    var c = document.createElement('div'); c.className = 'fr-pc'; var av = avatars[nick];
+  var dark = false, tileL = null;
+  try{ dark = localStorage.getItem('zyp_map_dark') === '1'; }catch(e){}
+  function bustEl(nick, cls){
+    var c = document.createElement('div'); c.className = 'fr-pc ' + (cls || ''); var av = avatars[nick];
     if(av && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(av)){ var im = document.createElement('img'); im.src = av; im.alt = ''; c.appendChild(im); } else c.textContent = lettersOf(nick);
-    var l = document.createElement('div'); l.className = 'fr-pl'; l.textContent = nick;
-    w.appendChild(c); w.appendChild(l); return w;
+    return c;
   }
+  // personajul întreg pe hartă (dacă știm avatarul desenat), altfel cerc cu poză
+  function pinEl(nick, cfg, sub, me){
+    var w = document.createElement('div'); w.className = 'fr-pin' + (me ? ' me' : '');
+    var fig = null;
+    if(cfg && typeof cfg === 'object' && window.zAvatar){ try{ fig = document.createElement('div'); fig.className = 'fr-fig'; fig.innerHTML = window.zAvatar.svg(window.zAvatar.norm(cfg), 54, 'cut'); }catch(e){ fig = null; } }
+    w.appendChild(fig || bustEl(nick));
+    var l = document.createElement('div'); l.className = 'fr-pl'; var n = document.createElement('b'); n.textContent = me ? 'Eu' : nick; l.appendChild(n);
+    if(sub){ var t = document.createElement('span'); t.textContent = ' ' + sub; l.appendChild(t); }
+    w.appendChild(l); return w;
+  }
+  function iconFor(nick, cfg, sub, me){ var fig = !!(cfg && window.zAvatar); return L.divIcon({ className: 'fr-ic', html: pinEl(nick, cfg, sub, me), iconSize: [110, fig ? 122 : 84], iconAnchor: [55, fig ? 92 : 30] }); }
   function ensureAvatar(nick){
     if(avatars[nick] !== undefined) return; avatars[nick] = '';
-    rpc('get_public_profile', { p_nick: nick }).then(function(p){ if(p && p.avatar){ avatars[nick] = p.avatar; if(markers[nick]){ markers[nick].setIcon(L.divIcon({ className: 'fr-ic', html: pinEl(nick), iconSize: [64, 74], iconAnchor: [32, 37] })); } renderChips(); } }).catch(function(){});
+    rpc('get_public_profile', { p_nick: nick }).then(function(p){ if(p && p.avatar){ avatars[nick] = p.avatar; updateMap(); renderStrip(); } }).catch(function(){});
   }
+  function setTiles(){
+    if(!map) return; if(tileL) map.removeLayer(tileL);
+    tileL = L.tileLayer('https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'rastertiles/voyager') + '/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap · © CARTO' }).addTo(map);
+    if(mapWrap) mapWrap.classList.toggle('dark', dark);
+  }
+  function roundBtn(txt, label, fn){ var b = document.createElement('button'); b.className = 'fr-rb'; b.textContent = txt; b.setAttribute('aria-label', label); b.addEventListener('click', fn); return b; }
   function initMap(){
     if(map || !window.L || !mapWrap) return;
     var el = document.createElement('div'); el.className = 'fr-map-el'; mapWrap.appendChild(el);
     map = L.map(el, { zoomControl: false, attributionControl: true, worldCopyJump: true }).setView(mine ? [mine.lat, mine.lng] : [28.1, -15.4], mine ? 14 : 5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap · © CARTO' }).addTo(map);
+    setTiles();
+    var top = document.createElement('div'); top.className = 'fr-top'; top.id = 'frTop'; mapWrap.appendChild(top);
     var bar = document.createElement('div'); bar.className = 'fr-fab';
-    var b1 = document.createElement('button'); b1.textContent = '🎯'; b1.setAttribute('aria-label', 'Centrează'); b1.addEventListener('click', function(){ if(mine) map.flyTo([mine.lat, mine.lng], 15); else if(markers && Object.keys(markers).length) fitAll(); else toast('Pornește-ți locația ca să te găsesc'); });
-    var b2 = document.createElement('button'); b2.id = 'frGhost'; b2.addEventListener('click', function(){ if(sharing()) stopShare().then(function(){ draw(); updateMap(); toast('🙈 Ești invizibil: nimeni nu te mai vede'); }); else startFlow(); });
-    bar.appendChild(b1); bar.appendChild(b2); mapWrap.appendChild(bar);
+    var b0 = roundBtn('', 'Arată-mă sau ascunde-mă', function(){ if(sharing()) stopShare().then(function(){ draw(); toast('🙈 Ești invizibil: nimeni nu te mai vede'); }); else startFlow(); }); b0.id = 'frGhost';
+    bar.appendChild(b0);
+    bar.appendChild(roundBtn('🗺️', 'Hartă luminoasă sau întunecată', function(){ dark = !dark; try{ localStorage.setItem('zyp_map_dark', dark ? '1' : '0'); }catch(e){} setTiles(); }));
+    bar.appendChild(roundBtn('➤', 'Centrează pe mine', function(){ if(mine) map.flyTo([mine.lat, mine.lng], 15); else if(Object.keys(markers).length) fitAll(); else toast('Pornește-ți locația ca să te găsesc'); }));
+    mapWrap.appendChild(bar);
+    var st = document.createElement('div'); st.className = 'fr-status'; st.id = 'frStatus'; mapWrap.appendChild(st);
+    var strip = document.createElement('div'); strip.className = 'fr-strip'; strip.id = 'frStrip'; mapWrap.appendChild(strip);
     setTimeout(function(){ if(map) map.invalidateSize(); }, 200);
   }
-  function fitAll(){ var pts = []; Object.keys(markers).forEach(function(k){ pts.push(markers[k].getLatLng()); }); if(mine) pts.push(L.latLng(mine.lat, mine.lng)); if(pts.length > 1) map.fitBounds(L.latLngBounds(pts), { padding: [60, 60], maxZoom: 16 }); else if(pts.length) map.setView(pts[0], 14); }
+  function fitAll(){ var pts = []; Object.keys(markers).forEach(function(k){ pts.push(markers[k].getLatLng()); }); if(mine) pts.push(L.latLng(mine.lat, mine.lng)); if(pts.length > 1) map.fitBounds(L.latLngBounds(pts), { padding: [70, 70], maxZoom: 16 }); else if(pts.length) map.setView(pts[0], 14); }
   function updateMap(){
     if(!map) return;
-    var g = document.getElementById('frGhost'); if(g) g.textContent = sharing() ? '🙈 Fă-mă invizibil' : '📍 Arată-mă';
+    var on = sharing(), g = document.getElementById('frGhost'); if(g){ g.textContent = on ? '🙈' : '📍'; g.classList.toggle('on', on); }
+    var st = document.getElementById('frStatus'); if(st){ var nf = friends.filter(function(f){ return f.st === 'friend' && f.i_share; }).length; st.textContent = on ? ('📍 Te ' + (nf === 1 ? 'vede 1 prieten' : 'văd ' + nf + ' prieteni')) : '🙈 Ești invizibil'; st.classList.toggle('off', !on); }
     var seen = {};
-    locs.forEach(function(l){ seen[l.nick] = 1; ensureAvatar(l.nick); var ll = [+l.lat, +l.lng];
-      if(markers[l.nick]) markers[l.nick].setLatLng(ll);
-      else markers[l.nick] = L.marker(ll, { icon: L.divIcon({ className: 'fr-ic', html: pinEl(l.nick), iconSize: [64, 74], iconAnchor: [32, 37] }) }).addTo(map).on('click', function(){ map.flyTo(ll, 16); }); });
+    locs.forEach(function(l){ seen[l.nick] = 1; ensureAvatar(l.nick); var ll = [+l.lat, +l.lng], ic = iconFor(l.nick, l.cfg, agoTxt(l.ago), false);
+      if(markers[l.nick]){ markers[l.nick].setLatLng(ll); markers[l.nick].setIcon(ic); }
+      else markers[l.nick] = L.marker(ll, { icon: ic }).addTo(map).on('click', function(){ map.flyTo(markers[l.nick].getLatLng(), 16); }); });
     Object.keys(markers).forEach(function(k){ if(!seen[k]){ map.removeLayer(markers[k]); delete markers[k]; } });
-    if(mine){ var mp = [mine.lat, mine.lng]; if(meMarker) meMarker.setLatLng(mp); else meMarker = L.marker(mp, { icon: L.divIcon({ className: 'fr-ic', html: pinEl('Eu', 'me'), iconSize: [64, 74], iconAnchor: [32, 37] }), zIndexOffset: 500 }).addTo(map); }
+    if(mine){ var mp = [mine.lat, mine.lng], mi = iconFor('Eu', myCfg(), on ? 'acum' : 'doar tu te vezi', true); if(meMarker){ meMarker.setLatLng(mp); meMarker.setIcon(mi); } else meMarker = L.marker(mp, { icon: mi, zIndexOffset: 500 }).addTo(map); }
     else if(meMarker){ map.removeLayer(meMarker); meMarker = null; }
     if(!fitted && (mine || locs.length)){ fitted = true; fitAll(); }
   }
-  function renderChips(){
-    var el = document.getElementById('frChips'); if(!el) return; el.textContent = '';
-    if(!locs.length){ var e = document.createElement('div'); e.className = 'fr-empty'; e.textContent = 'Niciun prieten nu își arată locația acum.'; el.appendChild(e); return; }
-    locs.forEach(function(l){ var d = mine ? dist(mine, l) : null, b = document.createElement('button'); b.className = 'fr-chip';
-      var pin = pinEl(l.nick, 'chip'); pin.removeChild(pin.lastChild); b.appendChild(pin);
-      var t = document.createElement('div'); t.className = 'fr-ct'; var n = document.createElement('b'); n.textContent = l.nick; var s = document.createElement('span'); s.textContent = (d !== null ? kmTxt(d) + ' · ' : '') + agoTxt(l.ago); t.appendChild(n); t.appendChild(s); b.appendChild(t);
-      b.addEventListener('click', function(){ if(map) map.flyTo([+l.lat, +l.lng], 16); }); el.appendChild(b); });
+  function renderStrip(){
+    var el = document.getElementById('frStrip'); if(!el) return; el.textContent = '';
+    var live = {}; locs.forEach(function(l){ live[l.nick] = l; });
+    friends.filter(function(f){ return f.st === 'friend'; }).forEach(function(f){ ensureAvatar(f.nick);
+      var b = document.createElement('button'); b.className = 'fr-sb' + (live[f.nick] ? ' live' : ''); b.setAttribute('aria-label', f.nick); b.appendChild(bustEl(f.nick));
+      var n = document.createElement('span'); n.textContent = f.nick; b.appendChild(n);
+      b.addEventListener('click', function(){ var l = live[f.nick]; if(l && map) map.flyTo([+l.lat, +l.lng], 16); else toast(f.nick + ' nu își arată locația acum'); }); el.appendChild(b); });
+    var add = document.createElement('button'); add.className = 'fr-addp'; add.textContent = '＋ Adaugă prieteni';
+    add.addEventListener('click', function(){ var i = document.getElementById('frNick'); if(i){ i.scrollIntoView({ block: 'center', behavior: 'smooth' }); setTimeout(function(){ i.focus(); }, 350); } });
+    el.appendChild(add);
+    var top = document.getElementById('frTop'); if(top){ top.textContent = ''; var n2 = locs.length; var t = document.createElement('div'); t.className = 'fr-count'; t.textContent = n2 ? (n2 === 1 ? '1 prieten pe hartă' : n2 + ' prieteni pe hartă') : 'Niciun prieten pe hartă acum'; top.appendChild(t); }
   }
+  function renderChips(){ renderStrip(); }
   function startFlow(){
-    var ok = confirm('Prietenii pe care i-ai acceptat tu îți vor vedea locația pe hartă cât timp aplicația e deschisă. O poți opri oricând cu „Fă-mă invizibil”.\n\nConfirmi că ai cel puțin 16 ani?'); if(!ok) return;
+    var ok = confirm('Prietenii pe care i-ai acceptat tu îți vor vedea locația pe hartă cât timp aplicația e deschisă. O poți opri oricând din butonul 🙈 de pe hartă.\n\nConfirmi că ai cel puțin 16 ani?'); if(!ok) return;
     if(!navigator.geolocation){ toast('Telefonul nu permite locația'); return; }
     navigator.geolocation.getCurrentPosition(function(p){ startShare(); send(p); draw(); updateMap(); if(map && mine) map.flyTo([mine.lat, mine.lng], 15); pull(); }, function(){ toast('Permite locația pentru By ZyP în setările telefonului'); }, { enableHighAccuracy: true, timeout: 20000 });
   }
   function draw(){
     if(!box || !dyn) return;
     var fr = friends.filter(function(f){ return f.st === 'friend'; }), inc = friends.filter(function(f){ return f.st === 'in'; }), out = friends.filter(function(f){ return f.st === 'out'; });
-    var h = '<div class="fr-chips" id="frChips"></div>';
+    var h = '';
     h += '<div class="card fr-card"><div class="card-title">👥 Prietenii mei</div>';
     if(inc.length) h += '<div class="fr-sub">Cereri primite</div>' + inc.map(function(f){ return '<div class="fr-row"><b>' + esc(f.nick) + '</b><span>vrea să fie prieten cu tine</span><button class="fr-ok" data-yes="' + esc(f.nick) + '">Accept</button><button class="fr-no" data-no="' + esc(f.nick) + '">Refuz</button></div>'; }).join('');
     if(fr.length) h += '<div class="fr-sub">Prieteni</div>' + fr.map(function(f){ return '<div class="fr-row"><b>' + esc(f.nick) + '</b><span>' + (f.i_share ? 'vede locația ta' : 'nu vede locația ta') + '</span><button class="fr-no" data-hide="' + esc(f.nick) + '" data-on="' + (f.i_share ? 0 : 1) + '">' + (f.i_share ? 'Ascunde-mă' : 'Arată-mă') + '</button><button class="fr-no" data-rm="' + esc(f.nick) + '">✕</button></div>'; }).join('');
@@ -116,7 +149,7 @@
   window.zFriends = {
     render: function(el){ box = el; box.textContent = ''; map = null; markers = {}; meMarker = null; fitted = false;
       mapWrap = document.createElement('div'); mapWrap.className = 'fr-mapwrap'; dyn = document.createElement('div'); box.appendChild(mapWrap); box.appendChild(dyn);
-      initMap(); var g = document.getElementById('frGhost'); if(g) g.textContent = sharing() ? '🙈 Fă-mă invizibil' : '📍 Arată-mă'; dyn.innerHTML = '<div class="top-load">Se încarcă…</div>'; pull(); clearInterval(timer); timer = setInterval(function(){ if(box && document.getElementById('frNick') !== document.activeElement) pull(); }, 20000); },
+      initMap(); updateMap(); renderStrip(); dyn.innerHTML = '<div class="top-load">Se încarcă…</div>'; pull(); clearInterval(timer); timer = setInterval(function(){ if(box && document.getElementById('frNick') !== document.activeElement) pull(); }, 20000); },
     leave: function(){ clearInterval(timer); timer = null; if(map){ try{ map.remove(); }catch(e){} } map = null; markers = {}; meMarker = null; box = null; dyn = null; mapWrap = null; }
   };
   // dacă ai pornit partajarea, continuă după ce redeschizi aplicația

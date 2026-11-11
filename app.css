@@ -1615,3 +1615,21 @@
 
   .fr-mapwrap{ isolation:isolate; z-index:0; } .sn-invite{ margin-top:12px; padding:14px; border-radius:18px; border:1px dashed var(--line); background:var(--bg-card); font-size:13.5px; line-height:1.4; color:var(--text-dim,#b9c2b4); text-align:center; }
   .sn-nav{ top:calc(env(safe-area-inset-top,0px) + 86px); }
+
+  /* ===== harta cu prieteni, ecran mare ===== */
+  .fr-mapwrap{ height:calc(100dvh - 250px); min-height:440px; border-radius:26px; background:#dfe9d8; } .fr-mapwrap.dark{ background:#0b0d0b; }
+  .fr-map-el{ background:transparent; } .fr-mapwrap:not(.dark) .fr-map-el .leaflet-control-attribution{ background:rgba(255,255,255,.7); color:#555; } .fr-mapwrap:not(.dark) .fr-map-el .leaflet-control-attribution a{ color:#555; }
+  .fr-map-el .leaflet-bottom{ bottom:86px; }
+  .fr-fab{ right:12px; top:auto; bottom:104px; gap:10px; align-items:center; }
+  .fr-rb{ width:50px; height:50px; padding:0 !important; border-radius:50% !important; background:#fff !important; color:#111 !important; border:none !important; font-size:20px !important; box-shadow:0 4px 14px rgba(0,0,0,.28); display:flex; align-items:center; justify-content:center; }
+  .fr-rb.on{ box-shadow:0 0 0 3px #A3FF12, 0 4px 14px rgba(0,0,0,.28); }
+  .fr-top{ position:absolute; left:12px; top:12px; z-index:900; } .fr-count{ background:#fff; color:#111; border-radius:999px; padding:8px 14px; font-size:13px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,.22); }
+  .fr-status{ position:absolute; left:12px; bottom:100px; z-index:900; background:#7c5cff; color:#fff; border-radius:999px; padding:8px 14px; font-size:12.5px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,.25); } .fr-status.off{ background:#444; }
+  .fr-strip{ position:absolute; left:0; right:0; bottom:0; z-index:900; display:flex; gap:10px; align-items:center; overflow-x:auto; padding:12px 12px 14px; background:linear-gradient(transparent, rgba(0,0,0,.28)); -webkit-overflow-scrolling:touch; }
+  .fr-sb{ flex:none; background:none; border:none; padding:0; display:flex; flex-direction:column; align-items:center; gap:2px; opacity:.55; } .fr-sb.live{ opacity:1; }
+  .fr-sb .fr-pc{ width:54px; height:54px; border:3px solid #fff; background:#e9ecef; color:#333; box-shadow:0 4px 12px rgba(0,0,0,.25); } .fr-sb.live .fr-pc{ border-color:#A3FF12; }
+  .fr-sb span{ font-size:10.5px; font-weight:800; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.8); max-width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fr-addp{ flex:none; background:#fff; color:#111; border:none; border-radius:999px; padding:14px 18px; font:inherit; font-weight:800; font-size:14px; box-shadow:0 4px 14px rgba(0,0,0,.25); white-space:nowrap; }
+  .fr-pin{ width:110px; overflow:visible; } .fr-fig{ line-height:0; filter:drop-shadow(0 3px 4px rgba(0,0,0,.35)); } .fr-fig svg{ display:block; }
+  .fr-pin .fr-pc{ width:52px; height:52px; border:3px solid #fff; background:#e9ecef; color:#333; box-shadow:0 3px 10px rgba(0,0,0,.35); }
+  .fr-pl{ margin-top:2px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#fff; color:#111; font-size:12px; font-weight:500; padding:3px 9px; border-radius:9px; box-shadow:0 2px 8px rgba(0,0,0,.25); } .fr-pl b{ font-weight:900; } .fr-pl span{ color:#1faa4b; font-weight:700; } .fr-pin.me .fr-pc{ border-color:#2e8bff; color:#2e8bff; }
