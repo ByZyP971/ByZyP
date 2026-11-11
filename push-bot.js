@@ -229,6 +229,59 @@ if (evs.length > MAXN) {
   }
 }
 
+
+// ---------- extra funny notifications through the day (everyone) ----------
+const FUNX = [
+  { k: 'fx-am', h: 7 * 60 + 45, t: ['🌅 Bună dimineața, campionule', '⏰ Trezirea, legendă', '☀️ S-a făcut ziuă', '🐓 Cucurigu de la By ZyP'], b: [
+    'Patul te iubește, dar nu te face mai puternic. Sus, că ziua nu se bifează singură.',
+    'Ai deschis ochii, deci prima repetare e făcută. Restul vin mai ușor.',
+    'Cafeaua întâi, scuzele niciodată. Uită-te ce ai azi în plan.',
+    'Azi e o zi bună să fii cu 1% mai bun decât ieri. Ieri oricum n-ai făcut mare lucru.',
+    'Bună dimineața! Perna a depus plângere că ai plecat. Am respins-o.',
+    'Soarele s-a trezit, gantera s-a trezit, numai tu te mai gândești. Hai!',
+    'Azi nu trebuie să fii perfect. Trebuie doar să apari.',
+    'Un pahar de apă înainte de cafea. Corpul tău nu e cactus.' ] },
+  { k: 'fx-water', h: 10 * 60 + 30, t: ['💧 Pauză de apă', '🚰 Robinetul te salută', '🥤 Hidratare, șefule', '🐪 Nu ești cămilă'], b: [
+    'Ai băut apă azi sau doar cafea și speranță? Un pahar acum.',
+    'Mușchii sunt 75% apă. Ai tăi sunt momentan 75% cafea.',
+    'Dacă îți e sete, deja e târziu. Bea acum, mulțumești mai târziu.',
+    'Un pahar de apă durează 10 secunde. Scuza durează mai mult.',
+    'Planta de pe birou bea mai multă apă ca tine. Nu te lăsa bătut de o plantă.',
+    'Apă. Simplu, gratis și fără etichetă de citit.',
+    'Pipi galben închis înseamnă că trebuie să bei. Am zis-o, cineva trebuia.',
+    'Ridică sticla aia. E cel mai ușor exercițiu de azi.' ] },
+  { k: 'fx-pm', h: 16 * 60, t: ['😂 Pauză de râs', '🤣 By ZyP are o vorbă', '🧐 Gândul de după-amiază', '☕ Pauza de la 4'], b: [
+    'Liftul e stricat în mintea ta de azi. Ia scările, fesierii îți mulțumesc.',
+    'Abdomenul se face în bucătărie. Păcat că acolo e și frigiderul.',
+    'Nu ești obosit, ești neantrenat la capitolul chef. Se rezolvă cu o serie.',
+    'Scaunul ăla te-a ținut destul. Ridică-te 2 minute, că nu sunteți căsătoriți.',
+    'Azi cineva mai leneș ca tine a mers la sală. Gândește-te la asta.',
+    'Dulcele de la 4 nu e foame, e plictiseală cu zahăr. Bea apă și mai vorbim.',
+    'Motivația vine după ce începi, nu înainte. E nesimțită, știu.',
+    'Corpul tău poate aproape orice. Mintea e cea care trebuie convinsă.',
+    'Febra musculară e doar corpul care îți scrie o recenzie. De 5 stele.',
+    'Dacă ar fi ușor, s-ar numi canapea, nu sală.' ] },
+  { k: 'fx-eve', h: 19 * 60 + 30, t: ['🌆 Cum a fost ziua?', '✅ Verificare de seară', '📋 Raport de seară', '🕖 Mai e timp'], b: [
+    'Mai sunt câteva ore din azi. Destul cât să bifezi un lucru de care să fii mândru.',
+    'Deschide aplicația și bifează ce ai făcut. Ce nu ai făcut, mai ai timp.',
+    'Cina cu proteină, nu cu regrete. Vezi meniul de azi.',
+    'Ziua nu e gata până nu bifezi. Hai, două minute.',
+    'Canapeaua te vrea acum. Arată-i că mai ai un lucru de făcut întâi.',
+    'Ai mâncat ca un sportiv sau ca un adolescent singur acasă? Fii sincer.',
+    'O plimbare de 15 minute după masă. Digestia zice mersi.',
+    'Seara e pentru cei care n-au apucat dimineața. Încă se pune.' ] },
+  { k: 'fx-sleep', h: 22 * 60 + 30, t: ['🌙 La nani, campionule', '😴 Ora de somn', '🛌 Mușchii cresc noaptea', '📵 Telefonul jos'], b: [
+    'Mușchii cresc în somn, nu pe TikTok. Lasă telefonul jos.',
+    'Încă un video și e 2 noaptea. Ne știm. Noapte bună.',
+    'Somnul e cel mai ieftin supliment. Ia doza întreagă: 7–8 ore.',
+    'Mâine ai nevoie de energie. Azi ai nevoie de pernă.',
+    'Ai făcut ce ai putut azi. Restul îl repari mâine, odihnit.',
+    'Telefonul are încărcător. Și tu ai: se numește pat.',
+    'Noapte bună! Gantera se odihnește deja, ia exemplu.',
+    'Cine doarme bine ridică mai mult. Cine scrolează ridică doar degetul.' ] }
+];
+const funPick = (arr, n) => arr[((n % arr.length) + arr.length) % arr.length];
+
 // ---------- OTHER USERS: every account gets its own funny notifications, on its own time zone and only for the modules it chose ----------
 const FUNU = [
   '😂 Mușchii nu cresc din scuze. Deși scuzele fac exercițiu bun pentru limbă.',
@@ -267,6 +320,11 @@ function localTz(d, tz) {
     return { date: `${p.year}-${p.month}-${p.day}`, hm: (+p.hour % 24) * 60 + +p.minute, wd: p.weekday };
   } catch (e) { return local(d); }
 }
+{ // owner: the same extra funny notifications
+  const dnO = Math.floor(Date.parse(L.date + 'T00:00:00Z') / 86400000);
+  for (const f of FUNX) { const key = `${f.k}-${L.date}`; if (L.hm >= f.h && L.hm < f.h + 40 && !sent[key]) { await send(funPick(f.t, dnO + 3), funPick(f.b, dnO * 3 + 5), f.k); sent[key] = Date.now(); changed = true; } }
+}
+
 if (KEY) {
   let all = [];
   try {
@@ -288,6 +346,7 @@ if (KEY) {
     if (on('sport') && ['Mon','Tue','Wed','Thu','Fri'].includes(U.wd) && U.hm >= 17 * 60 + 30 && U.hm < 17 * 60 + 70) todo.push(['gym', up(UGYM)]);
     if (on('food') && U.hm >= 13 * 60 && U.hm < 13 * 60 + 40) todo.push(['food', up(UFOOD)]);
     if (U.hm >= 14 * 60 + 30 && U.hm < 14 * 60 + 70) todo.push(['joke', [up(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei'], 1), up(FUNU)]]);
+    for (const f of FUNX) if (U.hm >= f.h && U.hm < f.h + 40) todo.push([f.k, [funPick(f.t, dn + salt), funPick(f.b, dn * 3 + salt)]]);
     const SC = u.supps && typeof u.supps === 'object' && Array.isArray(u.supps.g) ? u.supps : null;
     if (on('supp') && SC) {
       // the user's own schedule: only the supplements he chose, at the time he chose, a few minutes before
@@ -296,7 +355,9 @@ if (KEY) {
         const clean = (x) => String(x || '').replace(/[^\p{L}\p{N} +\-.,()]/gu, '').slice(0, 40);
         SC.g.slice(0, 6).forEach((g, gi) => {
           const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(g && g.t || '')); if (!m || !Array.isArray(g.n)) return;
-          const names = g.n.slice(0, 12).map(clean).filter(Boolean); if (!names.length) return;
+          // if the phone reported today's ticks, remind only for what is still not taken; everything taken -> no notification
+          const fresh = Array.isArray(g.p) && g.d === U.date;
+          const names = (fresh ? g.p : g.n).slice(0, 12).map(clean).filter(Boolean); if (!names.length) return;
           const at = (+m[1]) * 60 + (+m[2]), fire = at - lead;
           if (fire >= 0 && U.hm >= fire && U.hm < fire + 25) {
             const list = names.length > 4 ? names.slice(0, 4).join(', ') + ' și încă ' + (names.length - 4) : names.join(', ');
@@ -324,6 +385,8 @@ if (KEY) {
         else { t = '📊 Raportul tău: puțin sub ritm'; b = `${w} antrenamente săptămâna asta, față de ${pw} cea trecută. Nicio dramă, luni refacem ritmul.`; }
         todo.push(['wk', [t, b]]);
       }
+      const ei = todo.findIndex(x => x[0] === 'fx-eve');
+      if (ei >= 0 && la === U.date) todo[ei] = ['fx-eve', ['💪 Antrenament bifat azi!', funPick(['Respect. Acum mâncare bună și somn, că acolo se face treaba adevărată.', 'Azi ai făcut ce alții doar își propun. Cina cu proteină și la odihnă.', 'Bifat! Gantera a zis că a fost o întâlnire reușită. Pe curând.'], dn + salt)]];
       const gi = todo.findIndex(x => x[0] === 'gym');
       if (gi >= 0) {
         if (la === U.date) todo.splice(gi, 1);                                   // already trained today: no nagging
