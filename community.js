@@ -26,7 +26,7 @@
 
   // ---------- avatare ----------
   var AV_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
-  var AVC = {}, AVQ = {}, avObs = null;
+  var AVC = Object.create(null), AVQ = Object.create(null), avObs = null;
   function avFetch(nick){
     var k = nick.toLowerCase(); if(AVC[k] !== undefined) return Promise.resolve(AVC[k]); if(AVQ[k]) return AVQ[k];
     AVQ[k] = rpc('get_public_profile', { p_nick: nick }).then(function(p){ AVC[k] = (p && p.avatar && AV_RE.test(p.avatar)) ? p.avatar : ''; delete AVQ[k]; return AVC[k]; }).catch(function(){ AVC[k] = ''; delete AVQ[k]; return ''; });
@@ -106,7 +106,7 @@
       var top = d.top || [], html = '';
       html += '<div class="sn-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
       if(top.length > 3) html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
-      if(top.length < 4) html += '<div class="sn-invite">👋 Ești printre primii aici. Trimite aplicația unui prieten și vedeți care strânge mai multe puncte.</div>';
+      html += '<div class="sn-invite">' + (top.length < 4 ? '👋 Ești printre primii aici. ' : '') + 'Cheamă un prieten și vedeți care strânge mai multe puncte.<br><button class="sn-b alt" data-invite="1" style="margin-top:10px">📨 Invită un prieten</button></div>';
       var inTop = top.some(function(r){ return r.me; });
       if(me && !inTop) html += '<div class="sn-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
       if(!top.length) html = '<div class="top-load">Nimeni încă. Fii primul! 🏆</div>';
@@ -120,8 +120,8 @@
   function msgHtml(m){
     if(!m.mine && blocked.indexOf(m.nick.toLowerCase()) >= 0) return '';
     var t = tier(m.lvl);
-    var acts = m.mine ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge">🗑</button>' :
-      '<button class="top-ma" data-rep="' + m.id + '" title="Raportează">🚩</button><button class="top-ma" data-blk="' + esc(m.nick) + '" title="Blochează">🚫</button>' + (isAdmin ? '<button class="top-ma" data-del="' + m.id + '" title="Șterge (admin)">🗑</button><button class="top-ma" data-ban="' + esc(m.nick) + '" title="Blochează cont">⛔</button>' : '');
+    var acts = m.mine ? '<button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-del="' + m.id + '" title="Șterge">🗑</button>' :
+      '<button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-rep="' + m.id + '" title="Raportează">🚩</button><button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-blk="' + esc(m.nick) + '" title="Blochează">🚫</button>' + (isAdmin ? '<button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-del="' + m.id + '" title="Șterge (admin)">🗑</button><button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-ban="' + esc(m.nick) + '" title="Blochează cont">⛔</button>' : '');
     return '<div class="sn-msg' + (m.mine ? ' mine' : '') + '" data-id="' + m.id + '">' + (m.mine ? '' : '<span data-prof="' + esc(m.nick) + '">' + avEl(m.nick, m.lvl, 34) + '</span>') +
       '<div class="sn-mc">' + (m.mine ? '' : '<div class="sn-mh" style="color:' + t[2] + '">' + esc(m.nick) + '</div>') + '<div class="sn-bub">' + esc(m.body) + '</div>' +
       '<div class="sn-mf"><small>' + esc(fmtT(m.at)) + '</small><span class="sn-ma">' + acts + '</span></div></div></div>';
@@ -137,7 +137,7 @@
       var el = ev.target.closest('button'); if(!el) return;
       var id = el.getAttribute('data-rep') || el.getAttribute('data-del'), nk = el.getAttribute('data-blk') || el.getAttribute('data-ban');
       if(el.hasAttribute('data-rep')){ if(confirm('Raportezi acest mesaj?')) rpc('report_chat', {p_id:+id}).then(function(){ toast('Mesaj raportat. Mulțumim!'); }).catch(function(e){ toast(errMsg(e)); }); }
-      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi ' + nk + '? Nu îi mai vezi mesajele.')){ blocked.push(nk.toLowerCase()); saveBlocked(); box.querySelectorAll('.sn-msg').forEach(function(x){ var h = x.querySelector('.sn-mh'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
+      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi pe ' + nk + '? Nu îi mai vezi mesajele, iar el nu te mai poate adăuga și nu îți mai vede profilul.')){ blocked.push(nk.toLowerCase()); saveBlocked(); rpc('block_user', { p_nick: nk }).then(function(){ toast('Blocat'); }).catch(function(){}); box.querySelectorAll('.sn-msg').forEach(function(x){ var h = x.querySelector('.sn-mh'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
       else if(el.hasAttribute('data-del')){ if(confirm('Ștergi mesajul?')) rpc('delete_chat', {p_id:+id}).then(function(){ var x = box.querySelector('[data-id="' + id + '"]'); if(x) x.remove(); }).catch(function(e){ toast(errMsg(e)); }); }
       else if(el.hasAttribute('data-ban')){ if(confirm('Blochezi contul ' + nk + '?')) rpc('admin_ban', {p_nick:nk, p_on:true}).then(function(){ toast('Cont blocat'); }).catch(function(e){ toast(errMsg(e)); }); }
     });
@@ -149,7 +149,7 @@
     document.getElementById('topSend').addEventListener('click', send);
     document.getElementById('topMsgIn').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); send(); } });
     pull(true);
-    chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 4000);
+    chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 10000);
   }
   function pull(scroll){
     var box = document.getElementById('topMsgs'); if(!box) return;
@@ -240,6 +240,17 @@
     });
   }
   root.addEventListener('click', function(ev){ var el = ev.target.closest('[data-prof]'); if(el && !ev.target.closest('.top-ma')) openProfile(el.getAttribute('data-prof')); });
+
+  // ---------- invitație ----------
+  function invite(){
+    var url = location.origin + location.pathname, txt = 'Hai în By ZyP, aplicația mea de sală: plan de antrenament, mâncare și clasament.' + (me && me.nick ? ' Adaugă-mă la prieteni: ' + me.nick + '.' : '');
+    if(navigator.share){ navigator.share({ title: 'By ZyP', text: txt, url: url }).catch(function(){}); return; }
+    var all = txt + ' ' + url;
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(all).then(function(){ toast('Invitația e copiată. Lipește-o unde vrei.'); }).catch(function(){ prompt('Copiază invitația:', all); });
+    else prompt('Copiază invitația:', all);
+  }
+  window.zInvite = invite;
+  root.addEventListener('click', function(ev){ if(ev.target.closest('[data-invite]')) invite(); });
 
   // ---------- scor ----------
   function sync(){

@@ -28,13 +28,14 @@
 <meta name="twitter:image" content="https://byzyp971.github.io/ByZyP/og.png">
 
 <link rel="stylesheet" href="leaflet.css?v=1">
-<link rel="stylesheet" href="app.css?v=23">
+<link rel="stylesheet" href="app.css?v=24">
 </head>
 <body>
 <div id="authGate" class="auth-gate" style="display:none;">
   <div class="auth-box">
     <div class="sp-core auth-logo">↗</div>
     <div class="sp-title" style="margin-top:18px;">BY ZYP</div>
+    <div class="auth-pitch" style="max-width:300px;margin:10px auto 4px;font-size:14px;line-height:1.45;color:var(--text-dim);text-align:center;">Aplicația ta de sală, gratuită: plan de antrenament pe nivelul tău, mâncare explicată simplu, suplimente la ora ta și clasament cu prietenii.</div>
     <div class="auth-sub" id="authSub">Intră în contul tău</div>
     <input type="email" id="authEmail" placeholder="Email" autocomplete="email">
     <div class="pw-wrap"><input type="password" id="authPass" placeholder="Parolă (minim 8 caractere)" autocomplete="current-password"><button type="button" class="pw-eye" id="authEye" aria-label="Arată parola">👁</button></div>
@@ -42,6 +43,7 @@
     <button class="ghost-btn" id="authSignup">Creează cont nou</button>
     <button class="ghost-btn" id="authForgot" style="border:0;color:var(--text-dim);font-size:13px;">Ai uitat parola?</button>
     <div class="auth-msg" id="authMsg"></div>
+    <div style="max-width:300px;margin:12px auto 0;font-size:12px;line-height:1.4;color:var(--text-faint);text-align:center;">Contul îți păstrează progresul pe orice telefon. Creând un cont confirmi că ai cel puțin 16 ani. Nu cerem numele real.</div>
   </div>
 </div>
 <div class="lightbox" id="lightbox"><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div></div>
@@ -107,7 +109,7 @@
 
       <div class="sec-h">Obiceiurile de azi</div>
       <div id="todayHabits"></div>
-      <div class="perfect-day" id="perfectDay" style="display:none;">🏆 Zi perfectă, ZyP! Toate 5 bifate — ziua intră la șir.</div>
+      <div class="perfect-day" id="perfectDay" style="display:none;">🏆 Zi perfectă! Toate bifate, ziua intră la șir.</div>
 
       <div class="sec-h">Planul zilei</div>
       <div class="plan-tiles" id="planTiles"></div>
@@ -603,7 +605,7 @@
           <div class="card" id="legalCard">
         <div class="card-title">ℹ️ Important</div>
         <details style="margin:0 0 10px;"><summary style="cursor:pointer;font-weight:700;color:var(--gold);">🔒 Confidențialitate (pe scurt)</summary>
-        <div class="hint" style="margin:8px 0 0;">Salvăm doar emailul tău și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Fiecare cont vede doar datele lui. Dacă intri în clasament sau în chatul global, numele de utilizator ales, nivelul, punctele și mesajele tale se văd public pentru toți utilizatorii. Nu e nevoie de numele real. Le poți șterge oricând ștergând contul. Nu vindem și nu dăm datele nimănui și nu facem reclame. Poți descărca tot din „Descarcă backup” și poți șterge contul definitiv din Profil, oricând. Notificările folosesc un cod al telefonului, salvat în contul tău, pe care îl poți opri din setările telefonului.</div></details>
+        <div class="hint" style="margin:8px 0 0;">Salvăm doar emailul tău și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Fiecare cont vede doar datele lui. Dacă intri în clasament sau în chatul global, numele de utilizator ales, nivelul, punctele și mesajele tale se văd public pentru toți utilizatorii. Nu e nevoie de numele real. Le poți șterge oricând ștergând contul. Nu vindem și nu dăm datele nimănui. <b>Poza de profil și avatarul</b> se văd public în clasament și chat. <b>Prieteni și locație:</b> locația ta se vede doar dacă o pornești tu, doar de prietenii cărora alegi să le-o arăți, e aproximativă (cam 100 m), se trimite doar cât aplicația e deschisă și dispare după 30 de minute; o oprești oricând din butonul 🙈 de pe hartă. Poți bloca pe oricine. <b>Servicii folosite:</b> datele stau la Supabase (server în UE), iar harta e desenată de OpenStreetMap și CARTO, care primesc doar zona de hartă afișată, nu cine ești. Aplicația e pentru persoane de <b>cel puțin 16 ani</b>. Poți descărca tot din „Descarcă backup” și poți șterge contul definitiv din Profil, oricând. Notificările folosesc un cod al telefonului, salvat în contul tău, pe care îl poți opri din setările telefonului.</div></details>
         <div class="hint" style="margin:0;">By ZyP e o aplicație de organizare și motivație. Nu oferă sfaturi medicale, nutriționale sau financiare. Programele de antrenament, mesele și suplimentele sunt orientative: dacă ai probleme de sănătate, iei medicamente sau ești însărcinată, vorbește întâi cu medicul. Informațiile despre bani și criptomonede nu sunt recomandări de investiții, iar valorile pot scădea. Datele tale se salvează în contul tău și pe telefonul tău.</div>
       </div>
           <div class="card" id="prefCard">
@@ -636,16 +638,16 @@
 </div>
 
 <script src="core.js?v=2"></script>
-<script src="cloud.js?v=2"></script>
-<script src="main.js?v=16"></script>
-<script src="notify.js?v=4"></script>
+<script src="cloud.js?v=3"></script>
+<script src="main.js?v=17"></script>
+<script src="notify.js?v=5"></script>
 <script src="auth-ui.js?v=2"></script>
-<script src="onboarding.js?v=6"></script>
+<script src="onboarding.js?v=7"></script>
 <script src="admin.js?v=1"></script>
 <script src="leaflet.js?v=1"></script>
-<script src="friends.js?v=5"></script>
-<script src="avatar.js?v=8"></script>
-<script src="community.js?v=10"></script>
+<script src="friends.js?v=6"></script>
+<script src="avatar.js?v=9"></script>
+<script src="community.js?v=11"></script>
 <script src="music.js?v=4"></script>
   <script src="fit.js?v=1"></script>
 </body>

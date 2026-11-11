@@ -1633,3 +1633,10 @@
   .fr-pin{ width:110px; overflow:visible; } .fr-fig{ line-height:0; filter:drop-shadow(0 3px 4px rgba(0,0,0,.35)); } .fr-fig svg{ display:block; }
   .fr-pin .fr-pc{ width:52px; height:52px; border:3px solid #fff; background:#e9ecef; color:#333; box-shadow:0 3px 10px rgba(0,0,0,.35); }
   .fr-pl{ margin-top:2px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#fff; color:#111; font-size:12px; font-weight:500; padding:3px 9px; border-radius:9px; box-shadow:0 2px 8px rgba(0,0,0,.25); } .fr-pl b{ font-weight:900; } .fr-pl span{ color:#1faa4b; font-weight:700; } .fr-pin.me .fr-pc{ border-color:#2e8bff; color:#2e8bff; }
+
+  /* mâncare: sex, înălțime, vârstă */
+  .nu-sex{ margin-bottom:6px; } .nu-ha{ display:flex; gap:8px; margin-top:10px; } .nu-ha input{ flex:1; min-width:0; background:var(--bg-card-2); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:16px; } .nu-ha button{ background:var(--gold,#A3FF12); color:#000; border:none; border-radius:12px; padding:0 16px; font:inherit; font-weight:800; }
+  /* iPhone: fără zoom la scris, ținte mai mari */
+  #authEmail, #authPass, #weightInput, #todayNote, #goalInput, #eqStartInput, #tradeAmt, #tradeLot, #tradeEntry, #tradeResult, #investAmt, #investNote, #profName, #profHeight, #profAge, #topMsgIn, #pfBio, #frNick, .top-in, .ft-in, .ft-card input, .sp-tm input, .sp-notif select, textarea{ font-size:16px !important; }
+  .seg-btn, .sn-nav button, .av-tab, .nu-pills button, .fr-row button, .fr-map{ min-height:44px; }
+  #sportSeg, #foodSeg, .seg{ -webkit-overflow-scrolling:touch; }

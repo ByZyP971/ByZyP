@@ -79,6 +79,9 @@
     renderAvatar();
     if(typeof renderProfile === 'function') renderProfile();
   }
+  function zNm(){ try{ var n = String((profile && profile.name) || '').trim().split(/\s+/)[0]; return n ? n.slice(0, 18) : ''; }catch(e){ return ''; } }
+  function zN(){ var n = zNm(); return n ? n + ', ' : 'Hei, '; }      /* începutul unei propoziții adresate utilizatorului */
+  function zS(){ var n = zNm(); return n ? ', ' + n : ''; }
   function writeProfile(){
     profile = { name: profName.value, height: profHeight.value, age: profAge.value, photo: profile.photo || null };
     updateHeader();
@@ -1185,6 +1188,11 @@
     return { weights:ws, kg:W ? W.kg : null, cm:P.cm, age:P.age, sex:nu.sex, goal:nu.goal, kcal:D ? Math.round(D.kcal) : null, prot:D ? Math.round(D.P) : null,
       week:window.__zWeek(), planned:plannedSets(), level:sp.level || 'mid', phase:sp.phase || 1, klog:sp.klog || {}, sets:sp.sets || {}, todayKey:todayKey };
   }catch(e){ return null; } };
+  window.__zBasics = function(o){ o = o || {};
+    try{ if(o.sex === 'f' || o.sex === 'm') nu.sex = o.sex; if(['gain','maintain','lose'].indexOf(o.goal) >= 0) nu.goal = o.goal; nuSaveCfg(); }catch(e){}
+    try{ var ch = false; if(o.height >= 120 && o.height <= 230 && profHeight){ profHeight.value = String(o.height); ch = true; } if(o.age >= 13 && o.age <= 99 && profAge){ profAge.value = String(o.age); ch = true; } if(ch) writeProfile(); }catch(e){}
+    try{ nuRender(); }catch(e){}
+  };
   window.__zGoal = function(g){ if(['gain','maintain','lose'].indexOf(g) < 0) return; nu.goal = g; try{ nuSaveCfg(); nuRender(); }catch(e){} };
   function exDone(d, name){ // were all sets of this exercise ticked on that day? (null = unknown)
     var res = null;
@@ -3005,9 +3013,12 @@
   var NU_M = [ { k:'b', n:'Dimineața', ic:'🌅', kc:0.28, pr:0.30 }, { k:'l', n:'La prânz', ic:'☀️', kc:0.40, pr:0.35 }, { k:'d', n:'Seara', ic:'🌙', kc:0.32, pr:0.35 } ];
   function nuCalc(kg, cm, age, sex, act, goal){
     var bmr = 10 * kg + 6.25 * cm - 5 * age + (sex === 'f' ? -161 : 5), tdee = bmr * act;
+    var bmi = kg / Math.pow(cm / 100, 2), guard = goal === 'lose' && (bmi < 18.5 || age < 18) ? (age < 18 ? 'age' : 'bmi') : '';
+    if(guard) goal = 'maintain';                                  // nu dăm plan de slăbit sub greutatea normală sau sub 18 ani
     var kcal = tdee * (goal === 'lose' ? 0.85 : goal === 'gain' ? 1.10 : 1), floor = sex === 'f' ? 1300 : 1600; if(kcal < floor) kcal = floor;
-    var P = kg * (goal === 'lose' ? 2.0 : goal === 'gain' ? 1.9 : 1.8), F = Math.max(0.8 * kg, 0.25 * kcal / 9), C = Math.max(0, (kcal - 4 * P - 9 * F) / 4);
-    return { bmr:bmr, tdee:tdee, kcal:kcal, P:P, F:F, C:C, fiber: kcal / 1000 * 14, water: kg * 0.035 };
+    var ref = Math.min(kg, 27 * Math.pow(cm / 100, 2));           // la greutate mare, proteina se socotește pe o greutate de referință
+    var P = Math.min(200, ref * (goal === 'lose' ? 2.0 : goal === 'gain' ? 1.9 : 1.8)), F = Math.max(0.8 * ref, 0.25 * kcal / 9), C = Math.max(0, (kcal - 4 * P - 9 * F) / 4);
+    return { bmr:bmr, tdee:tdee, kcal:kcal, P:P, F:F, C:C, fiber: Math.min(45, kcal / 1000 * 14), water: Math.min(3.5, kg * 0.035), guard:guard };
   }
   function nuGauss(A, b){          // solves A x = b (n x n), null if singular
     var n = b.length, M = A.map(function(r, i){ return r.concat([b[i]]); }), i, j, k;
@@ -3084,7 +3095,7 @@
   function nuEaten(D){ var m = nu.log[todayKey] || 0, t = { kcal:0, p:0 }; D.meals.forEach(function(x, i){ if(m & (1 << i)){ t.kcal += x.tot.kcal; t.p += x.tot.p; } }); return t; }
   function nuRender(){
     var top = document.getElementById('nuTop'), main = document.getElementById('nuMain'); if(!top || !main) return;
-    if(useLocal && !nu._ll){ nu._ll = 1; try{ var c = JSON.parse(safeGet('reset_nutri_v1') || 'null'); if(c){ nu.sex = c.sex === 'f' ? 'f' : 'm'; if([1.375, 1.55, 1.725].indexOf(+c.act) >= 0) nu.act = +c.act; if(['lose', 'maintain', 'gain'].indexOf(c.goal) >= 0) nu.goal = c.goal; nu.v = Object.assign({ b:0, l:0, d:0 }, c.v || {}); } var l = JSON.parse(safeGet('reset_meals_v1') || 'null'); if(l) nu.log = l; }catch(e){} }
+    if(useLocal && !nu._ll){ nu._ll = 1; try{ var c = JSON.parse(safeGet('reset_nutri_v1') || 'null'); if(c){ nu.sex = c.sex === 'f' ? 'f' : 'm'; if([1.2, 1.375, 1.55, 1.725].indexOf(+c.act) >= 0) nu.act = +c.act; if(['lose', 'maintain', 'gain'].indexOf(c.goal) >= 0) nu.goal = c.goal; nu.v = Object.assign({ b:0, l:0, d:0 }, c.v || {}); } var l = JSON.parse(safeGet('reset_meals_v1') || 'null'); if(l) nu.log = l; }catch(e){} }
     var W = nuKgNow(), P = nuProf(); nu.W = W;
     if(!document.getElementById('nuKg')){
       top.innerHTML = '<div class="nu-w"><div class="nu-wl"><span>Greutatea ta azi</span><div class="nu-kg"><input id="nuKg" type="text" maxlength="7" inputmode="decimal" autocomplete="off" placeholder="0.0" aria-label="Greutate în kg"><em>kg</em></div><small id="nuKgNote"></small></div><div class="nu-bmi"><b id="nuBmi">–</b><span>IMC</span></div></div>';
@@ -3101,7 +3112,11 @@
     var D = nuDay(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal, nu.v); D.W = W; D.P = P; nu.D = D; var c = D.c, eaten = nuEaten(D), mask = nu.log[todayKey] || 0;
     var sum = { kcal:0, p:0, c:0, f:0 }; D.meals.forEach(function(m){ sum.kcal += m.tot.kcal; sum.p += m.tot.p; sum.c += m.tot.c; sum.f += m.tot.f; });
     var gp = function(v, ic, t){ return '<button data-g="goal" data-v="' + v + '" class="' + (nu.goal === v ? 'on' : '') + '"><i>' + ic + '</i>' + t + '</button>'; };
-    var h = '<div class="nu-q">Ce vrei să faci?</div><div class="nu-pills nu-goal">' + gp('lose', '🔥', 'Slăbesc') + gp('maintain', '⚖️', 'Rămân la fel') + gp('gain', '💪', 'Pun mușchi') + '</div>' +
+    var needHA = !(parseFloat((profile || {}).height) > 0) || !(parseInt((profile || {}).age, 10) > 0);
+    var h = '<div class="nu-q">Ești:</div><div class="nu-pills nu-goal nu-sex"><button data-g="sex" data-v="f" class="' + (nu.sex === 'f' ? 'on' : '') + '"><i>👩</i>Femeie</button><button data-g="sex" data-v="m" class="' + (nu.sex === 'm' ? 'on' : '') + '"><i>👨</i>Bărbat</button></div>' +
+      (needHA ? '<div class="nu-tip">📏 Ca să socotesc corect am nevoie și de <b>înălțime</b> și <b>vârstă</b>:<div class="nu-ha"><input id="nuCm" inputmode="numeric" maxlength="3" placeholder="cm" value="' + (parseFloat((profile || {}).height) || '') + '"><input id="nuAge" inputmode="numeric" maxlength="2" placeholder="ani" value="' + (parseInt((profile || {}).age, 10) || '') + '"><button id="nuHaOk">Salvează</button></div></div>' : '') +
+      (c.guard ? '<div class="nu-tip">ℹ️ ' + (c.guard === 'age' ? 'Sub 18 ani nu facem plan de slăbit: corpul tău încă crește. Îți arăt cât să mănânci ca să fii în formă.' : 'Greutatea ta e deja sub cea normală pentru înălțimea ta, așa că nu îți fac plan de slăbit. Îți arăt cât să mănânci ca să te menții sănătos.') + ' Dacă ai întrebări, vorbește cu un medic.</div>' : '') +
+      '<div class="nu-q">Ce vrei să faci?</div><div class="nu-pills nu-goal">' + gp('lose', '🔥', 'Slăbesc') + gp('maintain', '⚖️', 'Rămân la fel') + gp('gain', '💪', 'Pun mușchi') + '</div>' +
       '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>calorii pe zi</span></div><div class="nu-why">' + (nu.goal === 'lose' ? 'Atât mănânci ca să slăbești încet și sănătos, fără foame.' : nu.goal === 'gain' ? 'Atât mănânci ca să pui mușchi, nu grăsime.' : 'Atât mănânci ca să rămâi la greutatea de acum.') + ' Nu trebuie să numeri nimic: mesele de mai jos adună exact atât.</div><div class="nu-mac">' +
       '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină<small>pentru mușchi</small></span></div><div style="--c:#A3FF12"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați<small>pentru energie</small></span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi<small>pentru sănătate</small></span></div></div>' +
       '<div class="nu-bars"><div><span>Mâncat azi · calorii</span><em>' + nuN(eaten.kcal) + ' / ' + nuN(Math.round(c.kcal / 10) * 10) + '</em><i style="--w:' + Math.min(100, eaten.kcal / c.kcal * 100).toFixed(0) + '%"></i></div><div><span>Mâncat azi · proteină</span><em>' + nuN(eaten.p) + ' / ' + nuN(c.P) + ' g</em><i style="--w:' + Math.min(100, eaten.p / c.P * 100).toFixed(0) + '%;--b:#5FBF8F"></i></div></div>' +
@@ -3115,11 +3130,10 @@
     });
     var agg = {}; D.meals.forEach(function(m){ m.items.forEach(function(it){ agg[it.k] = (agg[it.k] || 0) + it.g; }); });
     h += '<div class="nu-shop"><div class="nu-sh">🛒 Tot ce îți trebuie azi</div><div class="nu-chips">' + Object.keys(agg).sort(function(a, b){ return agg[b] - agg[a]; }).map(function(k){ return '<span>' + NU_F[k].ic + ' ' + NU_F[k].n.split(' (')[0] + ' <b>' + nuQty(k, agg[k]) + '</b></span>'; }).join('') + '</div></div>';
-    h += '<button class="ghost-btn nu-cfg" id="nuCfg" aria-expanded="' + (nu.open ? 'true' : 'false') + '">⚙️ Bărbat/femeie, cât te miști și cum am calculat ' + (nu.open ? '▴' : '▾') + '</button>';
+    h += '<button class="ghost-btn nu-cfg" id="nuCfg" aria-expanded="' + (nu.open ? 'true' : 'false') + '">⚙️ Cât te miști și cum am calculat ' + (nu.open ? '▴' : '▾') + '</button>';
     if(nu.open){
       var pill = function(grp, val, txt, on){ return '<button data-g="' + grp + '" data-v="' + val + '" class="' + (on ? 'on' : '') + '">' + txt + '</button>'; };
-      h += '<div class="nu-set"><div class="nu-sl">Sex</div><div class="nu-pills">' + pill('sex', 'm', 'Bărbat', nu.sex === 'm') + pill('sex', 'f', 'Femeie', nu.sex === 'f') + '</div>' +
-        '<div class="nu-sl">Cât te miști</div><div class="nu-pills">' + pill('act', '1.375', 'Ușor · 1–3 antrenamente', nu.act === 1.375) + pill('act', '1.55', 'Mediu · 3–5', nu.act === 1.55) + pill('act', '1.725', 'Mult · 6–7', nu.act === 1.725) + '</div>' +
+      h += '<div class="nu-set"><div class="nu-sl">Cât te miști</div><div class="nu-pills">' + pill('act', '1.2', 'Deloc · nu mă antrenez încă', nu.act === 1.2) + pill('act', '1.375', 'Ușor · 1–3 antrenamente', nu.act === 1.375) + pill('act', '1.55', 'Mediu · 3–5', nu.act === 1.55) + pill('act', '1.725', 'Mult · 6–7', nu.act === 1.725) + '</div>' +
         
         '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuKgTxt(W.kg) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (nu.goal === 'lose' ? 'Slăbești încet: −15%.' : nu.goal === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (nu.goal === 'lose' ? '2,0' : nu.goal === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
     }
@@ -3128,14 +3142,15 @@
     main.querySelectorAll('[data-eat]').forEach(function(b){ b.addEventListener('click', function(){ var i = +b.getAttribute('data-eat'); nu.log[todayKey] = (nu.log[todayKey] || 0) ^ (1 << i); nuSaveLog(); nuRender(); }); });
     main.querySelectorAll('[data-var]').forEach(function(b){ b.addEventListener('click', function(){ var k = NU_M[+b.getAttribute('data-var')].k; nu.v[k] = ((nu.v[k] || 0) + 1) % NU_T[k].length; nuSaveCfg(); nuRender(); }); });
     var cf = document.getElementById('nuCfg'); if(cf) cf.addEventListener('click', function(){ nu.open = !nu.open; nuRender(); });
+    var hok = document.getElementById('nuHaOk'); if(hok) hok.addEventListener('click', function(){ var cmv = parseInt(document.getElementById('nuCm').value, 10), agv = parseInt(document.getElementById('nuAge').value, 10); if(!(cmv >= 120 && cmv <= 230) || !(agv >= 13 && agv <= 99)){ toast('Scrie înălțimea în cm și vârsta în ani'); return; } window.__zBasics({ height: cmv, age: agv }); });
     main.querySelectorAll('.nu-pills button').forEach(function(b){ b.addEventListener('click', function(){ var g = b.getAttribute('data-g'), v = b.getAttribute('data-v'); if(g === 'sex') nu.sex = v; else if(g === 'act') nu.act = +v; else nu.goal = v; nuSaveCfg(); nuRender(); }); });
   }
   function nuAnswer(t){        // for Jarvis
-    var D = nuCompute(); if(!D) return 'ZyP, nu ai notat încă greutatea. Scrie-o în Mâncare, Calculator, și îți spun tot.';
+    var D = nuCompute(); if(!D) return zN() + 'nu ai notat încă greutatea. Scrie-o în Mâncare, Calculator, și îți spun tot.';
     var c = D.c, pick = /dimineata|mic dejun/.test(t) ? 0 : /pranz/.test(t) ? 1 : /seara|cina/.test(t) ? 2 : -1;
-    if(pick >= 0){ var m = D.meals[pick]; return 'ZyP, ' + m.m.n.toLowerCase() + ' mănânci ' + m.name.toLowerCase() + ': ' + m.items.map(function(it){ return NU_F[it.k].n.split(' (')[0].toLowerCase().replace(' / ', ' sau ') + ' ' + nuQty(it.k, it.g).replace(/ \(.*\)/, '').replace(' g', ' de grame'); }).join(', ') + '. Asta înseamnă aproximativ ' + nuN(m.tot.kcal) + ' calorii și ' + nuN(m.tot.p) + ' grame de proteină.'; }
+    if(pick >= 0){ var m = D.meals[pick]; return zN() + '' + m.m.n.toLowerCase() + ' mănânci ' + m.name.toLowerCase() + ': ' + m.items.map(function(it){ return NU_F[it.k].n.split(' (')[0].toLowerCase().replace(' / ', ' sau ') + ' ' + nuQty(it.k, it.g).replace(/ \(.*\)/, '').replace(' g', ' de grame'); }).join(', ') + '. Asta înseamnă aproximativ ' + nuN(m.tot.kcal) + ' calorii și ' + nuN(m.tot.p) + ' grame de proteină.'; }
     var e = nuEaten(D);
-    return 'ZyP, la ' + nuKgTxt(D.W.kg) + ' kilograme ai nevoie azi de aproximativ ' + nuN(Math.round(c.kcal / 10) * 10) + ' calorii și ' + nuN(c.P) + ' grame de proteină, adică ' + nuN(D.meals[0].target.p) + ' dimineața, ' + nuN(D.meals[1].target.p) + ' la prânz și ' + nuN(D.meals[2].target.p) + ' seara. Plus ' + nuN(c.water, 1) + ' litri de apă. ' + (e.kcal ? 'Ai mâncat deja ' + nuN(e.kcal) + ' calorii și ' + nuN(e.p) + ' grame de proteină.' : '');
+    return zN() + 'la ' + nuKgTxt(D.W.kg) + ' kilograme ai nevoie azi de aproximativ ' + nuN(Math.round(c.kcal / 10) * 10) + ' calorii și ' + nuN(c.P) + ' grame de proteină, adică ' + nuN(D.meals[0].target.p) + ' dimineața, ' + nuN(D.meals[1].target.p) + ' la prânz și ' + nuN(D.meals[2].target.p) + ' seara. Plus ' + nuN(c.water, 1) + ' litri de apă. ' + (e.kcal ? 'Ai mâncat deja ' + nuN(e.kcal) + ' calorii și ' + nuN(e.p) + ' grame de proteină.' : '');
   }
   setTimeout(function(){ var b = document.querySelector('[data-fseg="calc"]'); if(b) b.click(); nuRender(); }, 0);
   function renderGoldMini(){
@@ -3761,120 +3776,120 @@
     if(!jHas(t, ['cate','cat','cum','ce '])) ticks.forEach(function(tk){ if(jHas(t, tk[1])){ var r = jTick(tk[0]); var lbl = HABITS.filter(function(x){ return x.key === tk[0]; })[0].label.toLowerCase(); if(r === 'already') already.push(lbl); else if(r) done.push(lbl); } });
     if(done.length || already.length){
       var left = jLeft().filter(function(x){ return done.indexOf(x.label.toLowerCase()) < 0; });
-      var msg = 'ZyP, ' + (done.length ? 'am bifat ' + done.join(' și ') + '. ' : '') + (already.length ? (already.join(' și ') + ' era deja bifat. ') : '');
+      var msg = zN() + '' + (done.length ? 'am bifat ' + done.join(' și ') + '. ' : '') + (already.length ? (already.join(' și ') + ' era deja bifat. ') : '');
       msg += left.length ? 'Mai ai ' + left.length + ': ' + left.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai bifat tot azi. Zi perfectă, bravo! 🔥';
       return msg;
     }
     // --- open views ---
-    if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return 'ZyP, deschid terminalul de trader.'; }
-    if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return 'ZyP, deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
-    if(jHas(t, ['tradingview','trading view','tradingviu'])){ setTimeout(function(){ window.open('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD', '_blank'); }, 500); return 'ZyP, deschid TradingView pe aur. Acolo ai contul tău și desenele tale.'; }
+    if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return zN() + 'deschid terminalul de trader.'; }
+    if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return zN() + 'deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
+    if(jHas(t, ['tradingview','trading view','tradingviu'])){ setTimeout(function(){ window.open('https://www.tradingview.com/chart/?symbol=OANDA%3AXAUUSD', '_blank'); }, 500); return zN() + 'deschid TradingView pe aur. Acolo ai contul tău și desenele tale.'; }
     if(jHas(t, ['linie de trend','linia de trend','linii de trend','trendline','trend line'])){
-      var T5 = gold && gold.trend; if(!T5 || (!T5.sup && !T5.res)) return 'ZyP, acum nu e nicio linie de trend clară pe aur. Piața e în interval.';
+      var T5 = gold && gold.trend; if(!T5 || (!T5.sup && !T5.res)) return zN() + 'acum nu e nicio linie de trend clară pe aur. Piața e în interval.';
       var pT = liveSpot != null ? liveSpot : gold.price, outT = [];
       [['sup', 'suport'], ['res', 'rezistență']].forEach(function(a){ var q = T5[a[0]]; if(!q) return; outT.push('linia de trend ' + (q.dir === 'asc' ? 'ascendentă' : 'descendentă') + ' de ' + a[1] + ' e acum la ' + jNum(q.now, 2) + ', la ' + jNum(Math.abs(pT - q.now), 1) + ' dolari de preț' + (q.status === 'broken' ? ', dar a fost spartă' : '') + ', atinsă de ' + q.touches + ' ori'); });
-      return 'ZyP, ' + outT.join('; ') + '.';
+      return zN() + '' + outT.join('; ') + '.';
     }
-    if(jHas(t, ['analizeaza poza','analiza poza','analiza din poza','analizeaza captura','screenshot','captura de ecran','am o poza','poza cu grafic'])){ setTimeout(function(){ window.__openPhoto && window.__openPhoto(); }, 500); return 'ZyP, deschid analiza din poză. Alege captura din galerie și o analizez.'; }
+    if(jHas(t, ['analizeaza poza','analiza poza','analiza din poza','analizeaza captura','screenshot','captura de ecran','am o poza','poza cu grafic'])){ setTimeout(function(){ window.__openPhoto && window.__openPhoto(); }, 500); return zN() + 'deschid analiza din poză. Alege captura din galerie și o analizez.'; }
     // --- support / resistance ---
     if(jHas(t, ['suport','rezistenta','niveluri','nivelul','nivel '])){
-      if(!gold || !gold.watch || !gold.watch.levels.length) return 'ZyP, nu am încă nivelurile calculate. Mai așteaptă un minut.';
+      if(!gold || !gold.watch || !gold.watch.levels.length) return zN() + 'nu am încă nivelurile calculate. Mai așteaptă un minut.';
       var pS = liveSpot != null ? liveSpot : gold.price, lv5 = gold.watch.levels;
       var dn = lv5.filter(function(x){ return x.v < pS; }).sort(function(a, b){ return b.v - a.v; })[0], up5 = lv5.filter(function(x){ return x.v > pS; }).sort(function(a, b){ return a.v - b.v; })[0];
       var ph = lv5.filter(function(x){ return x.phase === 'near' || x.phase === 'touched'; });
-      return 'ZyP, aurul e la ' + jNum(pS, 2) + '. ' + (dn ? 'Cel mai apropiat suport e ' + jNum(dn.v, 2) + ', la ' + jNum(pS - dn.v, 1) + ' dolari sub preț. ' : '') + (up5 ? 'Cea mai apropiată rezistență e ' + jNum(up5.v, 2) + ', la ' + jNum(up5.v - pS, 1) + ' dolari deasupra. ' : '') +
+      return zN() + 'aurul e la ' + jNum(pS, 2) + '. ' + (dn ? 'Cel mai apropiat suport e ' + jNum(dn.v, 2) + ', la ' + jNum(pS - dn.v, 1) + ' dolari sub preț. ' : '') + (up5 ? 'Cea mai apropiată rezistență e ' + jNum(up5.v, 2) + ', la ' + jNum(up5.v - pS, 1) + ' dolari deasupra. ' : '') +
         (ph.length ? 'Atenție, prețul e acum în zona nivelului ' + jNum(ph[0].v, 2) + ': ' + (ph[0].phase === 'touched' ? 'l-a atins, urmărește dacă e respins sau spart.' : 'se apropie, verifică graficul.') : 'Te anunț când se apropie de unul.');
     }
     // --- gold: open entries ---
     if(jHas(t, ['intrari','intrare','tranzactii deschise','sunt deschise','pozitii','ce e deschis','tranzactii de test'])){
       var act = (gold && gold.ptrades || []).filter(function(x){ return !x.closed; });
-      if(!act.length) return 'ZyP, acum nu e nicio intrare deschisă pe aur. Te anunț când intră o strategie.';
+      if(!act.length) return zN() + 'acum nu e nicio intrare deschisă pe aur. Te anunț când intră o strategie.';
       var op = act.filter(function(x){ return x.status !== 'în așteptare'; }), p = jGold().p;
       var list = op.slice(-4).map(function(x){ var mv = x.side === 'BUY' ? p - x.entry : x.entry - p; return x.strat.split(' (')[0] + ' pe ' + (x.side === 'BUY' ? 'cumpărare' : 'vânzare') + ' de la ' + jNum(x.entry) + ', acum ' + (mv >= 0 ? 'pe plus ' : 'pe minus ') + jNum(Math.abs(mv), 1) + ' dolari'; });
-      return 'ZyP, ai ' + op.length + ' intrări deschise' + (act.length > op.length ? ' și ' + (act.length - op.length) + ' ordine în așteptare' : '') + '. ' + (list.length ? 'Ultimele: ' + list.join('; ') + '.' : '');
+      return zN() + 'ai ' + op.length + ' intrări deschise' + (act.length > op.length ? ' și ' + (act.length - op.length) + ' ordine în așteptare' : '') + '. ' + (list.length ? 'Ultimele: ' + list.join('; ') + '.' : '');
     }
-    if(!window.SHOW_GOLD && jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga','aur','aurul','gold','xau','strategii','strategiile','verdict'])) return 'ZyP, fila de aur e ascunsă pentru moment. O pornim când vrei.';
+    if(!window.SHOW_GOLD && jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga','aur','aurul','gold','xau','strategii','strategiile','verdict'])) return zN() + 'fila de aur e ascunsă pentru moment. O pornim când vrei.';
     if(jHas(t, ['clasament','cea mai buna strategie','care strategie','strategia castiga'])){
       var ps = gold && gold.pstats ? Object.keys(gold.pstats).map(function(k){ return gold.pstats[k]; }).filter(function(v){ return v.n; }).sort(function(a,b){ return b.r - a.r; }) : [];
-      if(!ps.length) return 'ZyP, încă nu sunt tranzacții închise ca să fac un clasament. Mai așteaptă câteva zile.';
-      return 'ZyP, pe primul loc e ' + ps[0].name + ', cu ' + ps[0].rate + '% câștigate și ' + (ps[0].r >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(ps[0].r), 1) + ' R.' + (ps[1] ? ' Pe locul doi, ' + ps[1].name + '.' : '');
+      if(!ps.length) return zN() + 'încă nu sunt tranzacții închise ca să fac un clasament. Mai așteaptă câteva zile.';
+      return zN() + 'pe primul loc e ' + ps[0].name + ', cu ' + ps[0].rate + '% câștigate și ' + (ps[0].r >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(ps[0].r), 1) + ' R.' + (ps[1] ? ' Pe locul doi, ' + ps[1].name + '.' : '');
     }
     if(jHas(t, ['aur','aurul','gold','xau','strategii','strategiile','verdict'])){
-      var g = jGold(); if(!g) return 'ZyP, analiza aurului se încarcă încă. Încearcă peste câteva secunde.';
+      var g = jGold(); if(!g) return zN() + 'analiza aurului se încarcă încă. Încearcă peste câteva secunde.';
       var vt = g.v === 'BUY' ? 'mai multe strategii spun cumpărare' : g.v === 'SELL' ? 'mai multe strategii spun vânzare' : 'strategiile nu sunt de acord, așa că e mai bine să aștepți';
       var nact = (gold.ptrades || []).filter(function(x){ return !x.closed && x.status !== 'în așteptare'; }).length;
-      return 'ZyP, aurul e la ' + jNum(g.p, 2) + ' dolari, ' + (g.ch >= 0 ? 'în creștere cu ' : 'în scădere cu ') + jNum(Math.abs(g.pct), 2) + ' la sută azi. Din cele ' + (gold.strategies || []).length + ' de strategii, ' + (g.c.buyN || 0) + ' spun cumpărare și ' + (g.c.sellN || 0) + ' vânzare: ' + vt + '. Ai ' + nact + ' intrări de test deschise.';
+      return zN() + 'aurul e la ' + jNum(g.p, 2) + ' dolari, ' + (g.ch >= 0 ? 'în creștere cu ' : 'în scădere cu ') + jNum(Math.abs(g.pct), 2) + ' la sută azi. Din cele ' + (gold.strategies || []).length + ' de strategii, ' + (g.c.buyN || 0) + ' spun cumpărare și ' + (g.c.sellN || 0) + ' vânzare: ' + vt + '. Ai ' + nact + ' intrări de test deschise.';
     }
     // --- news ---
     if(jHas(t, ['stire','stiri','stirea','calendar','news'])){
-      if(!newsTarget) return 'ZyP, nu urmează nicio știre importantă acum. Calendarul săptămânii noi apare duminică seara.';
+      if(!newsTarget) return zN() + 'nu urmează nicio știre importantă acum. Calendarul săptămânii noi apare duminică seara.';
       var mins = Math.round((newsTarget.t.getTime() - Date.now()) / 60000);
-      return 'ZyP, următoarea știre ' + (newsTarget.i === 'High' ? 'roșie' : 'importantă') + ' e ' + newsTarget.c + ', ' + newsTarget.title + ', la ora ' + hhmm(newsTarget.t) + (mins > 0 ? ', peste ' + (mins >= 60 ? Math.floor(mins / 60) + ' ore și ' + (mins % 60) + ' minute' : mins + ' minute') : '') + '.' + (newsTarget.i === 'High' ? ' Atenție la aur în jurul ei.' : '');
+      return zN() + 'următoarea știre ' + (newsTarget.i === 'High' ? 'roșie' : 'importantă') + ' e ' + newsTarget.c + ', ' + newsTarget.title + ', la ora ' + hhmm(newsTarget.t) + (mins > 0 ? ', peste ' + (mins >= 60 ? Math.floor(mins / 60) + ' ore și ' + (mins % 60) + ' minute' : mins + ' minute') : '') + '.' + (newsTarget.i === 'High' ? ' Atenție la aur în jurul ei.' : '');
     }
     if(/\beth(ereum|erium)?\b/.test(t)){
-      if(eth.live == null) return 'ZyP, încă nu am prețul Ethereum. Deschide Bani, Avere, și mai încearcă peste câteva secunde.';
-      var ps = eth.pos, tx = 'ZyP, Ethereum e la ' + jNum(eth.live, 2) + ' euro' + (eth.ch24 != null && !isNaN(eth.ch24) ? ', ' + (eth.ch24 >= 0 ? 'în creștere cu ' : 'în scădere cu ') + jNum(Math.abs(eth.ch24), 2) + ' la sută în 24 de ore' : '') + '. ';
+      if(eth.live == null) return zN() + 'încă nu am prețul Ethereum. Deschide Bani, Avere, și mai încearcă peste câteva secunde.';
+      var ps = eth.pos, tx = zN() + 'Ethereum e la ' + jNum(eth.live, 2) + ' euro' + (eth.ch24 != null && !isNaN(eth.ch24) ? ', ' + (eth.ch24 >= 0 ? 'în creștere cu ' : 'în scădere cu ') + jNum(Math.abs(eth.ch24), 2) + ' la sută în 24 de ore' : '') + '. ';
       if(ps){ var vv = ps.qty * eth.live, dd = vv - ps.invested; tx += 'Ai pus ' + jNum(ps.invested, 0) + ' euro, acum valorează ' + jNum(vv, 2) + ' euro, adică ' + (dd >= 0 ? 'ești pe plus cu ' : 'ești pe minus cu ') + jNum(Math.abs(dd), 2) + ' euro, ' + jNum(Math.abs(dd / ps.invested * 100), 2) + ' la sută.'; }
       else tx += 'Nu ai pus încă nicio sumă la Ethereum. O poți adăuga la Bani, Avere.';
       return tx;
     }
     // --- MT5 account ---
     if(jHas(t, ['mt5','metatrader','contul meu','cont real','pozitiile mele','equity','balanta','contul de trading'])){
-      var S5 = mt5State; if(!S5 || !S5.info) return 'ZyP, contul MT5 nu e conectat încă. După ce punem cheile MetaApi, îți spun tot despre el.';
+      var S5 = mt5State; if(!S5 || !S5.info) return zN() + 'contul MT5 nu e conectat încă. După ce punem cheile MetaApi, îți spun tot despre el.';
       var ps5 = S5.positions || [], fl5 = ps5.map(mt5Live).reduce(function(a, x){ return a + (x.profit || 0); }, 0);
       var c5 = S5.info.currency === 'USD' ? ' dolari' : ' ' + (S5.info.currency || '');
-      return 'ZyP, în contul MT5 ai o balanță de ' + jNum(S5.info.balance, 2) + c5 + ' și equity ' + jNum(S5.info.balance + fl5, 2) + '. ' +
+      return zN() + 'în contul MT5 ai o balanță de ' + jNum(S5.info.balance, 2) + c5 + ' și equity ' + jNum(S5.info.balance + fl5, 2) + '. ' +
         (ps5.length ? 'Ai ' + ps5.length + (ps5.length === 1 ? ' poziție deschisă' : ' poziții deschise') + ': ' + ps5.slice(0, 3).map(function(p){ var L = mt5Live(p); return p.symbol + ' ' + (p.side === 'BUY' ? 'cumpărare' : 'vânzare') + ' ' + p.volume + ' de la ' + p.open + ', acum ' + (L.profit >= 0 ? 'pe plus ' : 'pe minus ') + jNum(Math.abs(L.profit), 2); }).join('; ') + '.' + (ps5.some(function(p){ return !p.sl; }) ? ' Atenție: ai o poziție fără stop loss!' : '') : 'Nu ai nicio poziție deschisă acum.');
     }
     // --- money ---
     if(jHas(t, ['avere','bani','cati bani','sold','conturi','cat am'])){
-      var w = jWorth(); if(!w) return 'ZyP, încă n-ai salvat soldurile. Intră la Bani, Avere, și le trecem.';
-      return 'ZyP, averea ta totală e ' + jNum(w.now) + ' euro.' + (w.prev != null ? ' Față de ultima salvare ' + (w.now >= w.prev ? 'ai crescut cu ' : 'ai scăzut cu ') + jNum(Math.abs(w.now - w.prev)) + ' euro.' : '') + (worthGoal ? ' Ești la ' + Math.round(w.now / worthGoal * 100) + ' la sută din obiectivul de ' + jNum(worthGoal) + ' euro.' : '');
+      var w = jWorth(); if(!w) return zN() + 'încă n-ai salvat soldurile. Intră la Bani, Avere, și le trecem.';
+      return zN() + 'averea ta totală e ' + jNum(w.now) + ' euro.' + (w.prev != null ? ' Față de ultima salvare ' + (w.now >= w.prev ? 'ai crescut cu ' : 'ai scăzut cu ') + jNum(Math.abs(w.now - w.prev)) + ' euro.' : '') + (worthGoal ? ' Ești la ' + Math.round(w.now / worthGoal * 100) + ' la sută din obiectivul de ' + jNum(worthGoal) + ' euro.' : '');
     }
     if(jHas(t, ['trading','profit','pierdere','jurnal'])){
       var ym = todayKey.slice(0, 7), tm = trades.filter(function(x){ return x.date && x.date.slice(0, 7) === ym; });
       var pl = tm.reduce(function(a, x){ return a + (x.result || 0); }, 0), wn = tm.filter(function(x){ return x.result > 0; }).length;
-      return tm.length ? 'ZyP, luna asta ai ' + tm.length + (tm.length === 1 ? ' tranzacție, ' : ' tranzacții, ') + wn + ' pe plus, rezultat ' + (pl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(pl), 2) + ' euro.' : 'ZyP, luna asta n-ai notat încă nicio tranzacție.';
+      return tm.length ? zN() + 'luna asta ai ' + tm.length + (tm.length === 1 ? ' tranzacție, ' : ' tranzacții, ') + wn + ' pe plus, rezultat ' + (pl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(pl), 2) + ' euro.' : zN() + 'luna asta n-ai notat încă nicio tranzacție.';
     }
     if(jHas(t, ['investit','investitii','etf','bitcoin'])){
       var tot = investments.reduce(function(a, x){ return a + (+x.amount || 0); }, 0);
-      return 'ZyP, ai investit în total ' + jNum(tot) + ' euro, în ' + investments.length + ' luni. Continuă cu 500 pe lună și banii lucrează pentru tine.';
+      return zN() + 'ai investit în total ' + jNum(tot) + ' euro, în ' + investments.length + ' luni. Continuă cu 500 pe lună și banii lucrează pentru tine.';
     }
     // --- habits / streaks ---
     if(jHas(t, ['motiveaza','pofta','greu','nu mai pot','ajuta','ajutor'])){
-      return 'ZyP, ascultă-mă: pofta trece în trei până la cinci minute. Respiră adânc de patru ori, bea un pahar de apă și mergi zece pași. Ai ajuns la ziua ' + jDayNum() + '. Nu da totul înapoi pentru cinci minute.';
+      return zN() + 'ascultă-mă: pofta trece în trei până la cinci minute. Respiră adânc de patru ori, bea un pahar de apă și mergi zece pași. Ai ajuns la ziua ' + jDayNum() + '. Nu da totul înapoi pentru cinci minute.';
     }
     if(jHas(t, ['tigari','fumat','fumez','tigara'])){
-      var sf = jSmokeFree(); return 'ZyP, ai ' + sf + (sf === 1 ? ' zi' : ' zile') + ' la rând fără țigări. ' + (sf >= 7 ? 'Plămânii tăi deja respiră mai bine. Nu da totul înapoi pentru una singură.' : 'Fiecare zi contează. Dacă vine pofta, trece în câteva minute: bea un pahar de apă.');
+      var sf = jSmokeFree(); return zN() + 'ai ' + sf + (sf === 1 ? ' zi' : ' zile') + ' la rând fără țigări. ' + (sf >= 7 ? 'Plămânii tăi deja respiră mai bine. Nu da totul înapoi pentru una singură.' : 'Fiecare zi contează. Dacă vine pofta, trece în câteva minute: bea un pahar de apă.');
     }
     if(jHas(t, ['ce mai am','ce am de bifat','obiceiuri','bifat','ce am facut','cum stau azi'])){
       var lf = jLeft(), dnN = HABITS.length - lf.length;
-      return 'ZyP, azi ai bifat ' + dnN + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
+      return zN() + 'azi ai bifat ' + dnN + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
     }
-    if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ return 'ZyP, azi e ziua ' + jDayNum() + ' din viața ta nouă. Ai ' + jSmokeFree() + ' zile la rând fără țigări.'; }
+    if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ return zN() + 'azi e ziua ' + jDayNum() + ' din viața ta nouă. Ai ' + jSmokeFree() + ' zile la rând fără țigări.'; }
     if(jHas(t, ['greutate','kg','kilograme','cantaresc'])){
       var ws = Object.keys(data).sort().filter(function(k){ return data[k] && data[k].weight != null; });
-      if(!ws.length) return 'ZyP, n-ai notat încă greutatea. O poți scrie pe fila Azi, la jurnalul zilei.';
+      if(!ws.length) return zN() + 'n-ai notat încă greutatea. O poți scrie pe fila Azi, la jurnalul zilei.';
       var wl = +data[ws[ws.length - 1]].weight, wf = +data[ws[0]].weight;
-      return 'ZyP, ultima greutate notată e ' + jNum(wl, Math.round(wl * 100) % 10 === 0 ? 1 : 2) + ' kilograme.' + (ws.length > 1 ? ' De la început ' + (wl <= wf ? 'ai slăbit ' : 'ai pus ') + jNum(Math.abs(wl - wf), 2) + ' kilograme.' : '');
+      return zN() + 'ultima greutate notată e ' + jNum(wl, Math.round(wl * 100) % 10 === 0 ? 1 : 2) + ' kilograme.' + (ws.length > 1 ? ' De la început ' + (wl <= wf ? 'ai slăbit ' : 'ai pus ') + jNum(Math.abs(wl - wf), 2) + ' kilograme.' : '');
     }
     // --- day plan ---
     if(jHas(t, ['sala','sport','antrenament azi','ce am azi','planul','azi ce'])){
       var code = woOfDay(wIdx), md = document.querySelectorAll('.mm-day')[wIdx], lunch = '';
       if(md){ var fs = md.querySelectorAll('.mm-food'); lunch = fs[1] ? fs[1].textContent : ''; }
-      return 'ZyP, ' + (/odihn/i.test(woLabel(code)) ? 'azi e zi de odihnă, fără sală.' : 'azi la sport ai ' + woLabel(code) + '.') + (lunch ? ' La prânz: ' + lunch + '.' : '') + (newsTarget ? ' Următoarea știre importantă e la ' + hhmm(newsTarget.t) + '.' : '') + ' Mai ai ' + jLeft().length + ' obiceiuri de bifat.';
+      return zN() + '' + (/odihn/i.test(woLabel(code)) ? 'azi e zi de odihnă, fără sală.' : 'azi la sport ai ' + woLabel(code) + '.') + (lunch ? ' La prânz: ' + lunch + '.' : '') + (newsTarget ? ' Următoarea știre importantă e la ' + hhmm(newsTarget.t) + '.' : '') + ' Mai ai ' + jLeft().length + ' obiceiuri de bifat.';
     }
     if(jHas(t, ['mananc','mancare','pranz','cina','meniu'])){
       var md2 = document.querySelectorAll('.mm-day')[wIdx]; var f2 = md2 ? Array.from(md2.querySelectorAll('.mm-food')).map(function(x){ return x.textContent; }) : [];
-      return f2.length ? 'ZyP, azi în meniu: dimineața ' + f2[0] + ', la prânz ' + (f2[1] || '') + ', seara ' + (f2[3] || f2[2] || '') + '.' : 'ZyP, deschide fila Mâncare ca să vezi meniul zilei.';
+      return f2.length ? zN() + 'azi în meniu: dimineața ' + f2[0] + ', la prânz ' + (f2[1] || '') + ', seara ' + (f2[3] || f2[2] || '') + '.' : zN() + 'deschide fila Mâncare ca să vezi meniul zilei.';
     }
     if(jHas(t, ['raport','saptamana','cum a fost'])){
       var W = (typeof weekStats === 'function') ? weekStats(0) : null;
-      return W ? 'ZyP, săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' euro.' : '') : 'ZyP, raportul se află la Profil.';
+      return W ? zN() + 'săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' euro.' : '') : zN() + 'raportul se află la Profil.';
     }
-    if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + ', ZyP! Sunt aici. Întreabă-mă de aur, intrări, știri, bani, sală sau obiceiuri.'; }
-    if(jHas(t, ['ce poti','ajutor comenzi','ce stii','comenzi'])){ return 'ZyP, mă poți întreba: cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, câte zile fără țigări, ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune: am băut apă, am fost la sală, deschide terminalul, deschide seiful.'; }
-    return 'ZyP, n-am înțeles exact. Poți să mă întrebi de aur, intrări, știri, bani, trading, țigări, obiceiuri, sală sau mâncare.';
+    if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + zS() + '! Sunt aici. Întreabă-mă de aur, intrări, știri, bani, sală sau obiceiuri.'; }
+    if(jHas(t, ['ce poti','ajutor comenzi','ce stii','comenzi'])){ return zN() + 'mă poți întreba: cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, câte zile fără țigări, ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune: am băut apă, am fost la sală, deschide terminalul, deschide seiful.'; }
+    return zN() + 'n-am înțeles exact. Poți să mă întrebi de aur, intrări, știri, bani, trading, țigări, obiceiuri, sală sau mâncare.';
   }
 
   var jRec = null, jListening = false;
@@ -3913,7 +3928,7 @@
     }
     ov.classList.add('open');
     try{ speechSynthesis.getVoices(); }catch(e){}
-    if(!document.getElementById('jvLog').innerHTML){ var h = new Date().getHours(); jShow(null, (h < 12 ? 'Bună dimineața' : h < 18 ? 'Bună ziua' : 'Bună seara') + ', ZyP. Ziua ' + jDayNum() + '. Cu ce te ajut?'); }
+    if(!document.getElementById('jvLog').innerHTML){ var h = new Date().getHours(); jShow(null, (h < 12 ? 'Bună dimineața' : h < 18 ? 'Bună ziua' : 'Bună seara') + zS() + '. Ziua ' + jDayNum() + '. Cu ce te ajut?'); }
     setTimeout(jListen, 250);
   }
   function jListen(){
@@ -4085,7 +4100,7 @@
       if(!(start >= 0)) start = 100;
       btn.disabled = true; btn.textContent = 'Se șterge…';
       try{ Object.keys(localStorage).forEach(function(k){ if(k !== THEME_KEY && k.indexOf('sb-') !== 0) localStorage.removeItem(k); }); }catch(e){}
-      var done = function(){ try{ localStorage.setItem('reset_eq_start_v1', String(start)); }catch(e){} alert('Gata, ZyP. Totul e de la zero: ziua 1, trading de la €' + start + '. Succes! 💪'); location.hash = ''; location.reload(); };
+      var done = function(){ try{ localStorage.setItem('reset_eq_start_v1', String(start)); }catch(e){} alert('Gata' + zS() + '. Totul e de la zero: ziua 1, trading de la €' + start + '. Succes! 💪'); location.hash = ''; location.reload(); };
       if(window.__wipeAll){
         window.__wipeAll().then(function(){ return window.__putDoc('settings', 'trading', { startBalance:start }); }).then(done)
           .catch(function(e){ alert('Nu s-a putut șterge din cloud: ' + (e.message || e) + '. Încearcă din nou.'); btn.disabled = false; btn.textContent = '🗑️ Resetează tot (de la zero)'; });
@@ -4465,7 +4480,7 @@
       if(w.goal != null){ worthGoal = parseFloat(w.goal) || 0; try{ localStorage.setItem('byzyp_goal', String(worthGoal)); }catch(e){} renderWorth(); }
     }, function(err){ console.error('worth settings sub error', err); });
 
-    db.doc('settings/nutri').onSnapshot(function(snap){ if(snap.exists){ var d = snap.data() || {}; nu.sex = d.sex === 'f' ? 'f' : 'm'; if([1.375, 1.55, 1.725].indexOf(+d.act) >= 0) nu.act = +d.act; if(['lose', 'maintain', 'gain'].indexOf(d.goal) >= 0) nu.goal = d.goal; nu.v = Object.assign({ b:0, l:0, d:0 }, d.v || {}); } nuRender(); }, function(err){ console.error('nutri sub error', err); });
+    db.doc('settings/nutri').onSnapshot(function(snap){ if(snap.exists){ var d = snap.data() || {}; nu.sex = d.sex === 'f' ? 'f' : 'm'; if([1.2, 1.375, 1.55, 1.725].indexOf(+d.act) >= 0) nu.act = +d.act; if(['lose', 'maintain', 'gain'].indexOf(d.goal) >= 0) nu.goal = d.goal; nu.v = Object.assign({ b:0, l:0, d:0 }, d.v || {}); } nuRender(); }, function(err){ console.error('nutri sub error', err); });
     db.doc('settings/meals').onSnapshot(function(snap){ nu.log = snap.exists ? ((snap.data() || {}).log || {}) : {}; nuRender(); }, function(err){ console.error('meals sub error', err); });
 
     db.doc('settings/accounts').onSnapshot(function(snap){ var l = snap.exists ? accClean((snap.data() || {}).list) : null; ACC = l || ACC_DEFAULT.slice(); renderWorth(); }, function(err){ console.error('accounts list sub error', err); });
@@ -4496,7 +4511,7 @@
     var now = new Date(), h = now.getHours();
     var g = h<5 ? 'Noapte bună' : h<12 ? 'Bună dimineața' : h<18 ? 'Bună ziua' : 'Bună seara';
     var zile = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'], luni = ['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
-    sub.textContent = g + ', ZyP';
+    sub.textContent = g + zS();
     var dEl = document.getElementById('spDate'); if(dEl) dEl.textContent = zile[now.getDay()] + ' · ' + now.getDate() + ' ' + luni[now.getMonth()];
     setTimeout(function(){ sp.classList.add('hide'); }, 2150);
     setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 2900);

@@ -6,7 +6,14 @@
   var gate = document.getElementById('authGate');
   function msg(t){ document.getElementById('authMsg').textContent = t || ''; }
   function done(){ window.__byzypAuthed = true; gate.style.display = 'none'; window.dispatchEvent(new Event('byzyp-auth')); }
-  if(!window.supabase || SB_URL.indexOf('__') === 0){ window.claude = undefined; setTimeout(done, 0); return; }
+  if(!window.supabase || SB_URL.indexOf('__') === 0){
+    var had = false; try{ for(var li = 0; li < localStorage.length; li++){ var lk = localStorage.key(li) || ''; if(lk.indexOf('sb-') === 0 && lk.indexOf('auth-token') > 0) had = true; } }catch(e){}
+    if(had && SB_URL.indexOf('__') !== 0){   // ai cont, dar nu am putut încărca legătura cu serverul: nu pornim cu date goale
+      gate.style.display = 'flex'; gate.innerHTML = '<div style="max-width:320px;margin:auto;text-align:center;padding:24px;color:#fff;font:600 15px/1.4 system-ui,sans-serif">Nu pot ajunge la server.<br>Verifică internetul și apasă Reîncearcă.<br><button id="sbRetry" style="margin-top:16px;padding:12px 22px;border-radius:999px;border:none;background:#A3FF12;color:#000;font:800 15px system-ui,sans-serif">Reîncearcă</button></div>';
+      var rb = document.getElementById('sbRetry'); if(rb) rb.addEventListener('click', function(){ location.reload(); });
+      return;
+    }
+    window.claude = undefined; setTimeout(done, 0); return; }
   var sb = window.supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true } });
   window.__sb = sb;
 
@@ -15,7 +22,7 @@
   function makeDb(uid){
     var cache = {}, docL = {}, colL = {}, loaded = false, waiting = [];
     window.__wipeAll = function(){ return sb.from('docs').delete().eq('user_id', uid).then(function(r){ if(r.error) throw r.error; }); };
-    window.__putDoc = function(col, id, data){ return sb.from('docs').upsert({ user_id:uid, col:col, id:id, data:data, updated_at:new Date().toISOString() }, { onConflict:'user_id,col,id' }).then(function(r){ if(r.error) throw r.error; }); };
+    window.__putDoc = function(col, id, data){ if(!readOk) return Promise.reject(new Error('Fără conexiune la date. Încearcă din nou peste puțin.')); return sb.from('docs').upsert({ user_id:uid, col:col, id:id, data:data, updated_at:new Date().toISOString() }, { onConflict:'user_id,col,id' }).then(function(r){ if(r.error) throw r.error; }); };
     function snapDoc(col, id){ var d = cache[col] && cache[col][id]; return { id:id, exists: !!d, data:function(){ return clone(d); } }; }
     function snapCol(col, order){
       var m = cache[col] || {};
@@ -29,11 +36,33 @@
     }
     function put(col, id, data){ cache[col] = cache[col] || {}; if(data == null) delete cache[col][id]; else cache[col][id] = clone(data); emit(col, id); }
     function whenLoaded(fn){ if(loaded) fn(); else waiting.push(fn); }
-    sb.from('docs').select('col,id,data').then(function(r){
-      if(r.error) console.error(r.error);
-      (r.data || []).forEach(function(row){ cache[row.col] = cache[row.col] || {}; cache[row.col][row.id] = row.data; });
-      loaded = true; waiting.splice(0).forEach(function(f){ f(); });
-    });
+    // Prima citire: dacă eșuează (net slab), NU pornim cu date goale și NU scriem nimic în cloud până nu reușește.
+    var readOk = false, pend = {}, tries = 0, bann = null;
+    function banner(on){
+      if(!on){ if(bann){ bann.remove(); bann = null; } return; }
+      if(bann || !document.body) return;
+      bann = document.createElement('div'); bann.textContent = 'Fără conexiune. Datele tale sunt în siguranță, reîncerc…';
+      bann.style.cssText = 'position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9000;background:#2a2a2a;color:#fff;border:1px solid #A3FF12;border-radius:12px;padding:10px 14px;font:600 13px/1.3 system-ui,sans-serif;text-align:center;';
+      document.body.appendChild(bann);
+    }
+    function firstRead(){
+      tries++;
+      var p; try{ p = sb.from('docs').select('col,id,data'); }catch(e){ p = Promise.resolve({ error: e }); }
+      Promise.resolve(p).then(function(r){ return r; }, function(e){ return { error: e || true }; }).then(function(r){
+        if(!r || r.error){ console.error(r && r.error); banner(true); setTimeout(firstRead, Math.min(30000, 2000 * tries)); return; }
+        var srv = {};
+        (r.data || []).forEach(function(row){ srv[row.col + '/' + row.id] = 1; cache[row.col] = cache[row.col] || {}; if(!pend[row.col + '/' + row.id] || !pend[row.col + '/' + row.id].patch) cache[row.col][row.id] = row.data; else cache[row.col][row.id] = Object.assign({}, row.data, pend[row.col + '/' + row.id].patch); });
+        readOk = true; banner(false);
+        // ce s-a scris cât nu aveam datele: completările (update) se păstrează peste datele din cloud; un document nou se trimite; restul rămâne ca în cloud
+        Object.keys(pend).forEach(function(k){ var pp = k.split('/'), c = pp[0], i = pp[1], q = pend[k];
+          if(q.patch || !srv[k]){ var d = cache[c] && cache[c][i]; if(d != null) sb.from('docs').upsert({ user_id:uid, col:c, id:i, data:d, updated_at:new Date().toISOString() }, { onConflict:'user_id,col,id' }).then(function(){}, function(){}); } });
+        pend = {};
+        var first = !loaded; loaded = true; waiting.splice(0).forEach(function(f){ f(); });
+        if(!first) Object.keys(cache).forEach(function(c){ Object.keys(cache[c]).forEach(function(i){ emit(c, i); }); });
+      });
+    }
+    firstRead();
+    window.addEventListener('online', function(){ if(!readOk){ tries = 0; firstRead(); } });
     sb.channel('docs-' + uid).on('postgres_changes', { event:'*', schema:'public', table:'docs', filter:'user_id=eq.' + uid }, function(p){
       if(p.eventType === 'DELETE'){ if(p.old && p.old.col) put(p.old.col, p.old.id, null); }
       else if(p.new){ put(p.new.col, p.new.id, p.new.data); }
@@ -61,10 +90,14 @@
       return {
         id:id,
         set:function(data){ put(col, id, data);
+          if(!readOk){ var k0 = col + '/' + id; if(!(pend[k0] && pend[k0].patch)) pend[k0] = { full: 1 }; return Promise.resolve({ id:id }); }
           return sb.from('docs').upsert({ user_id:uid, col:col, id:id, data:data, updated_at:new Date().toISOString() }, { onConflict:'user_id,col,id' })
             .then(function(r){ if(r.error) throw r.error; return { id:id }; }); },
-        update:function(patch){ var cur = (cache[col] && cache[col][id]) || {}; return this.set(Object.assign({}, cur, patch)); },
+        update:function(patch){ var cur = (cache[col] && cache[col][id]) || {};
+          if(!readOk){ var k1 = col + '/' + id; pend[k1] = { patch: Object.assign({}, pend[k1] && pend[k1].patch, patch) }; put(col, id, Object.assign({}, cur, patch)); return Promise.resolve({ id:id }); }
+          return this.set(Object.assign({}, cur, patch)); },
         delete:function(){ put(col, id, null);
+          if(!readOk){ delete pend[col + '/' + id]; return Promise.resolve(); }
           return sb.from('docs').delete().match({ user_id:uid, col:col, id:id }).then(function(r){ if(r.error) throw r.error; }); },
         onSnapshot:function(next){
           if(path === 'news/current'){ newsSnapshot(next); var iv = setInterval(function(){ newsSnapshot(next); }, 60*1000); return function(){ clearInterval(iv); }; }

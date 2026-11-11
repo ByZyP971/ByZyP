@@ -25,7 +25,8 @@ try { webpush.setVapidDetails('mailto:byzyp@users.noreply.github.com', PUBLIC, P
 catch (e) { bail('VAPID_PRIVATE nu e valid sau nu se potrivește cu cheia publică din aplicație.'); }
 // subscriptions: (1) the phone saves its own code in the account (Supabase) — read here with the private key BYZYP_KEY; (2) fallback: the PUSH_SUB secret
 let subs = [];
-const okSub = (x) => x && x.endpoint && x.keys;
+const PUSH_HOSTS = ['push.apple.com', 'fcm.googleapis.com', 'updates.push.services.mozilla.com', 'notify.windows.com'];
+const okSub = (x) => { try { if (!x || !x.endpoint || !x.keys) return false; const u = new URL(String(x.endpoint)); return u.protocol === 'https:' && (process.env.ALLOW_ANY_PUSH_HOST === '1' || PUSH_HOSTS.some(h => u.hostname === h || u.hostname.endsWith('.' + h))); } catch (e) { return false; } };
 const KEY = process.env.BYZYP_KEY;
 if (KEY) {
   try {
@@ -232,7 +233,7 @@ if (evs.length > MAXN) {
 
 // ---------- extra funny notifications through the day (everyone) ----------
 const FUNX = [
-  { k: 'fx-am', h: 7 * 60 + 45, t: ['🌅 Bună dimineața, campionule', '⏰ Trezirea, legendă', '☀️ S-a făcut ziuă', '🐓 Cucurigu de la By ZyP'], b: [
+  { k: 'fx-am', h: 7 * 60 + 45, t: ['🌅 Bună dimineața!', '⏰ Trezirea, începe ziua', '☀️ S-a făcut ziuă', '🐓 Cucurigu de la By ZyP'], b: [
     'Patul te iubește, dar nu te face mai puternic. Sus, că ziua nu se bifează singură.',
     'Ai deschis ochii, deci prima repetare e făcută. Restul vin mai ușor.',
     'Cafeaua întâi, scuzele niciodată. Uită-te ce ai azi în plan.',
@@ -241,12 +242,12 @@ const FUNX = [
     'Soarele s-a trezit, gantera s-a trezit, numai tu te mai gândești. Hai!',
     'Azi nu trebuie să fii perfect. Trebuie doar să apari.',
     'Un pahar de apă înainte de cafea. Corpul tău nu e cactus.' ] },
-  { k: 'fx-water', h: 10 * 60 + 30, t: ['💧 Pauză de apă', '🚰 Robinetul te salută', '🥤 Hidratare, șefule', '🐪 Nu ești cămilă'], b: [
+  { k: 'fx-water', h: 10 * 60 + 30, t: ['💧 Pauză de apă', '🚰 Robinetul te salută', '🥤 Ora de hidratare', '🐪 Nu ești cămilă'], b: [
     'Ai băut apă azi sau doar cafea și speranță? Un pahar acum.',
     'Mușchii sunt 75% apă. Ai tăi sunt momentan 75% cafea.',
     'Dacă îți e sete, deja e târziu. Bea acum, mulțumești mai târziu.',
     'Un pahar de apă durează 10 secunde. Scuza durează mai mult.',
-    'Planta de pe birou bea mai multă apă ca tine. Nu te lăsa bătut de o plantă.',
+    'Planta de pe birou bea mai multă apă ca tine. Nu lăsa o plantă să câștige.',
     'Apă. Simplu, gratis și fără etichetă de citit.',
     'Pipi galben închis înseamnă că trebuie să bei. Am zis-o, cineva trebuia.',
     'Ridică sticla aia. E cel mai ușor exercițiu de azi.' ] },
@@ -270,7 +271,7 @@ const FUNX = [
     'Ai mâncat ca un sportiv sau ca un adolescent singur acasă? Fii sincer.',
     'O plimbare de 15 minute după masă. Digestia zice mersi.',
     'Seara e pentru cei care n-au apucat dimineața. Încă se pune.' ] },
-  { k: 'fx-sleep', h: 22 * 60 + 30, t: ['🌙 La nani, campionule', '😴 Ora de somn', '🛌 Mușchii cresc noaptea', '📵 Telefonul jos'], b: [
+  { k: 'fx-sleep', h: 22 * 60 + 30, t: ['🌙 La nani, ajunge pe azi', '😴 Ora de somn', '🛌 Mușchii cresc noaptea', '📵 Telefonul jos'], b: [
     'Mușchii cresc în somn, nu pe TikTok. Lasă telefonul jos.',
     'Încă un video și e 2 noaptea. Ne știm. Noapte bună.',
     'Somnul e cel mai ieftin supliment. Ia doza întreagă: 7–8 ore.',
@@ -298,9 +299,9 @@ const FUNU = [
   '🚶 7.000 de pași. Nu trebuie să fugi, trebuie doar să nu stai pe canapea ca o pernă.'
 ];
 const UGYM = [
-  ['🏋️ Hei, campionule!', 'Ora de sală se apropie. Gantera te strigă, tu ce faci, scrolezi? Deschide planul de azi.'],
+  ['🏋️ Hei, e ora de sală!', 'Ora de sală se apropie. Gantera te strigă, tu ce faci, scrolezi? Deschide planul de azi.'],
   ['🦍 Maimuța de sală te cheamă', 'Azi e zi de antrenament. Perna te cheamă, dar bara te așteaptă. Nu o lăsa să aștepte!'],
-  ['💪 Hercule, trezirea!', 'Ai spus că vrei mușchi, nu? Mușchii s-au adunat la sală. Tu unde ești?'],
+  ['💪 Trezirea, e zi de sală!', 'Ai spus că vrei rezultate, nu? Ele s-au adunat la sală. Tu unde ești?'],
   ['🔥 Ora de fier a sosit', 'Încălzire, serii simple, bifat. Fără scuze azi. Deschide antrenamentul.']
 ];
 const UFOOD = [
@@ -311,7 +312,7 @@ const UFOOD = [
 const USUPP = [
   { h: 9 * 60, k: 'am', t: ['🤦 Hei, vitaminele!', '🐟 Peștele așteaptă, ia Omega 3!', '🧟 Zombie, bagă vitaminele!'], b: ['Se apropie 9:00. Ia suplimentele de dimineață, cu micul dejun.', 'Dimineața e momentul vitaminelor. Deschide bifa din aplicație și ia-le acum.'] },
   { h: 20 * 60 + 30, k: 'ev', t: ['🛡️ Ora suplimentelor de seară', '🧪 Zincul nu se ia singur'], b: ['Se apropie cina. Ia suplimentele de seară cu mâncarea, ca să nu te supere stomacul.', 'Cina e gata? Atunci și suplimentele de seară. Bifează-le în aplicație.'] },
-  { h: 22 * 60, k: 'ng', t: ['🌙 Magneziul, apoi la nani', '😴 Somnul începe cu magneziul'], b: ['Se apropie somnul. Ia ce ai de luat înainte de culcare și lasă telefonul jos.', 'Telefonul jos, magneziul sus. Somn bun, campionule.'] }
+  { h: 22 * 60, k: 'ng', t: ['🌙 Magneziul, apoi la nani', '😴 Somnul începe cu magneziul'], b: ['Se apropie somnul. Ia ce ai de luat înainte de culcare și lasă telefonul jos.', 'Telefonul jos, magneziul sus. Somn bun!'] }
 ];
 function localTz(d, tz) {
   try {
@@ -333,10 +334,13 @@ if (KEY) {
     if (r.ok) { const j = await r.json(); all = Array.isArray(j) ? j : []; } else console.log('all-users lookup failed: HTTP', r.status);
   } catch (e) { console.log('all-users lookup failed:', e.message); }
   const mine = new Set(subs.map(x => x.endpoint));
+  const dead = sent._dead && typeof sent._dead === 'object' && !Array.isArray(sent._dead) ? sent._dead : {};
+  for (const k of Object.keys(dead)) if (Date.now() - dead[k] > 30 * 86400000) delete dead[k];
   const others = all.filter(u => u && okSub(u.sub) && !mine.has(u.sub.endpoint));
   console.log('other users:', others.length);
   for (const u of others) {
     const id = String(u.sub.endpoint).slice(-14).replace(/[^A-Za-z0-9]/g, '_');
+    if (dead[id]) continue;                                   // expired subscription seen in an earlier run
     const M = u.mods && typeof u.mods === 'object' ? u.mods : {};
     const on = (m) => M[m] === undefined || +M[m] !== 0;
     const U = localTz(now, u.tz || TZ);
@@ -399,9 +403,12 @@ if (KEY) {
     for (const [k, [title, body]] of todo) {
       const key = `u-${id}-${U.date}-${k}`;
       if (sent[key]) continue;
-      try { await webpush.sendNotification(u.sub, JSON.stringify({ title, body, tag: 'u-' + k, url: './' }), { TTL: 1800, urgency: 'high' }); console.log('sent to user', id, k); }
-      catch (e) { console.log('user push error', id, e.statusCode || e.message); }
-      sent[key] = Date.now(); changed = true;
+      try { await webpush.sendNotification(u.sub, JSON.stringify({ title, body, tag: 'u-' + k, url: './' }), { TTL: 1800, urgency: 'high', timeout: 8000 }); console.log('sent to user', id, k); sent[key] = Date.now(); changed = true; }
+      catch (e) {
+        const code = e.statusCode || 0; console.log('user push error', id, code || e.message);
+        if (code === 404 || code === 410) { dead[id] = Date.now(); sent._dead = dead; changed = true; break; }   // subscription is gone: stop retrying this phone
+        // any other error: not marked as sent, so it is retried on the next run while still inside its time window
+      }
     }
   }
 }

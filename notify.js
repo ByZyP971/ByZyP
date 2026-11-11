@@ -1,5 +1,7 @@
 /* ===== By ZyP · notifications (service worker + web push) ===== */
 (function(){
+  var DEV = false; try{ if(location.hash === '#dev') localStorage.setItem('zyp_dev', '1'); if(location.hash === '#nodev') localStorage.removeItem('zyp_dev'); DEV = localStorage.getItem('zyp_dev') === '1'; }catch(e){}
+
   var VAPID_PUBLIC = 'BEbAlapGPODbyKuDao4BL5sEJyF3m3ax0rr2BTNTqD2pzMEivOj-3BqgZL2Y2FjYd0uha2TgsUW1EIteOKnH9ns';
   var st = document.getElementById('ntStatus'), en = document.getElementById('ntEnable'), te = document.getElementById('ntTest');
   var wrap = document.getElementById('ntSubWrap'), ta = document.getElementById('ntSub'), hint = document.getElementById('ntHint');
@@ -29,7 +31,7 @@
   function showSub(sub){
     if(!sub) return;
     ta.value = JSON.stringify(sub);
-    wrap.style.display = 'block';
+    wrap.style.display = DEV ? 'block' : 'none';   // codul tehnic e doar pentru proprietar
     saveSub(sub);
   }
   function refresh(){
@@ -44,7 +46,7 @@
       if(sub && Notification.permission === 'granted'){
         st.innerHTML = '<b>✅ Notificările sunt active</b> pe acest telefon.';
         en.style.display = 'none'; te.style.display = 'block'; showSub(sub);
-        hint.textContent = 'Primești motivare la 08:30, 14:30 și 21:30 și un avertisment cu ~10 minute înainte de fiecare știre roșie (după ce pui codul în GitHub).';
+        hint.textContent = 'Primești pe zi câteva mesaje scurte: trezirea, apă, sală, mâncare, suplimentele tale la ora aleasă și raportul de duminică. Le oprești oricând din Setările telefonului.';
       } else {
         st.textContent = 'Notificările nu sunt pornite încă.';
         en.style.display = 'block'; te.style.display = 'none';
@@ -65,13 +67,14 @@
   // delivery log written by the push robot (sent.json, same site)
   var logEl = document.createElement('div'); logEl.className = 'nt-log'; hint.parentNode.insertBefore(logEl, hint.nextSibling);
   function loadPushLog(){
+    if(!DEV) return;
     fetch('sent.json?t=' + Date.now(), { cache:'no-store' }).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
       var st = (j._status || []).slice(-8).reverse();
       if(!st.length){ logEl.innerHTML = '<div class="hint" style="margin-top:0;">Robotul n-a trimis încă notificări.</div>'; return; }
       var bad = st.filter(function(x){ return !x.ok && (x.code === 404 || x.code === 410); }).length, cfg = st.filter(function(x){ return !x.ok && x.code === 'config'; })[0];
       logEl.innerHTML = '<div style="margin-top:14px;"></div>' + (window.hxHtml || function(k,l,x){ return x; })('notifLog', 'ultimele notificări trimise', st.map(function(x){ var d = new Date(x.t);
         return '<div class="nt-row"><span>' + (x.ok ? '✅' : '❌') + ' ' + hh(d) + '</span><span class="nt-t">' + String(x.title).replace(/</g,'&lt;') + (x.ok ? '' : (x.code === 'config' ? ' <em>(configurare)</em>' : ' <em>(eroare ' + x.code + ')</em>')) + '</span></div>'; }).join('')) +
-        (cfg && st[0] && st[0].code === 'config' ? '<div class="hint" style="color:var(--gold)">⚠️ ' + String(cfg.err || 'Secretele din GitHub nu sunt valide.').replace(/</g, '&lt;') + '</div>' : '') + (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
+        (cfg && st[0] && st[0].code === 'config' ? '<div class="hint" style="color:var(--gold)">⚠️ ' + String(cfg.err || 'Notificările au o problemă de configurare.').replace(/</g, '&lt;') + '</div>' : '') + (bad ? '<div class="hint" style="color:var(--gold)">⚠️ Codul telefonului a expirat. Apasă din nou pe „Activează notificările”, copiază codul nou și pune-l în GitHub la secretul PUSH_SUB.</div>' : '');
     }).catch(function(){});
   }
   function hh(d){ return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
