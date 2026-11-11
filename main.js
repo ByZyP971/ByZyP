@@ -3071,6 +3071,16 @@
     if(d.spoon){ var sp = g / d.spoon, w = Math.floor(sp + 0.001), half = Math.abs(sp - w - 0.5) < 0.1; return (sp < 0.75 ? '½ lingură' : (w + (half ? '½' : '')) + (sp < 1.25 ? ' lingură' : ' linguri')) + ' (≈ ' + Math.round(g) + ' g)'; }
     return Math.round(g) + ' g';
   }
+  function nuFrac(x){ var q = Math.max(0.25, Math.round(x * 4) / 4); if(q >= 4) q = Math.round(q); else if(q > 2) q = Math.round(q * 2) / 2; var w = Math.floor(q), r = q - w, f = r === 0.25 ? '¼' : r === 0.5 ? '½' : r === 0.75 ? '¾' : ''; return (w ? w : '') + f; }
+  function nuEasy(k, g){
+    var d = NU_F[k]; if(d.piece || d.spoon) return '';
+    var U = { pui:[120,'palmă','palme'], curcan:[120,'palmă','palme'], vita:[120,'palmă','palme'], somon:[120,'palmă','palme'], ton:[110,'conservă','conserve'],
+      iaurt:[200,'pahar','pahare'], cottage:[200,'pahar','pahare'], ovaz:[10,'lingură','linguri'], orez:[185,'cană','căni'], paste:[100,'cană','căni'], quinoa:[170,'cană','căni'], linte:[190,'cană','căni'],
+      cartof:[150,'cartof mediu','cartofi medii'], cartofd:[150,'cartof mediu','cartofi medii'], paine:[35,'felie','felii'], fructe:[100,'fruct','fructe'], legume:[250,'farfurie','farfurii'],
+      nuci:[30,'pumn mic','pumni mici'], migdale:[30,'pumn mic','pumni mici'], avocado:[150,'avocado','avocado'] }[k];
+    if(!U) return ''; var x = g / U[0]; if(k === 'paine' && g < 25) return '≈ ½ felie'; if(k === 'ovaz' && g > 65){ U = [90, 'cană', 'căni']; x = g / 90; } else if(k === 'ovaz' || k === 'paine') return '≈ ' + Math.max(1, Math.round(x)) + ' ' + (Math.round(x) <= 1 ? U[1] : U[2]);
+    var f = nuFrac(x); return '≈ ' + f + ' ' + (Math.round(x * 4) / 4 <= 1 ? U[1] : U[2]);
+  }
   function nuEaten(D){ var m = nu.log[todayKey] || 0, t = { kcal:0, p:0 }; D.meals.forEach(function(x, i){ if(m & (1 << i)){ t.kcal += x.tot.kcal; t.p += x.tot.p; } }); return t; }
   function nuRender(){
     var top = document.getElementById('nuTop'), main = document.getElementById('nuMain'); if(!top || !main) return;
@@ -3085,30 +3095,32 @@
     }
     var inp2 = document.getElementById('nuKg'); if(document.activeElement !== inp2) inp2.value = W ? W.kg : '';
     var note = document.getElementById('nuKgNote'), bmi = document.getElementById('nuBmi');
-    if(W){ var d0 = new Date(W.date + 'T00:00:00'); note.textContent = W.date === todayKey ? 'Scrie-o în fiecare dimineață: totul se recalculează singur' : 'ultima notată: ' + d0.getDate() + ' ' + monthShort[d0.getMonth()] + ' · scrie greutatea de azi ca să recalculez'; bmi.textContent = nuN(W.kg / Math.pow(P.cm / 100, 2), 1); }
+    if(W){ var d0 = new Date(W.date + 'T00:00:00'); note.textContent = W.date === todayKey ? 'Scrie-o în fiecare dimineață: totul se recalculează singur' : 'ultima notată: ' + d0.getDate() + ' ' + monthShort[d0.getMonth()] + ' · scrie greutatea de azi ca să recalculez'; var bv = W.kg / Math.pow(P.cm / 100, 2); bmi.textContent = nuN(bv, 1); var bl = bmi.parentNode.querySelector('span'); if(bl) bl.textContent = bv < 18.5 ? 'IMC · sub normal' : bv < 25 ? 'IMC · normal' : bv < 30 ? 'IMC · peste' : 'IMC · mult peste'; }
     else { note.textContent = 'Scrie greutatea și calculez ce ai nevoie'; bmi.textContent = '–'; }
-    if(!W){ main.innerHTML = '<div class="nu-empty">⚖️ Scrie mai sus greutatea ta în kg și îți calculez caloriile, proteina și cât trebuie să mănânci la fiecare masă, în grame.</div>'; nu.D = null; return; }
+    if(!W){ main.innerHTML = '<div class="nu-empty nu-steps"><b>Cum merge, în 3 pași</b><ol><li><b>Scrie greutatea ta</b> în căsuța de sus (de exemplu 75).</li><li><b>Alege ce vrei:</b> să slăbești, să rămâi la fel sau să pui mușchi.</li><li><b>Mănâncă ce îți arăt</b> la fiecare masă și apasă „Am mâncat”.</li></ol><span>Nu trebuie să știi nimic despre calorii. Aplicația socotește tot.</span></div>'; nu.D = null; return; }
     var D = nuDay(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal, nu.v); D.W = W; D.P = P; nu.D = D; var c = D.c, eaten = nuEaten(D), mask = nu.log[todayKey] || 0;
     var sum = { kcal:0, p:0, c:0, f:0 }; D.meals.forEach(function(m){ sum.kcal += m.tot.kcal; sum.p += m.tot.p; sum.c += m.tot.c; sum.f += m.tot.f; });
-    var h = '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>kcal pe zi</span></div><div class="nu-mac">' +
-      '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină</span></div><div style="--c:#A3FF12"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați</span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi</span></div></div>' +
+    var gp = function(v, ic, t){ return '<button data-g="goal" data-v="' + v + '" class="' + (nu.goal === v ? 'on' : '') + '"><i>' + ic + '</i>' + t + '</button>'; };
+    var h = '<div class="nu-q">Ce vrei să faci?</div><div class="nu-pills nu-goal">' + gp('lose', '🔥', 'Slăbesc') + gp('maintain', '⚖️', 'Rămân la fel') + gp('gain', '💪', 'Pun mușchi') + '</div>' +
+      '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>calorii pe zi</span></div><div class="nu-why">' + (nu.goal === 'lose' ? 'Atât mănânci ca să slăbești încet și sănătos, fără foame.' : nu.goal === 'gain' ? 'Atât mănânci ca să pui mușchi, nu grăsime.' : 'Atât mănânci ca să rămâi la greutatea de acum.') + ' Nu trebuie să numeri nimic: mesele de mai jos adună exact atât.</div><div class="nu-mac">' +
+      '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină<small>pentru mușchi</small></span></div><div style="--c:#A3FF12"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați<small>pentru energie</small></span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi<small>pentru sănătate</small></span></div></div>' +
       '<div class="nu-bars"><div><span>Mâncat azi · calorii</span><em>' + nuN(eaten.kcal) + ' / ' + nuN(Math.round(c.kcal / 10) * 10) + '</em><i style="--w:' + Math.min(100, eaten.kcal / c.kcal * 100).toFixed(0) + '%"></i></div><div><span>Mâncat azi · proteină</span><em>' + nuN(eaten.p) + ' / ' + nuN(c.P) + ' g</em><i style="--w:' + Math.min(100, eaten.p / c.P * 100).toFixed(0) + '%;--b:#5FBF8F"></i></div></div>' +
-      '<div class="nu-sub">💧 Apă: <b>' + nuN(c.water, 1) + ' L</b> (+0,5 L în zilele de sală sau alergat) · 🌾 Fibre: <b>≥ ' + nuN(c.fiber) + ' g</b></div></div>';
+      '<div class="nu-sub">💧 Bea <b>' + nuN(c.water, 1) + ' L</b> de apă pe zi (cam ' + Math.round(c.water * 4) + ' pahare). În zilele de sală, încă 2 pahare.</div></div>' +
+      '<div class="nu-tip">⚖️ <b>Nu ai cântar de bucătărie?</b> Sub fiecare gramaj scrie măsura simplă: palmă, cană, lingură, felie.</div>';
     D.meals.forEach(function(m, i){
       var done = !!(mask & (1 << i));
-      h += '<div class="nu-meal' + (done ? ' done' : '') + '" data-m="' + i + '"><div class="nu-mh"><span class="nu-mi">' + m.m.ic + '</span><div class="nu-mt0"><b>' + m.m.n + '</b><small>≈ ' + nuN(m.tot.kcal) + ' kcal · ' + nuN(m.tot.p) + ' g proteină</small></div><button class="nu-eat" data-eat="' + i + '">' + (done ? '✓ Mâncat' : 'Am mâncat') + '</button></div>' +
-        '<div class="nu-mn">' + m.name + '</div><ul class="nu-it">' + m.items.map(function(it){ var d = NU_F[it.k]; return '<li><i>' + d.ic + '</i><span>' + d.n + '</span><b>' + nuQty(it.k, it.g) + '</b></li>'; }).join('') + '</ul>' +
-        '<div class="nu-mx"><span>P <b>' + nuN(m.tot.p) + '</b></span><span>C <b>' + nuN(m.tot.c) + '</b></span><span>G <b>' + nuN(m.tot.f) + '</b></span><span><b>' + nuN(m.tot.kcal) + '</b> kcal</span></div>' +
-        '<button class="ghost-btn nu-var" data-var="' + i + '">↻ Altă variantă (' + ((((nu.v[m.m.k] || 0) % m.n) + m.n) % m.n + 1) + '/' + m.n + ')</button></div>';
+      h += '<div class="nu-meal' + (done ? ' done' : '') + '" data-m="' + i + '"><div class="nu-mh"><span class="nu-mi">' + m.m.ic + '</span><div class="nu-mt0"><b>' + m.m.n + '</b><small>' + nuN(m.tot.kcal) + ' calorii · ' + nuN(m.tot.p) + ' g proteină</small></div><button class="nu-eat" data-eat="' + i + '">' + (done ? '✓ Mâncat' : 'Am mâncat') + '</button></div>' +
+        '<div class="nu-mn">' + m.name + '</div><ul class="nu-it">' + m.items.map(function(it){ var d = NU_F[it.k]; var ez = nuEasy(it.k, it.g); return '<li><i>' + d.ic + '</i><span>' + d.n + '</span><b>' + nuQty(it.k, it.g) + (ez ? '<small>' + ez + '</small>' : '') + '</b></li>'; }).join('') + '</ul>' +
+        '<button class="ghost-btn nu-var" data-var="' + i + '">↻ Nu-mi place, dă-mi altceva (' + ((((nu.v[m.m.k] || 0) % m.n) + m.n) % m.n + 1) + '/' + m.n + ')</button></div>';
     });
     var agg = {}; D.meals.forEach(function(m){ m.items.forEach(function(it){ agg[it.k] = (agg[it.k] || 0) + it.g; }); });
     h += '<div class="nu-shop"><div class="nu-sh">🛒 Tot ce îți trebuie azi</div><div class="nu-chips">' + Object.keys(agg).sort(function(a, b){ return agg[b] - agg[a]; }).map(function(k){ return '<span>' + NU_F[k].ic + ' ' + NU_F[k].n.split(' (')[0] + ' <b>' + nuQty(k, agg[k]) + '</b></span>'; }).join('') + '</div></div>';
-    h += '<button class="ghost-btn nu-cfg" id="nuCfg" aria-expanded="' + (nu.open ? 'true' : 'false') + '">⚙️ Setări și cum am calculat ' + (nu.open ? '▴' : '▾') + '</button>';
+    h += '<button class="ghost-btn nu-cfg" id="nuCfg" aria-expanded="' + (nu.open ? 'true' : 'false') + '">⚙️ Bărbat/femeie, cât te miști și cum am calculat ' + (nu.open ? '▴' : '▾') + '</button>';
     if(nu.open){
       var pill = function(grp, val, txt, on){ return '<button data-g="' + grp + '" data-v="' + val + '" class="' + (on ? 'on' : '') + '">' + txt + '</button>'; };
       h += '<div class="nu-set"><div class="nu-sl">Sex</div><div class="nu-pills">' + pill('sex', 'm', 'Bărbat', nu.sex === 'm') + pill('sex', 'f', 'Femeie', nu.sex === 'f') + '</div>' +
         '<div class="nu-sl">Cât te miști</div><div class="nu-pills">' + pill('act', '1.375', 'Ușor · 1–3 antrenamente', nu.act === 1.375) + pill('act', '1.55', 'Mediu · 3–5', nu.act === 1.55) + pill('act', '1.725', 'Mult · 6–7', nu.act === 1.725) + '</div>' +
-        '<div class="nu-sl">Obiectiv</div><div class="nu-pills">' + pill('goal', 'lose', 'Slăbesc', nu.goal === 'lose') + pill('goal', 'maintain', 'Mențin', nu.goal === 'maintain') + pill('goal', 'gain', 'Cresc masa', nu.goal === 'gain') + '</div>' +
+        
         '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuKgTxt(W.kg) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (nu.goal === 'lose' ? 'Slăbești încet: −15%.' : nu.goal === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (nu.goal === 'lose' ? '2,0' : nu.goal === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
     }
     h += '<div class="hint">Estimare orientativă, nu sfat medical. Dacă ai probleme de sănătate sau ești însărcinată, vorbește cu medicul sau cu un dietetician. Fără zahăr adăugat și fără produse procesate, cum ți-ai propus.</div>';

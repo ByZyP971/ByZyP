@@ -1602,3 +1602,13 @@
   .sn-hero-ov{ position:absolute; left:0; right:0; bottom:0; padding:60px 16px 12px; text-align:left; line-height:1.2; background:linear-gradient(transparent, rgba(0,0,0,.72)); } .sn-hero-ov .sn-me-n{ margin:0; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.6); } .sn-hero-ov .sn-me-t{ margin:2px 0 0; }
   .sn-hero .sn-lv{ right:14px; bottom:14px; }
   .sn-me:has(.sn-hero) .sn-bar, .sn-me:has(.sn-hero) .sn-stats, .sn-me:has(.sn-hero) .sn-acts{ margin-left:16px; margin-right:16px; }
+
+  /* mâncare, mai simplu */
+  .nu-q{ font-size:15px; font-weight:800; margin:14px 0 8px; }
+  .nu-goal{ display:flex; gap:8px; margin-bottom:14px; } .nu-goal button{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 4px !important; border-radius:16px !important; font-size:13px !important; font-weight:800; } .nu-goal button i{ font-style:normal; font-size:22px; }
+  .nu-why{ font-size:13.5px; line-height:1.4; color:var(--text-dim,#b9c2b4); margin:6px 0 12px; }
+  .nu-mac span small{ display:block; font-size:10.5px; color:var(--text-faint); font-weight:500; }
+  .nu-tip{ margin:12px 0 2px; padding:11px 13px; border-radius:14px; background:rgba(163,255,18,.07); border:1px dashed rgba(163,255,18,.35); font-size:13px; line-height:1.4; }
+  .nu-it li b small{ display:block; font-size:11.5px; font-weight:600; color:var(--text-faint); text-align:right; margin-top:1px; }
+  .nu-steps b{ font-size:15px; } .nu-steps ol{ margin:10px 0 10px 18px; padding:0; } .nu-steps li{ margin:7px 0; line-height:1.4; } .nu-steps span{ font-size:12.5px; color:var(--text-faint); }
+  #foodSeg .seg-btn{ font-size:12.5px; padding-left:6px; padding-right:6px; }
