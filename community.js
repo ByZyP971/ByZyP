@@ -63,6 +63,7 @@
   // ---------- ecran principal ----------
   function progress(score, lv){ var a = 25*(lv-1)*(lv-1), b = 25*lv*lv; return Math.max(0, Math.min(100, Math.round((score-a)/(b-a)*100))); }
   function renderMain(){
+    if(!me || !me.nick){ root.innerHTML = '<div class="top-load">Se încarcă…</div>'; loaded = false; return; }
     var lv = me.level || lvOf(me.score), t = tier(lv), heroOn = !!(window.zAvatar && window.zAvatar.has());
     root.innerHTML =
       '<div class="sn-me">' + (heroOn ?
@@ -104,11 +105,12 @@
       board = d; me = d.me || me; if(!document.getElementById('topBody') || seg !== 'rank') return;
       var top = d.top || [], html = '';
       html += '<div class="sn-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
-      html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
+      if(top.length > 3) html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
+      if(top.length < 4) html += '<div class="sn-invite">👋 Ești printre primii aici. Trimite aplicația unui prieten și vedeți care strânge mai multe puncte.</div>';
       var inTop = top.some(function(r){ return r.me; });
       if(me && !inTop) html += '<div class="sn-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
       if(!top.length) html = '<div class="top-load">Nimeni încă. Fii primul! 🏆</div>';
-      html += '<div class="top-foot">' + (d.total || top.length) + ' conturi în clasament</div>';
+      var tn = d.total || top.length; html += '<div class="top-foot">' + (tn === 1 ? 'Un cont în clasament' : tn + (tn >= 20 ? ' de' : '') + ' conturi în clasament') + '</div>';
       document.getElementById('topBody').innerHTML = html; avHydrate(document.getElementById('topBody'));
     }).catch(function(e){ var bb = document.getElementById('topBody'); if(bb) bb.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
   }
@@ -242,7 +244,7 @@
   // ---------- scor ----------
   function sync(){
     if(!me) return Promise.resolve(); var s = stats();
-    return rpc('set_my_profile', {p_nick:null, p_score:s.score, p_streak:s.streak}).then(function(p){ me = p; }).catch(function(){});
+    return rpc('set_my_profile', {p_nick:null, p_score:s.score, p_streak:s.streak}).then(function(p){ if(p && p.nick) me = p; }).catch(function(){});
   }
   function startScoreTimer(){ if(scoreTimer) return; scoreTimer = setInterval(function(){ if(active()) sync(); }, 120000); }
   function stopTimers(){ stopChat(); if(scoreTimer){ clearInterval(scoreTimer); scoreTimer = null; } }
