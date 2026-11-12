@@ -1,6 +1,22 @@
 /* By ZyP — service worker: shows push notifications */
-var CACHE = 'byzyp-v1';
-self.addEventListener('install', function(e){ self.skipWaiting(); });
+var CACHE = 'byzyp-v2';
+/* La instalare: pagina și fișierele ei (cu versiunea din pagină) se pun deoparte, ca aplicația să pornească fără internet chiar după o singură deschidere. */
+function precache(){
+  return fetch('./', { cache: 'no-cache' }).then(function(res){
+    if(!res || res.status !== 200) return;
+    var copy = res.clone();
+    return res.text().then(function(html){
+      var urls = [], re = /<(?:script|link)\b[^>]*?\b(?:src|href)="([^"]+)"/g, m;
+      while((m = re.exec(html))){ try{ var u = new URL(m[1], self.registration.scope); if((u.origin === self.location.origin || u.hostname === 'cdn.jsdelivr.net') && /\.(js|css)$/i.test(u.pathname) && !/sw\.js$/i.test(u.pathname)) urls.push(u.href); }catch(err){} }
+      return caches.open(CACHE).then(function(c){
+        return c.put(new Request(self.registration.scope), copy).then(function(){
+          return Promise.all(urls.map(function(h){ return c.match(h).then(function(hit){ if(hit) return; return fetch(h).then(function(r){ if(r && r.status === 200 && (r.type === 'basic' || r.type === 'cors')) return c.put(h, r); }).catch(function(){}); }); }));
+        });
+      });
+    });
+  }).catch(function(){});
+}
+self.addEventListener('install', function(e){ self.skipWaiting(); e.waitUntil(precache()); });
 self.addEventListener('activate', function(e){
   e.waitUntil(caches.keys().then(function(ks){ return Promise.all(ks.filter(function(k){ return k.indexOf('byzyp-') === 0 && k !== CACHE; }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); }));
 });
@@ -33,22 +49,30 @@ self.addEventListener('fetch', function(e){
   // restul fișierelor: copia salvată imediat, iar în spate se aduce varianta nouă
   e.respondWith(caches.match(req).then(function(hit){
     var net = fetch(req).then(function(res){ putCache(req, res); return res; });
-    if(hit){ net.catch(function(){}); return hit; }
+    if(hit){ try{ e.waitUntil(net.catch(function(){})); }catch(err){ net.catch(function(){}); } return hit; }
     return net.catch(function(){ return caches.match(req, { ignoreSearch: true }).then(function(old){ return old || Response.error(); }); });
   }));
 });
 self.addEventListener('push', function(e){
   var d = {};
   try{ d = e.data ? e.data.json() : {}; }catch(err){ d = { title:'By ZyP', body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'By ZyP', {
-    body: d.body || '', icon: 'icon.png', badge: 'icon.png', tag: d.tag || undefined, data: { url: d.url || './' }
+  if(!d || typeof d !== 'object') d = { body: d == null ? '' : String(d) };
+  var s = function(v, n){ return (typeof v === 'string' || typeof v === 'number') ? String(v).slice(0, n) : ''; };
+  e.waitUntil(self.registration.showNotification(s(d.title, 120) || 'By ZyP', {
+    body: s(d.body, 600), icon: 'icon.png', badge: 'icon.png', tag: s(d.tag, 60) || undefined, data: { url: s(d.url, 500) || './' }
   }));
 });
 self.addEventListener('notificationclick', function(e){
   e.notification.close();
-  var url = (e.notification.data && e.notification.data.url) || './';
+  var scope = self.registration.scope, url = (e.notification.data && e.notification.data.url) || './', t;
+  try{ t = new URL(url, scope); if(t.protocol !== 'https:' && t.protocol !== 'http:') t = new URL(scope); }catch(err){ t = new URL(scope); }   // adresa e relativă la folderul aplicației (merge și într-un sub-folder)
+  var ours = t.origin === self.location.origin && t.href.indexOf(scope) === 0;
   e.waitUntil(self.clients.matchAll({ type:'window', includeUncontrolled:true }).then(function(list){
-    for(var i=0;i<list.length;i++){ if('focus' in list[i]) return list[i].focus(); }
-    if(self.clients.openWindow) return self.clients.openWindow(url);
+    if(!ours){ if(self.clients.openWindow) return self.clients.openWindow(t.href); return; }                  // o știre: se deschide separat
+    for(var i=0;i<list.length;i++){ var c = list[i];
+      if(c.url.indexOf(scope) !== 0 || !('focus' in c)) continue;                                              // doar ferestrele aplicației noastre
+      return c.focus().then(function(w){ w = w || c; if(t.hash && w.url !== t.href && 'navigate' in w) return w.navigate(t.href).catch(function(){}); }, function(){ if(self.clients.openWindow) return self.clients.openWindow(t.href); });
+    }
+    if(self.clients.openWindow) return self.clients.openWindow(t.href);
   }));
 });

@@ -4,8 +4,17 @@
   'use strict';
   var esc = window.zEsc || function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   function toast(m){ if(window.zToast) window.zToast(m); }
-  function errMsg(e){ var m = (e && e.message) || 'Eroare'; return String(m).replace(/^.*?:\s*/, ''); }
-  function rpc(name, args){ var sb = window.__sb; if(!sb) return Promise.reject(new Error('Nu ești conectat')); return sb.rpc(name, args||{}).then(function(r){ if(r.error) throw r.error; return r.data; }); }
+  // mesaj pe înțeles: serverul vechi (funcție lipsă), fără internet, sesiune expirată; altfel textul trimis de server
+  function errMsg(e){
+    var m = String((e && e.message) || ''), c = String((e && e.code) || '');
+    if(c === 'PGRST202' || c === '42883' || c === '42501' || c === '42P01' || c === '42703' || /could not find the function|does not exist|schema cache|permission denied/i.test(m)) return 'Partea asta nu e încă pornită pe server. Încearcă mai târziu.';
+    if(/failed to fetch|networkerror|load failed|network request failed|timeout|timed out/i.test(m)) return 'Nu există conexiune la internet. Încearcă din nou.';
+    if(c === 'PGRST301' || /jwt/i.test(m)) return 'Sesiunea a expirat. Ieși din cont și intră din nou.';
+    if(!m || (typeof Error !== 'undefined' && (e instanceof TypeError || e instanceof ReferenceError || e instanceof RangeError || e instanceof SyntaxError))) return 'Ceva nu a mers. Încearcă din nou.';
+    m = m.replace(/^.*?:\s*/, ''); return m.charAt(0).toUpperCase() + m.slice(1); }
+  function missing(e){ return !!e && (e.code === 'PGRST202' || /could not find the function/i.test(e.message || '')); }
+  var MAXSHARE = 8 * 3600000;   // partajarea se oprește singură după 8 ore
+  function rpc(name, args){ var sb = window.__sb; if(!sb) return Promise.reject(new Error('Intră mai întâi în cont')); return sb.rpc(name, args||{}).then(function(r){ if(r.error) throw r.error; return r.data; }); }
   var KEY = 'zyp_locshare_v1';
   var box = null, timer = null, watchId = null, mine = null, lastSent = 0, friends = [], locs = [], busy = false;
   function sharing(){ try{ return localStorage.getItem(KEY) === '1'; }catch(e){ return false; } }
@@ -19,22 +28,23 @@
   var DIRS = ['N','NE','E','SE','S','SV','V','NV'];
   function dirTxt(deg){ return DIRS[Math.round(deg/45) % 8]; }
   function kmTxt(m){ return m < 950 ? Math.max(10, Math.round(m/10)*10) + ' m' : (m/1000).toFixed(m < 10000 ? 1 : 0).replace('.', ',') + ' km'; }
-  function agoTxt(s){ if(s < 90) return 'acum'; var m = Math.round(s/60); return 'acum ' + m + ' min'; }
+  function agoTxt(s){ s = +s || 0; if(s < 90) return 'acum'; var m = Math.round(s/60); return 'acum ' + m + ' min'; }
 
   // ---------- trimitere locație ----------
   var noCfg = false;
   function myCfg(){ try{ if(window.zAvatar && window.zAvatar.has()){ var c = window.zAvatar.load(); if(c.scene === 'photo') c.scene = 'none'; return c; } }catch(e){} return null; }
   function send(pos){
+    if(sharing() && shareAge() > MAXSHARE){ stopShare(); mine = null; if(box) draw(); toast('Locația s-a oprit singură după 8 ore. O poți porni din nou de pe hartă.'); return; }
     mine = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     if(box){ try{ updateMap(); }catch(e){} }
     var now = Date.now(); if(now - lastSent < 15000) return; lastSent = now;
     var args = { p_lat: mine.lat, p_lng: mine.lng, p_acc: Math.round(pos.coords.accuracy || 0) }, cf = myCfg();
-    if(cf && !noCfg){ var a2 = { p_lat: args.p_lat, p_lng: args.p_lng, p_acc: args.p_acc, p_cfg: cf }; rpc('loc_set', a2).catch(function(){ noCfg = true; rpc('loc_set', args).catch(function(){}); }); }
+    if(cf && !noCfg){ var a2 = { p_lat: args.p_lat, p_lng: args.p_lng, p_acc: args.p_acc, p_cfg: cf }; rpc('loc_set', a2).catch(function(e){ if(!missing(e)) return; noCfg = true; rpc('loc_set', args).catch(function(){}); }); }
     else rpc('loc_set', args).catch(function(){});
   }
   function startWatch(){
     if(watchId !== null || !navigator.geolocation) return;
-    try{ watchId = navigator.geolocation.watchPosition(send, function(err){ if(err && err.code === 1){ stopWatch(); setSharing(false); if(box) draw(); } }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }); }catch(e){}
+    try{ watchId = navigator.geolocation.watchPosition(send, function(err){ if(err && err.code === 1){ stopShare(); mine = null; if(box) draw(); toast('Locația e oprită din setările telefonului. Prietenii nu te mai văd.'); } }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }); }catch(e){}
   }
   function stopWatch(){ if(watchId !== null){ try{ navigator.geolocation.clearWatch(watchId); }catch(e){} watchId = null; } }
   function startShare(){ setSharing(true); startWatch(); }
@@ -43,7 +53,9 @@
   // ---------- date ----------
   function pull(){
     if(busy) return Promise.resolve(); busy = true;
-    return Promise.all([ rpc('friend_list'), rpc('loc_friends') ]).then(function(r){ friends = r[0] || []; locs = r[1] || []; busy = false; if(box) draw(); })
+    return Promise.all([ rpc('friend_list'), rpc('loc_friends') ]).then(function(r){ friends = (Array.isArray(r[0]) ? r[0] : []).filter(function(f){ return f && f.nick != null; });
+      locs = (Array.isArray(r[1]) ? r[1] : []).filter(function(l){ return l && l.nick != null && l.lat != null && l.lng != null && isFinite(+l.lat) && isFinite(+l.lng) && Math.abs(+l.lat) <= 90 && Math.abs(+l.lng) <= 180; });
+      busy = false; if(box) draw(); })
       .catch(function(e){ busy = false; if(dyn) dyn.innerHTML = '<div class="card"><div class="top-load">' + esc(errMsg(e)) + '</div></div>'; });
   }
 
@@ -138,7 +150,7 @@
   function startFlow(){
     var ok = confirm('Prietenii pe care i-ai acceptat tu îți vor vedea locația pe hartă cât timp aplicația e deschisă. O poți opri oricând din butonul 🙈 de pe hartă.\n\nConfirmi că ai cel puțin 16 ani?'); if(!ok) return;
     if(!navigator.geolocation){ toast('Telefonul nu permite locația'); return; }
-    navigator.geolocation.getCurrentPosition(function(p){ startShare(); send(p); draw(); updateMap(); if(map && mine) map.flyTo([mine.lat, mine.lng], 15); pull(); }, function(){ toast('Permite locația pentru By ZyP în setările telefonului'); }, { enableHighAccuracy: true, timeout: 20000 });
+    navigator.geolocation.getCurrentPosition(function(p){ startShare(); send(p); draw(); updateMap(); if(map && mine) map.flyTo([mine.lat, mine.lng], 15); pull(); }, function(err){ toast(err && err.code === 1 ? 'Permite locația pentru By ZyP în setările telefonului' : 'Nu am putut afla unde ești. Încearcă din nou, afară sau lângă o fereastră.'); }, { enableHighAccuracy: true, timeout: 20000 });
   }
   function draw(){
     if(!box || !dyn) return;
@@ -160,7 +172,7 @@
     dyn.querySelectorAll('[data-no]').forEach(function(b){ b.addEventListener('click', function(){ rpc('friend_respond', { p_nick: b.getAttribute('data-no'), p_accept: false }).then(pull).catch(function(e){ toast(errMsg(e)); }); }); });
     dyn.querySelectorAll('[data-hide]').forEach(function(b){ b.addEventListener('click', function(){ rpc('friend_share', { p_nick: b.getAttribute('data-hide'), p_on: b.getAttribute('data-on') === '1' }).then(pull).catch(function(e){ toast(errMsg(e)); }); }); });
     dyn.querySelectorAll('[data-blk]').forEach(function(b){ b.addEventListener('click', function(){ var n = b.getAttribute('data-blk'); if(confirm('Blochezi pe ' + n + '? Nu te mai poate adăuga și nu îți mai vede profilul sau locația.')) rpc('block_user', { p_nick: n }).then(function(){ toast('Blocat'); pull(); }).catch(function(e){ toast(errMsg(e)); }); }); });
-    dyn.querySelectorAll('[data-rm]').forEach(function(b){ b.addEventListener('click', function(){ if(confirm('Ștergi pe ' + b.getAttribute('data-rm') + ' din prieteni?')) rpc('friend_remove', { p_nick: b.getAttribute('data-rm') }).then(pull).catch(function(e){ toast(errMsg(e)); }); }); });
+    dyn.querySelectorAll('[data-rm]').forEach(function(b){ b.addEventListener('click', function(){ if(confirm(b.textContent === 'Anulează' ? 'Anulezi cererea către ' + b.getAttribute('data-rm') + '?' : 'Ștergi pe ' + b.getAttribute('data-rm') + ' din prieteni?')) rpc('friend_remove', { p_nick: b.getAttribute('data-rm') }).then(pull).catch(function(e){ toast(errMsg(e)); }); }); });
   }
 
   window.zFriends = {
@@ -168,9 +180,11 @@
       mapWrap = document.createElement('div'); mapWrap.className = 'fr-mapwrap'; dyn = document.createElement('div'); box.appendChild(mapWrap); box.appendChild(dyn);
       var msg = document.createElement('div'); msg.className = 'fr-mapmsg'; msg.textContent = 'Se încarcă harta…'; msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#333;font-weight:700;font-size:14px;'; mapWrap.appendChild(msg);
       var myBox = box; ensureLeaflet(function(ok){ if(box !== myBox || !mapWrap) return; if(!ok){ msg.textContent = 'Harta nu s-a putut încărca. Verifică internetul și încearcă din nou.'; return; } msg.remove(); try{ initMap(); updateMap(); renderStrip(); }catch(e){ msg.textContent = 'Harta are o problemă: ' + (e && e.message || ''); mapWrap.appendChild(msg); } });
-      dyn.innerHTML = '<div class="top-load">Se încarcă…</div>'; pull(); clearInterval(timer); timer = setInterval(function(){ if(box && !document.hidden && document.getElementById('frNick') !== document.activeElement) pull(); }, 20000); },
+      dyn.innerHTML = '<div class="top-load">Se încarcă…</div>'; pull(); clearInterval(timer); timer = setInterval(function(){
+        if(sharing() && shareAge() > MAXSHARE){ stopShare(); mine = null; if(box) draw(); toast('Locația s-a oprit singură după 8 ore. O poți porni din nou de pe hartă.'); }
+        if(box && box.isConnected && box.offsetParent !== null && !document.hidden && document.getElementById('frNick') !== document.activeElement) pull(); }, 20000); },
     leave: function(){ clearInterval(timer); timer = null; if(map){ try{ map.remove(); }catch(e){} } map = null; markers = Object.create(null); meMarker = null; box = null; dyn = null; mapWrap = null; }
   };
   // dacă ai pornit partajarea, continuă după ce redeschizi aplicația
-  if(sharing()){ setTimeout(function(){ if(shareAge() > 8 * 3600000){ setSharing(false); if(window.__sb) rpc('loc_stop').catch(function(){}); return; } if(window.__sb) startWatch(); else setTimeout(startWatch, 4000); }, 2500); }
+  if(sharing()){ setTimeout(function(){ if(shareAge() > MAXSHARE){ setSharing(false); if(window.__sb) rpc('loc_stop').catch(function(){}); return; } if(window.__sb) startWatch(); else setTimeout(startWatch, 4000); }, 2500); }
 })();

@@ -2,9 +2,28 @@
 (function(){
   var SB_URL = 'https://bskujbfaynbeqjonqydb.supabase.co';
   var SB_KEY = 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX';
-  var FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
   var gate = document.getElementById('authGate');
   function msg(t){ document.getElementById('authMsg').textContent = t || ''; }
+  /* mesajele serverului vin în engleză: le spunem pe românește, simplu */
+  function roErr(e){
+    var m = String((e && (e.message || e.error_description || e.msg)) || e || '').toLowerCase(), c = String((e && e.code) || '').toLowerCase(), st = +(e && e.status) || 0;
+    if(/failed to fetch|networkerror|network request|load failed|fetch|timeout|timed out/.test(m) || (typeof navigator !== 'undefined' && navigator.onLine === false)) return 'Nu am putut ajunge la server. Verifică internetul și încearcă din nou.';
+    if(/invalid login credentials|invalid_credentials/.test(m + c)) return 'Email sau parolă greșită.';
+    if(/email not confirmed|email_not_confirmed/.test(m + c)) return 'Confirmă mai întâi emailul: deschide mesajul primit de la noi și apasă pe link (caută și în Spam).';
+    if(/already registered|already been registered|user_already_exists|email_exists/.test(m + c)) return 'Există deja un cont cu acest email. Apasă „Intră” sau „Ai uitat parola?”.';
+    if(/should be different|same_password/.test(m + c)) return 'Parola nouă trebuie să fie diferită de cea veche.';
+    if(/weak|at least|too short|should contain|weak_password/.test(m + c)) return 'Parola e prea simplă. Alege una de minim 8 caractere, cu litere și cifre.';
+    if(/rate limit|too many|only request this after|over_email_send_rate_limit|over_request_rate_limit/.test(m + c) || st === 429) return 'Prea multe încercări. Așteaptă un minut și încearcă din nou.';
+    if(/missing email|email.*required|anonymous sign-ins|provide.*email/.test(m)) return 'Scrie adresa de email.';
+    if(/missing password|password.*required|provide.*password/.test(m)) return 'Scrie parola.';
+    if(/invalid.*email|email.*invalid|validate email|email_address_invalid/.test(m + c)) return 'Adresa de email nu pare corectă. Verifică să nu aibă spații sau litere lipsă.';
+    if(/signups? (are |is )?(not allowed|disabled)|signup_disabled/.test(m + c)) return 'Momentan nu se pot crea conturi noi. Încearcă mai târziu.';
+    if(/expired|invalid.*(token|link|jwt)|otp|session.*(missing|not found)|session_not_found|refresh token|not authenticated|jwt/.test(m + c)) return 'Sesiunea sau linkul a expirat. Intră din nou în cont și reia pasul.';
+    if(/banned/.test(m + c)) return 'Contul acesta este blocat.';
+    if(st >= 500) return 'Serverul are o problemă acum. Încearcă din nou peste câteva minute.';
+    return 'Ceva nu a mers. Încearcă din nou peste puțin.';
+  }
+  window.__zAuthErr = roErr;
   function done(){ window.__byzypAuthed = true; gate.style.display = 'none'; window.dispatchEvent(new Event('byzyp-auth')); }
   if(!window.supabase || SB_URL.indexOf('__') === 0){
     var had = false; try{ for(var li = 0; li < localStorage.length; li++){ var lk = localStorage.key(li) || ''; if(lk.indexOf('sb-') === 0 && lk.indexOf('auth-token') > 0) had = true; } }catch(e){}
@@ -79,10 +98,9 @@
         var ev = mapFF(arr); if(!ev.length) throw new Error('empty');
         next({ id:'current', exists:true, data:function(){ return { updated: label, source:'Forex Factory', events: clone(ev) }; } });
       }
-      // 1) copy kept next to the site (refreshed by GitHub every 3h) → 2) Forex Factory directly → 3) saved copy
+      // 1) copy kept next to the site (refreshed by GitHub every 3h) → 2) saved copy. (The direct call to the news site was removed: the page's security policy blocks it anyway.)
       getJSON('news.json?t=' + Date.now()).then(function(arr){ window.__newsCheckedAt = Date.now(); deliver(arr, 'automat'); })
-        .catch(function(){ return getJSON(FF_URL).then(function(arr){ deliver(arr, 'direct de pe Forex Factory'); }); })
-        .catch(function(e){ console.warn('news unavailable', e); whenLoaded(function(){ next(snapDoc('news','current')); }); });
+        .catch(function(e){  whenLoaded(function(){ next(snapDoc('news','current')); }); });
     }
 
     function docRef(path){
@@ -121,7 +139,11 @@
     return { doc:docRef, collection:colRef, _cache:cache };
   }
 
+  var started = false, leaving = false;
   function start(session){
+    if(started){ gate.style.display = 'none'; return; }   /* o singură pornire: altfel butoanele (ieșire, ștergere cont) s-ar lega de două ori */
+    if(!session || !session.user){ showGate(); return; }
+    started = true;
     var db = makeDb(session.user.id);
     window.__byzypDb = db;
     setTimeout(function(){ if(window.__syncPush) window.__syncPush(); }, 1200);
@@ -133,17 +155,21 @@
   function wireTools(db){
     function tmsg(t){ var el = document.getElementById('toolsMsg'); if(el) el.textContent = t; }
     var lo = document.getElementById('logoutBtn');
-    if(lo) lo.addEventListener('click', function(){ sb.auth.signOut().then(function(){ location.reload(); }); });
+    if(lo) lo.addEventListener('click', function(){ leaving = true; var bye = function(){ location.reload(); }; try{ sb.auth.signOut().then(bye, bye); }catch(e){ bye(); } });
     var da = document.getElementById('delAccBtn');
     if(da) da.addEventListener('click', function(){
       if(!confirm('Ștergi contul definitiv? Toate datele tale (obiective, greutate, poze, notificări) se șterg și nu se mai pot recupera.')) return;
-      var w = prompt('Ca să confirmi, scrie cuvântul STERGE'); if(!w || w.trim().toUpperCase() !== 'STERGE'){ tmsg('Ștergerea a fost anulată.'); return; }
+      var w = prompt('Ca să confirmi, scrie cuvântul STERGE'); if(!w || w.trim().toUpperCase().replace(/Ș|Ş/g, 'S') !== 'STERGE'){ tmsg('Ștergerea a fost anulată.'); return; }
       tmsg('Se șterge contul…');
-      sb.rpc('delete_my_account').then(function(r){
-        if(r.error){ tmsg('Nu am putut șterge contul: ' + r.error.message); return; }
+      var delFail = function(e){ console.error(e); tmsg('Nu am putut șterge contul. ' + roErr(e) + ' Datele tale au rămas neatinse.'); };
+      var pr; try{ pr = sb.rpc('delete_my_account'); }catch(e){ delFail(e); return; }
+      Promise.resolve(pr).then(function(r){
+        if(!r || r.error){ delFail(r && r.error); return; }
+        leaving = true;
         try{ localStorage.clear(); }catch(e){}
-        sb.auth.signOut().then(function(){ location.reload(); }, function(){ location.reload(); });
-      });
+        var bye = function(){ location.reload(); };
+        try{ sb.auth.signOut().then(bye, bye); }catch(e){ bye(); }
+      }, delFail);
     });
     var ex = document.getElementById('exportBtn');
     if(ex) ex.addEventListener('click', function(){
@@ -167,7 +193,7 @@
               Object.keys(cols[col]).forEach(function(id){ jobs.push(db.doc(col + '/' + id).set(cols[col][id])); }); });
             tmsg('Import în curs… ' + jobs.length + ' înregistrări');
             Promise.all(jobs).then(function(){ tmsg('✅ Import gata: ' + jobs.length + ' înregistrări.'); })
-              .catch(function(e){ tmsg('Eroare la import: ' + (e.message || e)); });
+              .catch(function(e){ console.error(e); tmsg('Importul nu a reușit până la capăt. ' + roErr(e)); });
           }catch(e){ tmsg('Fișierul nu e un backup valid.'); }
         };
         rd.readAsText(f);
@@ -178,28 +204,41 @@
   function showGate(){
     gate.style.display = 'flex';
     var em = document.getElementById('authEmail'), pw = document.getElementById('authPass');
+    var busy = false;
+    function fail(e){ busy = false; console.error(e); msg(roErr(e)); }
+    function okMail(){ var e = em.value.trim(); if(!e){ msg('Scrie adresa de email.'); return ''; } if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){ msg('Adresa de email nu pare corectă. Verifică să nu aibă spații sau litere lipsă.'); return ''; } return e; }
     document.getElementById('authLogin').onclick = function(){
-      msg('Se conectează…');
-      sb.auth.signInWithPassword({ email:em.value.trim(), password:pw.value }).then(function(r){
-        if(r.error){ msg(r.error.message === 'Invalid login credentials' ? 'Email sau parolă greșită.' : (r.error.message.indexOf('confirm') >= 0 ? 'Confirmă mai întâi emailul (verifică inboxul).' : r.error.message)); return; }
-        start(r.data.session);
-      });
+      if(busy) return; var e = okMail(); if(!e) return; if(!pw.value){ msg('Scrie parola.'); return; }
+      busy = true; msg('Se conectează…');
+      var p; try{ p = sb.auth.signInWithPassword({ email:e, password:pw.value }); }catch(x){ fail(x); return; }
+      Promise.resolve(p).then(function(r){
+        if(!r || r.error || !r.data || !r.data.session){ fail(r && r.error); return; }
+        busy = false; msg(''); start(r.data.session);
+      }, fail);
     };
     document.getElementById('authForgot').onclick = function(){
-      var e = em.value.trim(); if(!e){ msg('Scrie întâi emailul de mai sus, apoi apasă „Ai uitat parola?”.'); return; }
-      msg('Se trimite emailul…');
-      sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + location.pathname }).then(function(r){
-        msg(r.error ? r.error.message : 'Ți-am trimis un email cu un link. Deschide-l din telefon și alege o parolă nouă (verifică și Spam).');
-      });
+      if(busy) return;
+      if(!em.value.trim()){ msg('Scrie întâi emailul de mai sus, apoi apasă „Ai uitat parola?”.'); return; }
+      var e = okMail(); if(!e) return;
+      busy = true; msg('Se trimite emailul…');
+      var p; try{ p = sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + location.pathname }); }catch(x){ fail(x); return; }
+      Promise.resolve(p).then(function(r){
+        if(!r || r.error){ fail(r && r.error); return; }
+        busy = false; msg('Dacă ai cont cu acest email, ți-am trimis un mesaj cu un link. Deschide-l din telefon și alege o parolă nouă (caută și în Spam).');
+      }, fail);
     };
     document.getElementById('authSignup').onclick = function(){
+      if(busy) return; var e = okMail(); if(!e) return;
       if(pw.value.length < 8){ msg('Parola trebuie să aibă minim 8 caractere.'); return; }
-      msg('Se creează contul…');
-      sb.auth.signUp({ email:em.value.trim(), password:pw.value }).then(function(r){
-        if(r.error){ msg(r.error.message); return; }
-        if(r.data.session) start(r.data.session);
-        else msg('Cont creat! Verifică emailul, apasă linkul de confirmare, apoi revino și apasă „Intră”.');
-      });
+      busy = true; msg('Se creează contul…');
+      var p; try{ p = sb.auth.signUp({ email:e, password:pw.value, options:{ emailRedirectTo: location.origin + location.pathname } }); }catch(x){ fail(x); return; }
+      Promise.resolve(p).then(function(r){
+        if(!r || r.error || !r.data){ fail(r && r.error); return; }
+        busy = false;
+        if(r.data.session){ msg(''); start(r.data.session); }
+        else if(r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) msg('Există deja un cont cu acest email. Apasă „Intră” sau „Ai uitat parola?”.');
+        else msg('Cont creat! Ți-am trimis un email: deschide-l și apasă pe linkul de confirmare (caută și în Spam), apoi revino aici și apasă „Intră”.');
+      }, fail);
     };
   }
 
@@ -213,19 +252,29 @@
       var v = document.getElementById('newPw').value, m = document.getElementById('newPwMsg');
       if(v.length < 8){ m.textContent = 'Parola trebuie să aibă minim 8 caractere.'; return; }
       m.textContent = 'Se salvează…';
-      sb.auth.updateUser({ password: v }).then(function(r){
-        if(r.error){ m.textContent = r.error.message; return; }
+      var bad = function(e){ console.error(e); m.textContent = roErr(e); };
+      var p; try{ p = sb.auth.updateUser({ password: v }); }catch(x){ bad(x); return; }
+      Promise.resolve(p).then(function(r){
+        if(!r || r.error){ bad(r && r.error); return; }
         try{ history.replaceState(null, '', location.pathname); }catch(e){}
-        sb.auth.getSession().then(function(x){ o.remove(); if(x.data && x.data.session) start(x.data.session); else showGate(); });
-      });
+        var after = function(x){ o.remove(); if(x && x.data && x.data.session) start(x.data.session); else { showGate(); msg('Parola a fost schimbată. Intră cu parola nouă.'); } };
+        sb.auth.getSession().then(after, function(){ after(null); });
+      }, bad);
     };
   }
   var isRecovery = /type=recovery/.test(location.hash);
   var hashErr = /error_code=|error=access_denied/.test(location.hash);
   var recShown = false;
-  try{ sb.auth.onAuthStateChange(function(ev){ if(ev === 'PASSWORD_RECOVERY' && !recShown){ recShown = true; showRecovery(); } }); }catch(e){}
-  sb.auth.getSession().then(function(r){
-    var s = r.data && r.data.session;
+  try{ sb.auth.onAuthStateChange(function(ev){
+    if(ev === 'PASSWORD_RECOVERY' && !recShown){ recShown = true; showRecovery(); }
+    /* sesiunea a expirat sau contul a fost închis de pe alt telefon: înapoi la ecranul de intrare, nu rămânem cu o aplicație care nu mai salvează */
+    if(ev === 'SIGNED_OUT' && started && !leaving){ leaving = true; try{ sessionStorage.setItem('zyp_sess_exp', '1'); }catch(e){} location.reload(); }
+  }); }catch(e){}
+  var gs; try{ gs = sb.auth.getSession(); }catch(e){ gs = Promise.reject(e); }
+  Promise.resolve(gs).then(function(r){ return r; }, function(e){ console.error(e); return {}; }).then(function(r){
+    var s = r && r.data && r.data.session;
+    var exp = false; try{ exp = sessionStorage.getItem('zyp_sess_exp') === '1'; sessionStorage.removeItem('zyp_sess_exp'); }catch(e){}
+    if(exp && !s && !isRecovery){ showGate(); msg('Sesiunea a expirat. Intră din nou în cont: datele tale sunt salvate.'); return; }
     if(recShown) return;
     if(isRecovery && s){ recShown = true; showRecovery(); }
     else if(s) start(s);

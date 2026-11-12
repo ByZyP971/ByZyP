@@ -54,8 +54,11 @@
     if(document.getElementById('onb')) return;
     if(!document.getElementById('onb-css2')){ var st=document.createElement('style'); st.id='onb-css2'; st.textContent='.onb-sex{display:flex;gap:10px;margin:6px 0 10px}.onb-sex button{flex:1;padding:14px 8px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font:700 16px/1.2 inherit}.onb-sex button.on{background:#A3FF12;color:#000;border-color:transparent}.onb-ha{display:flex;gap:10px;margin-bottom:14px}.onb-ha input{flex:1;min-width:0;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font-size:16px}'; document.head.appendChild(st); }
     var o=document.createElement('div'); o.className='onb'; o.id='onb'; document.body.appendChild(o); var step=0, sel={sport:1,food:1,supp:1,money:1}, hsel=HKEYS.slice(), gsel=[], phsel=curPhase(), ph0=phsel, lvsel=curLevel(), lv0=lvsel, first=!load(), bas={sex:'',age:'',cm:''};
-    if(first){ phsel=3; lvsel='easy'; ph0=-1; }   /* începător: 3 zile, nivel Ușor, dacă nu alege altceva */
-    var p0=load(); if(p0){ sel=Object.assign({},p0.mods); if(Array.isArray(p0.habits)&&p0.habits.length) hsel=p0.habits.slice(); if(Array.isArray(p0.goals)) gsel=p0.goals.slice(); }
+    var hadSp=false; try{ var s0=JSON.parse(localStorage.getItem(SPK)||'{}')||{}; hadSp=[1,2,3,4,5,6].indexOf(s0.phase)>=0 && (!!s0.placed || (s0.sets&&Object.keys(s0.sets).length>0) || (s0.klog&&Object.keys(s0.klog).length>0)); }catch(e){}
+    if(first && !hadSp){ phsel=3; lvsel='easy'; ph0=-1; }   /* începător: 3 zile, nivel Ușor, dacă nu alege altceva (cine are deja un program îl păstrează) */
+    var p0=load(); if(p0){ sel=Object.assign({sport:1,food:1,supp:1,money:1},p0.mods); if(Array.isArray(p0.habits)&&p0.habits.length) hsel=p0.habits.slice(); if(Array.isArray(p0.goals)) gsel=p0.goals.slice(); }
+    var g0=gsel.slice().sort().join(',');   /* obiectivele de la deschiderea ghidului: modulele și obiceiurile se re-potrivesc doar dacă le schimbi */
+    var gOpen=g0;
     function dots(){ return '<div class="onb-dots">'+[0,1,2,3,4,5].map(function(i){ return '<i class="'+(i<=step?'on':'')+'"></i>'; }).join('')+'</div>'; }
     function draw(){
       if(step===0){ o.innerHTML='<img class="onb-logo" src="icon.png" alt="">'+dots()+'<h1>Bine ai venit la By ZyP</h1><p>Planul tău zilnic pentru sală, suplimente și mâncare, simplu și pe ore. Îți alegi tu ce vezi în aplicație și poți schimba oricând.</p><button class="onb-btn" id="onbN">Începem</button>'; }
@@ -64,19 +67,20 @@
       else if(step===3){ o.innerHTML=dots()+'<h1>Câte zile pe săptămână poți merge la sală?</h1><p>Îți punem programul potrivit. Săptămânile vin una după alta, singure. Poți schimba oricând din fila Sală.</p>'+DAYS.map(function(m){ return dbox(m,m.ph===phsel,lockd(m.ph,lvsel)); }).join('')+'<h1 style="font-size:20px;margin-top:18px">Cât de greu vrei să fie?</h1>'+LVLS.map(function(m){ return lbox(m,m.k===lvsel); }).join('')+'<button class="onb-btn" id="onbPl" style="background:transparent;color:#A3FF12;border:1px solid #A3FF12;margin-bottom:10px">🎯 Alege-mi tu de unde încep (4 întrebări)</button><button class="onb-btn" id="onbN">Continuă</button>'; var pl=document.getElementById('onbPl'); if(pl) pl.addEventListener('click',function(){ if(window.zPlace) window.zPlace(function(r){ phsel=r.phase; lvsel=r.level; draw(); },{apply:false}); }); o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ if(i.hasAttribute('data-ph')) phsel=+i.getAttribute('data-ph'); else { lvsel=i.getAttribute('data-lv'); if(lockd(phsel,lvsel)) phsel=3; draw(); } }); }); }
       else if(step===4){ o.innerHTML=dots()+'<h1>Ce obiceiuri vrei să urmărești?</h1><p>Alegi doar ce ți se potrivește. Poți schimba oricând din Profil.</p>'+HABS.map(function(m){ return hbox(m,hsel.indexOf(m.k)>=0); }).join('')+'<button class="onb-btn" id="onbN">Continuă</button>'; o.querySelectorAll('input').forEach(function(i){ i.addEventListener('change',function(){ var k=i.getAttribute('data-h'); hsel=hsel.filter(function(x){ return x!==k; }); if(i.checked) hsel.push(k); }); }); }
       else { o.innerHTML=dots()+'<h1>Gata, poți începe</h1><p>Pe fila Azi îți bifezi ziua. Sala, mâncarea și suplimentele apar la fila lor. Aplicația nu oferă sfaturi medicale sau financiare: sunt informații orientative.</p><button class="onb-btn" id="onbN">Deschide aplicația</button>'; }
-      document.getElementById('onbN').addEventListener('click',function(){ if(step===1 && gsel.length){ var pr=goalPreset(gsel); sel=pr.mods; hsel=pr.habits; }
+      document.getElementById('onbN').addEventListener('click',function(){ if(step===1 && gsel.length && (first || gsel.slice().sort().join(',')!==g0)){ var pr=goalPreset(gsel); sel=pr.mods; hsel=pr.habits; g0=gsel.slice().sort().join(','); }
  if(step===4 && !hsel.length){ hsel=HKEYS.slice(); }
- if(step<5){ step++; if(step===3 && !sel.sport) step++; draw(); } else { var q={done:1,mods:sel,habits:hsel,goals:gsel}; save(q); apply(q); renderPref(); o.remove(); try{ if(window.__zBasics) window.__zBasics({ sex:bas.sex, age:+bas.age||0, height:+bas.cm||0, goal:(gsel.indexOf('lose')>=0?'lose':(gsel.indexOf('muscle')>=0?'gain':(first?'maintain':undefined))) }); }catch(e){} try{ window.scrollTo(0,0); }catch(e){} var phChanged=(phsel!==ph0 || lvsel!==lv0); if(phChanged) setSp(phsel,lvsel,first); if(phChanged || JSON.stringify(hsel.slice().sort())!==JSON.stringify(CURH.slice().sort())) location.reload(); } });
+ if(step<5){ step++; if(step===3 && !sel.sport) step++; draw(); } else { var q={done:1,mods:sel,habits:hsel,goals:gsel}; save(q); apply(q); renderPref(); o.remove(); try{ if(window.__zBasics) window.__zBasics({ sex:bas.sex, age:+bas.age||0, height:+bas.cm||0, goal:((first || gsel.slice().sort().join(',')!==gOpen)?(gsel.indexOf('lose')>=0?'lose':(gsel.indexOf('muscle')>=0?'gain':(first?'maintain':undefined))):undefined) }); }catch(e){} try{ window.scrollTo(0,0); }catch(e){} var phChanged=(phsel!==ph0 || lvsel!==lv0); if(phChanged) setSp(phsel,lvsel,first); if(phChanged || JSON.stringify(hsel.slice().sort())!==JSON.stringify(CURH.slice().sort())) location.reload(); } });
     }
     draw();
   }
   document.addEventListener('DOMContentLoaded',function(){ renderPref(); renderHabPref(); var pg=document.getElementById('prefGuide'); if(pg) pg.addEventListener('click',guide); });
   window.addEventListener('load',function(){
     if(load() || /type=recovery|access_token/.test(location.hash)) return;
+    /* ghidul apare după ce ai intrat în cont, oricât ar dura crearea contului (confirmarea emailului poate lua minute) */
     var n=0, iv=setInterval(function(){ n++;
       var g=document.getElementById('authGate'), open=g && g.style.display!=='none';
-      if(n>120){ clearInterval(iv); return; }
-      if(!open && n>5){ clearInterval(iv); if(!load()) guide(); }
+      if(load()){ clearInterval(iv); return; }
+      if(!open && window.__byzypAuthed && n>5){ clearInterval(iv); guide(); }
     },1000);
   });
 })();
@@ -94,7 +98,8 @@
     document.body.appendChild(d);
   }
   window.addEventListener('load', function(){ setTimeout(function(){
-    if(inApp) card('zyp_tip_inapp', '<b>Ești în browserul din ' + (/Instagram|FBAN|FBAV|FB_IAB/i.test(ua) ? 'Instagram' : 'TikTok') + '.</b><br>Apasă pe ⋯ (sus în dreapta) și alege „Deschide în ' + (iOS ? 'Safari' : 'browser') + '”. Doar de acolo poți pune aplicația pe telefon și primi notificări.');
-    else if(iOS && !standalone) card('zyp_tip_install', '<b>📲 Pune By ZyP pe ecranul telefonului</b><br>În Safari apasă pe butonul de trimitere ⬆️ de jos, apoi „Adaugă pe ecranul principal”. Așa se deschide ca o aplicație și poți primi notificări.');
+    if(standalone) return;
+    if(inApp) card('zyp_tip_inapp', '<b>Ai deschis By ZyP din altă aplicație.</b><br>Apasă pe ⋯ (sus în dreapta) și alege „Deschide în browser”. Doar de acolo poți pune aplicația pe telefon și primi notificări.');
+    else if(iOS) card('zyp_tip_install', '<b>📲 Pune By ZyP pe ecranul telefonului</b><br>Apasă pe butonul de trimitere ⬆️ de jos, apoi „Adaugă pe ecranul principal”. Așa se deschide ca o aplicație și poți primi notificări.');
   }, 4000); });
 })();

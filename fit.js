@@ -97,19 +97,19 @@
   }
   function renderBody(){
     var root = $('bodyRoot'); if(!root) return;
-    var z = window.__zData && window.__zData() || {}, b = body.get(), sex = b.sex || z.sex || 'm', cm = z.cm || 172, kg = z.kg;
+    var z = window.__zData && window.__zData() || {}, b = body.get(), sex = b.sex || z.sex || 'm', cm = z.cm || 172, kg = z.kg, hasCm = z.cmSet !== false;
     var keys = Object.keys(b.log || {}).sort(), lastK = keys[keys.length - 1], last = lastK ? b.log[lastK] : null;
     var out = '';
     if(last){
-      var bf = last.bf, kgNow = kg || last.kg, fat = kgNow * bf / 100, lean = kgNow - fat, musc = lean * 0.54;
-      out += '<div class="ft-grid"><div><b>' + f1(bf) + '%</b><span>Grăsime corporală</span></div><div><b>' + f1(lean) + ' kg</b><span>Masă slabă</span></div><div><b>≈ ' + f1(musc) + ' kg</b><span>Masă musculară (estimare)</span></div><div><b>' + f1(fat) + ' kg</b><span>Masă grasă</span></div></div>' +
+      var bf = +last.bf || 0, kgNow = kg || last.kg, hasKg = kgNow > 0, fat = hasKg ? kgNow * bf / 100 : 0, lean = kgNow - fat, musc = lean * 0.54;
+      out += '<div class="ft-grid"><div><b>' + f1(bf) + '%</b><span>Grăsime corporală</span></div>' + (hasKg ? '<div><b>' + f1(lean) + ' kg</b><span>Masă slabă</span></div><div><b>≈ ' + f1(musc) + ' kg</b><span>Masă musculară (estimare)</span></div><div><b>' + f1(fat) + ' kg</b><span>Masă grasă</span></div>' : '<div><b>–</b><span>Notează greutatea în fila Azi ca să vezi și kilogramele</span></div>') + '</div>' +
         '<div class="ft-note">Categorie: <b>' + bfCat(sex, bf) + '</b> · măsurat ' + esc(lastK) + '. Estimările sunt orientative: metoda cu centimetrul are o eroare de câteva procente, iar masa musculară e calculată din masa slabă. Compară trendul, nu un singur număr.</div>';
     }
-    var BMI = kg ? kg / Math.pow(cm / 100, 2) : null;
+    var BMI = kg && hasCm ? kg / Math.pow(cm / 100, 2) : null;
     out += '<div class="ft-sub">Măsurătoare nouă</div><div class="ft-pills" id="bdSex"><button data-s="m" class="' + (sex === 'm' ? 'on' : '') + '">Bărbat</button><button data-s="f" class="' + (sex === 'f' ? 'on' : '') + '">Femeie</button></div>' +
       '<div class="ft-row3"><label>Gât (cm)<input id="bdNeck" inputmode="decimal" value="' + esc(b.neck) + '" placeholder="38"></label><label>Talie (cm)<input id="bdWaist" inputmode="decimal" value="' + esc(b.waist) + '" placeholder="84"></label>' +
       (sex === 'f' ? '<label>Șold (cm)<input id="bdHip" inputmode="decimal" value="' + esc(b.hip) + '" placeholder="96"></label>' : '') + '</div>' +
-      '<div class="ft-note">Înălțimea (' + cm + ' cm) și greutatea ' + (kg ? '(' + f1(kg) + ' kg)' : '(notează-ți greutatea în fila Azi)') + ' se iau automat. Gâtul se măsoară sub mărul lui Adam, talia la nivelul buricului, relaxat.' + (BMI ? ' IMC: ' + f1(BMI) + '.' : '') + '</div>' +
+      '<div class="ft-note">Înălțimea ' + (hasCm ? '(' + cm + ' cm)' : '(scrie-o mai sus, la „Editează profilul”)') + ' și greutatea ' + (kg ? '(' + f1(kg) + ' kg)' : '(notează-ți greutatea în fila Azi)') + ' se iau automat. Gâtul se măsoară la mijloc, în partea cea mai îngustă; talia la nivelul buricului, relaxat' + (sex === 'f' ? '; șoldul în partea cea mai lată.' : '.') + (BMI ? ' IMC: ' + f1(BMI) + '.' : '') + '</div>' +
       '<button class="ghost-btn" id="bdSave" style="width:100%">💾 Calculează și salvează</button><div class="hint" id="bdMsg"></div>';
     // grafice
     var ser = [];
@@ -126,6 +126,7 @@
     root.querySelectorAll('#bdMode button').forEach(function(x){ x.addEventListener('click', function(){ bodyMode = x.getAttribute('data-m'); renderBody(); }); });
     var sv = $('bdSave'); if(sv) sv.addEventListener('click', function(){
       var n = num($('bdNeck').value), w = num($('bdWaist').value), h = $('bdHip') ? num($('bdHip').value) : null, msg = $('bdMsg');
+      if(!hasCm){ msg.textContent = 'Scrie întâi înălțimea ta în Profil (Editează profilul), altfel calculul iese greșit.'; return; }
       if(!n || !w || n < 20 || n > 70 || w < 40 || w > 220){ msg.textContent = 'Completează gâtul și talia în centimetri (valori realiste).'; return; }
       if(sex === 'f' && (!h || h < 50 || h > 200)){ msg.textContent = 'Completează și șoldul.'; return; }
       var v = navyBF(sex, cm, n, w, h); if(!v){ msg.textContent = 'Valorile nu se potrivesc (talia trebuie să fie mai mare decât gâtul). Verifică măsurătorile.'; return; }
@@ -144,7 +145,7 @@
     low:{ t:'🦵 Înainte de zi de jos (picioare, fesieri)', s:[['Pod pentru fesieri', 40, 'Strângi fesierii sus 1 secundă.'], ['Genuflexiuni cu pauză jos', 45, 'Ții 2 secunde jos, genunchii afară.'], ['Balansări de picior, față-spate', 30, 'Cu ținere de perete, câte 10 pe picior.'], ['Fandări laterale', 40, 'Deschide șoldurile, călcâiul pe podea.'], ['Prima serie cu 50% din greutate', 60, '8–10 repetări ușoare la primul exercițiu.']] }
   };
   var STRETCH = [['Piept', 'Mâna pe perete, brațul întins în lateral, rotește corpul în partea opusă.', 30], ['Spate (poziția copilului)', 'În genunchi, șezi pe călcâie, brațele întinse în față, fruntea pe podea.', 40], ['Umeri', 'Brațul peste piept, tras ușor cu cealaltă mână.', 30], ['Triceps', 'Cotul sus lângă cap, palma pe spate, tragi ușor de cot.', 30], ['Cvadriceps', 'În picioare, tragi călcâiul spre fese, genunchii aproape.', 30], ['Femural', 'Șezi, un picior întins, te apleci din șolduri spre vârf.', 40], ['Fesieri', 'Pe spate, gleznă pe genunchi, tragi coapsa spre piept.', 40], ['Flexorii șoldului', 'Fandare joasă, genunchiul din spate pe podea, împingi șoldul în față.', 40], ['Gambe', 'Mâinile pe perete, un picior în spate, călcâiul pe podea.', 30]];
-  var TIPS = ['Încălzește-te mereu, 5–8 minute, apoi fă 1–2 serii ușoare înainte de greutatea de lucru.', 'Crește greutatea treptat, cu 2,5 kg sau o repetare în plus, nu din salturi mari.', 'Tehnica înaintea greutății: dacă nu poți controla coborârea, scade greutatea.', 'Doarme 7–9 ore. Majoritatea accidentărilor apar pe oboseală.', 'Ia o zi sau două de odihnă pe săptămână și o săptămână mai ușoară (deload) la fiecare 4–8 săptămâni.', 'Nu antrena același mușchi greu în zile consecutive.', 'Bea apă înainte, în timpul și după antrenament.', 'Fă mobilitate pentru umeri, șolduri și glezne, sunt cele mai solicitate articulații.', 'La dureri musculare normale (după 24–72 ore) poți antrena ușor sau poți merge la plimbare.', 'Folosește aparatul sau un partener la greutăți mari (bară la piept, genuflexiuni grele).'];
+  var TIPS = ['Încălzește-te mereu, 5–8 minute, apoi fă 1–2 serii ușoare înainte de greutatea de lucru.', 'Crește greutatea treptat, cu 2,5 kg sau o repetare în plus, nu cu salturi mari.', 'Tehnica înaintea greutății: dacă nu poți controla coborârea, scade greutatea.', 'Dormi 7–9 ore. Majoritatea accidentărilor apar pe oboseală.', 'Ia o zi sau două de odihnă pe săptămână și o săptămână mai ușoară (deload) la fiecare 4–8 săptămâni.', 'Nu antrena același mușchi greu în zile consecutive.', 'Bea apă înainte, în timpul și după antrenament.', 'Fă mobilitate pentru umeri, șolduri și glezne, sunt cele mai solicitate articulații.', 'La dureri musculare normale (după 24–72 ore) poți antrena ușor sau poți merge la plimbare.', 'Folosește aparatul sau un partener la greutăți mari (bară la piept, genuflexiuni grele).'];
   var REDFLAGS = ['durere ascuțită, bruscă, într-o articulație', 'amorțeală sau furnicături care nu trec', 'umflătură sau vânătaie după o mișcare greșită', 'durere în piept, amețeală, leșin sau lipsă de aer neobișnuită'];
 
   function hoursBetween(bed, wake){
@@ -173,7 +174,7 @@
     if(score >= 75){ lab = '🟢 Ești gata de un antrenament greu'; tip = 'Mergi pe planul normal. Încearcă ținta de greutate propusă.'; }
     else if(score >= 50){ lab = '🟡 Antrenament moderat'; tip = 'Fă planul, dar oprește-te la 1–2 repetări înainte de eșec și nu forța recorduri.'; }
     else if(score >= 30){ lab = '🟠 Mai ușor azi'; tip = 'Scade greutatea cu 10–15% sau fă o serie mai puțin. Fă mobilitate și stretching.'; }
-    else { lab = '🔴 Zi de recuperare'; tip = 'Plimbare, stretching, apă și somn devreme. Mâine revii mai puternic.'; }
+    else { lab = '🔴 Zi de recuperare'; tip = 'Plimbare, stretching, apă și somn devreme. Mâine revii cu forțe noi.'; }
     return { score:score, lab:lab, tip:tip, why:why };
   }
   var guideTimer = null;
@@ -184,7 +185,7 @@
     function beep(){ try{ if(navigator.vibrate) navigator.vibrate(120); }catch(e){} }
     function draw(){
       if(i >= steps.length){ ov.innerHTML = '<div class="zp-box"><div class="zp-n">' + esc(title) + '</div><h3>Gata! 🎉</h3><p class="zp-s">Ai terminat toate exercițiile.</p><button class="zp-opt zp-go" id="gdX">Închide</button></div>'; $('gdX').addEventListener('click', end); clearInterval(guideTimer); beep(); return; }
-      var st = steps[i]; left = st[1] || 30;
+      var st = steps[i]; left = st[1] || 30; run = true;
       ov.innerHTML = '<div class="zp-box"><div class="zp-n">' + esc(title) + ' · ' + (i + 1) + '/' + steps.length + '</div><h3>' + esc(st[0]) + '</h3><p class="zp-s">' + esc(st[2] || '') + '</p><div class="ft-count" id="gdT">' + left + ' s</div><button class="zp-opt" id="gdP">⏸ Pauză</button><button class="zp-opt" id="gdN">Următorul ›</button><button class="zp-x" id="gdX">Închide</button></div>';
       $('gdX').addEventListener('click', end);
       $('gdN').addEventListener('click', function(){ i++; draw(); });
@@ -197,7 +198,7 @@
   function renderRec(){
     var root = $('recRoot'); if(!root) return;
     var s = sleep.get(), sw = sleepWeek(), rd = readiness(), tk = dk(new Date()), todayLog = s.log && s.log[tk];
-    var out = '<div class="card"><div class="card-title">🔋 Cât de odihnit ești azi</div><div class="ft-ready"><b>' + rd.lab + '</b><span>' + esc(rd.tip) + '</span></div><div class="ft-note">Pe baza: ' + esc(rd.why.join(', ')) + '. Scorul e o recomandare simplă, nu o măsurătoare medicală.</div></div>';
+    var out = '<div class="card"><div class="card-title">🔋 Câtă energie ai azi</div><div class="ft-ready"><b>' + rd.lab + '</b><span>' + esc(rd.tip) + '</span></div><div class="ft-note">Pe baza: ' + esc(rd.why.join(', ')) + '. Scorul e o recomandare simplă, nu o măsurătoare medicală.</div></div>';
     out += '<div class="card"><div class="card-title">😴 Somn</div>' +
       '<div class="ft-row3"><label>Te-ai culcat<input type="time" id="slBed" value="' + esc(todayLog ? todayLog.bed : s.bed) + '"></label><label>Te-ai trezit<input type="time" id="slWake" value="' + esc(todayLog ? todayLog.wake : s.wake) + '"></label><label>Țintă (ore)<input type="number" id="slGoal" min="5" max="11" step="0.5" value="' + s.goal + '"></label></div>' +
       '<button class="ghost-btn" id="slSave" style="width:100%">💾 Salvez somnul de azi-noapte</button><div class="hint" id="slMsg"></div>' +
@@ -215,6 +216,7 @@
       if(!bed || !wake){ m.textContent = 'Completează ora de culcare și de trezire.'; return; }
       if(!goal || goal < 5 || goal > 11) goal = 8;
       var h = hoursBetween(bed, wake); if(h > 14){ m.textContent = 'Verifică orele, ies mai mult de 14 ore.'; return; }
+      if(h < 1){ m.textContent = 'Verifică orele, iese mai puțin de o oră de somn.'; return; }
       s.goal = goal; s.bed = bed; s.wake = wake; s.log = s.log || {}; s.log[tk] = { bed:bed, wake:wake, h:Math.round(h * 10) / 10 };
       var keep = {}; Object.keys(s.log).sort().slice(-120).forEach(function(k){ keep[k] = s.log[k]; }); s.log = keep;
       sleep.save(); toast('Somn salvat: ' + f1(h) + ' h'); renderRec();
@@ -241,7 +243,7 @@
     var z = window.__zData && window.__zData(); if(!z) return null;
     var rec = [], cards = [], goal = z.goal || 'maintain';
     // 1. greutate
-    var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 21); var recent = z.weights.filter(function(w){ return parse(w.d) >= cutoff; });
+    var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 21); var recent = (z.weights || []).filter(function(w){ return parse(w.d) >= cutoff; });
     var sl = slope(recent), pct = sl != null && z.kg ? sl / z.kg * 100 : null;
     if(pct == null){ cards.push(['⚖️', 'Greutate', 'Notează-ți greutatea în fila Azi de 3–4 ori pe săptămână, câteva săptămâni. Atunci pot calcula ritmul și ajusta caloriile.']); rec.push('Notează greutatea de 3–4 ori pe săptămână, dimineața.'); }
     else {
@@ -256,14 +258,14 @@
     var wk = z.week, want = PHASE_DAYS[z.phase] || 3;
     if(wk){
       var a = wk.cur, p = wk.prev, m = 'Săptămâna asta: <b>' + a.w + '</b> din ' + want + ' antrenamente (' + a.s + ' serii). Săptămâna trecută: <b>' + p.w + '</b> (' + p.s + ' serii).';
-      if(p.w === 0 && a.w === 0){ m += ' Bifează seriile în fila Sală, ca să pot vedea progresul.'; }
-      else if(p.w < want - 1 && p.w < 3 && z.phase !== 5){ m += ' Programul tău cere mult. Un program cu mai puține zile, făcut constant, bate unul ambițios făcut pe jumătate.'; rec.push('Alege un program cu mai puține zile și fă-l constant.'); }
+      if(p.w === 0 && a.w === 0){ m += ' Bifează seriile în Sport → Sală, ca să pot vedea progresul.'; }
+      else if(p.w > 0 && p.w < want - 1 && p.w < 3 && z.phase !== 5){ m += ' Programul tău cere mult. Un program cu mai puține zile, făcut constant, bate unul ambițios făcut pe jumătate.'; rec.push('Alege un program cu mai puține zile și fă-l constant.'); }
       else if(p.s && a.s >= p.s) m += ' Ai volum mai mare decât săptămâna trecută, bravo!';
       cards.push(['🏋️', 'Antrenamente', m]);
     }
     // 3. forță
     var pr = [], plat = [], today = new Date(), c28 = new Date(), k28; c28.setDate(today.getDate() - 28); k28 = dk(c28);
-    Object.keys(z.klog).forEach(function(n){
+    Object.keys(z.klog || {}).forEach(function(n){
       var L = (z.klog[n] || []).slice().sort(function(a, b){ return a.d < b.d ? -1 : 1; }); if(L.length < 2) return;
       var best = 0, bi = -1; L.forEach(function(x, i){ if(x.kg > best){ best = x.kg; bi = i; } });
       var prior = 0; L.slice(0, -1).forEach(function(x){ if(x.kg > prior) prior = x.kg; });
@@ -275,15 +277,27 @@
     // 4. somn
     var sw = sleepWeek();
     if(sw.avg != null){ var low = sw.avg < sleep.get().goal - 1; cards.push(['😴', 'Somn', 'Media ta: <b>' + f1(sw.avg) + ' h</b>. ' + (low ? 'Prea puțin pentru recuperare și creștere. Încearcă să te culci cu 30–45 min mai devreme.' : 'Ok pentru recuperare.')]); if(low) rec.push('Culcă-te mai devreme, somnul e cel mai ieftin supliment.'); }
-    else rec.push('Notează somnul în fila Recuperare, câteva zile.');
+    else rec.push('Notează somnul în Sport → Recuperare, câteva zile.');
     // 5. proteine
-    if(z.prot) cards.push(['🍗', 'Proteine', 'Ținta ta: <b>' + z.prot + ' g</b> pe zi (' + z.kcal + ' kcal). Împarte-le în 3–4 mese de 25–40 g.']);
+    if(z.prot) cards.push(['🍗', 'Proteine', 'Ținta ta: <b>' + z.prot + ' g</b> pe zi' + (z.kcal ? ' (' + z.kcal + ' kcal)' : '') + '. Împarte-le în 3–4 mese de 25–40 g.']);
     return { cards:cards, rec:rec, goal:goal, z:z };
   }
 
   /* ---- bază de cunoștințe: răspunsuri la întrebări ---- */
   var KB = [
-    { k:['durere piept', 'durere in piept', 'dureri in piept', 'doare pieptul', 'ameteal', 'ameteli', 'lesin', 'nu pot respira', 'lipsa de aer', 'amorteal', 'furnicaturi'], a:'Dacă ai durere în piept, amețeală, leșin sau amorțeală, oprește antrenamentul și vorbește cu un medic. Nu forța și nu aștepta să treacă.' },
+    { k:['durere piept', 'durere in piept', 'dureri in piept', 'doare pieptul', 'ameteal', 'ameteli', 'ametesc', 'lesin', 'nu pot respira', 'lipsa de aer', 'amorteal', 'amorteli', 'amortit', 'furnicaturi', 'palpitatii', 'vad negru'], a:'Dacă ai durere în piept, amețeală, leșin sau amorțeală, oprește antrenamentul și vorbește cu un medic. Nu forța și nu aștepta să treacă.' },
+    { m:1, k:['insarcinat', 'sarcina', 'gravida', 'alaptez', 'alaptare', 'hernie', 'tensiune', 'hipertensiune', 'diabet', 'inima', 'cardiac', 'astm', 'operatie', 'operat', 'epilepsie', 'tiroid', 'medicament', 'boala', 'bolnav cronic', 'anemie', 'tulburare de alimentatie', 'anorexi', 'bulimi'], a:'La sarcină, alăptare, boli (inimă, tensiune, diabet, tiroidă, hernie), după o operație sau dacă iei medicamente, vorbește întâi cu medicul tău. El îți spune ce mișcare și ce alimentație sunt sigure pentru tine. Aplicația dă doar sfaturi generale și nu înlocuiește un consult.' },
+    { m:1, k:['durer', 'doare', 'dor ', 'ma dor', 'intins un muschi', 'intindere musculara', 'entorsa', 'umflat', 'accidentare', 'accidentat', 'm am lovit', 'trosneste', 'pocneste', 'intepatura'], a:'La o durere ascuțită, la una care ține mai mult de câteva zile sau la o articulație umflată: oprește mișcarea care o provoacă, nu forța și mergi la un medic sau la un kinetoterapeut. Până atunci fă doar mișcări care nu dor. Revino treptat, cu greutăți mici. Febra musculară obișnuită (mușchi care dor la 1–3 zile după antrenament) trece singură.' },
+    { k:['racit', 'raceala', 'gripa', 'febra ', 'tusesc', 'tuse'], a:'Dacă ai doar nasul înfundat și te simți bine, poți face un antrenament ușor. Dacă ai febră, tuse, dureri în corp sau te simți fără putere, ia pauză până îți revii: odihna te ajută mai mult decât sala. Dacă nu trece în câteva zile, întreabă un medic.' },
+    { k:['menstruatie', 'ciclu ', 'ciclul', 'perioada lunii'], a:'Te poți antrena la menstruație dacă te simți bine. În zilele grele alege un antrenament mai ușor, o plimbare sau stretching: nu pierzi nimic. Dacă ai dureri mari sau ciclul lipsește mai multe luni, vorbește cu un medic.' },
+    { k:['ca un barbat', 'prea musculoasa', 'prea mare', 'ma ingros', 'prea multi muschi'], a:'Nu. Mușchii cresc încet, iar femeile au mult mai puțin testosteron, așa că greutățile nu te fac „masivă” peste noapte. Antrenamentul cu greutăți dă formă, forță și oase sănătoase. Tu alegi cât de departe mergi.' },
+    { k:['ani pot', 'am 13', 'am 14', 'am 15', 'am 16', 'am 17', 'minor', 'adolescent', 'copil'], a:'Adolescenții pot face antrenament cu greutăți dacă învață tehnica corectă, cu greutăți mici și, ideal, cu un antrenor sau un adult lângă ei. Fără diete de slăbit și fără suplimente în afară de mâncare normală. Dacă ai o problemă de sănătate, întreabă întâi medicul.' },
+    { k:['ce greutate', 'cata greutate', 'cate kg', 'cate kilograme sa pun', 'cu cat incep', 'cat sa pun'], a:'Alege o greutate cu care faci toate repetările curat și ai mai fi putut face încă 2–3. Dacă abia termini, e prea grea; dacă ți se pare joacă, e prea ușoară. Notează greutatea în Sport → Sală, iar aplicația îți propune data viitoare cât să pui.' },
+    { k:['cate zile', 'cate antrenamente', 'cat de des', 'de cate ori pe saptamana'], a:'La început sunt de ajuns 2–3 zile pe săptămână, cu o zi de pauză între ele. Mai târziu poți urca la 4. Contează să vii constant, nu să vii zilnic.' },
+    { k:['am sarit', 'am lipsit', 'am ratat', 'am pierdut un antrenament', 'n am fost', 'nu am fost', 'pauza de o saptamana', 'am luat pauza'], a:'Nu-i nimic. Continuă cu următorul antrenament din program, fără să „recuperezi” dublu. Un antrenament lipsă nu strică nimic; contează ce faci în săptămânile următoare. După o pauză mai lungă, pornește cu greutăți puțin mai mici.' },
+    { k:['ce suplimente', 'suplimente imi trebuie', 'am nevoie de suplimente', 'suplimente pentru incepator', 'trebuie sa iau suplimente'], a:'La început nu ai nevoie de suplimente: mâncare bună, somn și antrenament constant fac aproape toată treaba. Dacă vrei totuși, cele mai studiate sunt creatina și proteina din lapte (whey), când nu ajungi la proteine din mâncare. Dacă iei medicamente sau ai o boală, întreabă întâi medicul.' },
+    { k:['inainte de antrenament', 'inainte de sala', 'inaintea antrenamentului'], a:'Cu 1–2 ore înainte de antrenament mănâncă o masă obișnuită, cu carbohidrați și puțină proteină (de exemplu orez cu pui sau ovăz cu iaurt). Dacă nu ai timp, o banană cu 30 de minute înainte e de ajuns. Nu veni cu stomacul prea plin.' },
+    { k:['dupa antrenament', 'dupa sala'], a:'După antrenament mănâncă, în următoarele 1–2 ore, o masă cu proteine (25–40 g) și carbohidrați: de exemplu pui cu orez sau iaurt cu ovăz și fructe. Bea și apă. Nu trebuie să te grăbești, contează totalul pe zi.' },
     { k:['creatin'], a:'Creatina monohidrat e unul dintre cele mai studiate suplimente pentru forță. De obicei se iau 3–5 g pe zi, în fiecare zi, oricând, cu apă. Nu e nevoie de „încărcare". Dacă ai probleme de rinichi sau iei medicamente, întreabă mai întâi medicul.' },
     { k:['whey', 'proteina praf', 'proteină praf', 'shake'], a:'Whey e doar o sursă comodă de proteină. Contează totalul pe zi, nu momentul. O porție are de obicei 20–40 g, după antrenament sau oricând îți lipsesc proteine. Dacă ai intoleranță la lactoză, alege izolat sau proteină vegetală.' },
     { k:['proteine', 'proteina', 'cate proteine', 'câte proteine'], a:'Pentru masă musculară, ținta uzuală e 1,6–2,2 g proteine pe kg corp pe zi. Aplicația îți calculează ținta în fila Mâncare, pe baza greutății tale. Împarte-o în 3–4 mese.' },
@@ -292,33 +306,33 @@
     { k:['zinc'], a:'Zincul se ia la masă (pe stomacul gol poate da greață). Necesarul zilnic e de 8–11 mg. Peste 40 mg pe zi nu e recomandat pe termen lung. Respectă eticheta.' },
     { k:['magneziu'], a:'Magneziul se ia de obicei seara, 200–400 mg, forme ca glicinat sau citrat. Oxidul de magneziu poate da diaree. Poate ajuta la relaxare și somn.' },
     { k:['cofeina', 'cofeină', 'cafea', 'pre workout', 'preworkout'], a:'Cofeina ajută performanța în doze de aproximativ 3 mg/kg, la 30–60 minute înainte de antrenament. Evită-o seara, ca să nu-ți strice somnul. Dacă ai probleme cu inima sau tensiunea, întreabă medicul.' },
-    { k:['somn', 'dormi', 'culc'], a:'Țintește 7–9 ore de somn. Somnul scurt scade forța, recuperarea și dispoziția. Notează-ți somnul în fila Sală → Recuperare.' },
-    { k:['pauza intre', 'pauză între', 'odihna intre', 'cat ma odihnesc', 'cât mă odihnesc'], a:'La exerciții compuse (genuflexiuni, împins, ramat) odihnește-te 2–3 minute. La izolări, 60–90 de secunde.' },
+    { k:['somn', 'dormi', 'culc'], a:'Țintește 7–9 ore de somn. Somnul scurt scade forța, recuperarea și dispoziția. Notează-ți somnul în Sport → Recuperare.' },
+    { k:['pauza intre', 'odihna intre', 'cat ma odihnesc', 'odihnesc intre', 'intre serii', 'cat stau intre'], a:'La exerciții compuse (genuflexiuni, împins, ramat) odihnește-te 2–3 minute. La izolări, 60–90 de secunde.' },
     { k:['repetari', 'repetări', 'serii', 'cate serii', 'câte serii'], a:'Pentru masă: 6–12 repetări la compuse, 10–15 la izolări, aproape de eșec (cu 1–3 repetări rezervă). În total 10–20 de serii pe grupă pe săptămână, repartizate în 2 zile.' },
     { k:['frecventa', 'frecvență', 'de cate ori', 'de câte ori'], a:'O grupă musculară se antrenează bine de 2 ori pe săptămână. Începătorii pot merge cu 3 zile tot corpul.' },
     { k:['platou', 'nu mai cresc', 'stagnez', 'blocat'], a:'La platou verifică în ordine: somn, calorii și proteine suficiente, tehnica, apoi progresia (încearcă o repetare în plus înainte să crești greutatea). Dacă tot nu merge, fă o săptămână mai ușoară (deload).' },
     { k:['deload'], a:'Deload = o săptămână cu volum mai mic (aproximativ jumătate din serii) și greutăți puțin mai mici, la fiecare 4–8 săptămâni, ca să te recuperezi.' },
     { k:['cardio', 'alerg', 'pasi', 'pași'], a:'2–3 sesiuni de cardio ușor de 20–30 de minute pe săptămână, sau 7.000–10.000 de pași pe zi, ajută inima și recuperarea fără să-ți strice câștigul de masă.' },
-    { k:['apa', 'apă', 'hidrat'], a:'Aproximativ 35 ml apă pe kg corp, plus 0,5 L în zilele cu antrenament. Aplicația îți calculează ținta în fila Mâncare. Urina galben-pal e semn bun.' },
+    { k:['apa ', 'hidrat', 'sa beau', 'lichide'], a:'Aproximativ 35 ml apă pe kg corp, plus 0,5 L în zilele cu antrenament. Aplicația îți calculează ținta în fila Mâncare. Urina galben-pal e semn bun.' },
     { k:['cat de repede', 'cât de repede', 'cand vad rezultate', 'când văd rezultate', 'rezultate'], a:'Forța crește vizibil în 4–8 săptămâni. Schimbarea vizuală durează de obicei 8–12 săptămâni. Începătorii pot câștiga aproximativ 0,5–1 kg de mușchi pe lună la început, mult mai lent după primul an.' },
     { k:['surplus', 'masa musculara', 'masă musculară', 'sa cresc in masa', 'să cresc în masă', 'bulk'], a:'Pentru masă ai nevoie de un mic surplus caloric (aproximativ +250–500 kcal sau +10%), proteine suficiente, antrenament progresiv și somn. Aplicația ți-l calculează când alegi obiectivul „Masă musculară".' },
     { k:['deficit', 'slabesc', 'slăbesc', 'grasime', 'grăsime', 'slabit', 'slăbit'], a:'Pentru slăbit: deficit de 300–500 kcal, proteină mare (2 g/kg), continui antrenamentul cu greutăți și te ții de ritm de 0,5–1% din greutate pe săptămână.' },
-    { k:['febra musculara', 'febră musculară', 'doms', 'agujeala', 'agujeală'], a:'Febra musculară apare la 24–72 de ore și e normală după un antrenament nou. Mișcarea ușoară, somnul și proteinele ajută. Durerea ascuțită într-o articulație nu e febră musculară: oprește-te.' },
-    { k:['accidentare', 'durere', 'doare', 'intins', 'întins'], a:'La o durere ascuțită sau care persistă, oprește mișcarea care o provoacă, nu forța și întreabă un medic sau un kinetoterapeut. Revino treptat, cu greutăți mici.' },
-    { k:['incalzire', 'încălzire'], a:'Încălzirea durează 5–8 minute (mers rapid, mobilitate) și o serie ușoară la primul exercițiu. Găsești rutine ghidate în fila Sală → Recuperare.' },
-    { k:['stretching', 'intindere', 'întindere'], a:'Stretchingul static (30–40 s pe poziție) se face după antrenament. Înainte de antrenament e mai bună încălzirea dinamică. Rutina ghidată e în fila Recuperare.' },
+    { k:['febra musculara', 'doms', 'ma dor muschii', 'dor muschii'], a:'Febra musculară apare la 24–72 de ore și e normală după un antrenament nou. Mișcarea ușoară, somnul și proteinele ajută. Durerea ascuțită într-o articulație nu e febră musculară: oprește-te.' },
+    { k:['incalzire', 'încălzire'], a:'Încălzirea durează 5–8 minute (mers rapid, mobilitate) și o serie ușoară la primul exercițiu. Găsești rutine ghidate în Sport → Recuperare.' },
+    { k:['stretching', 'intindere', 'întindere'], a:'Stretchingul static (30–40 s pe poziție) se face după antrenament. Înainte de antrenament e mai bună încălzirea dinamică. Rutina ghidată e în Sport → Recuperare.' },
     { k:['tehnica', 'tehnică', 'forma corecta', 'forma corectă'], a:'Coboară controlat (aproximativ 2 secunde), fără avânt, cu abdomenul strâns. Dacă nu poți păstra forma, scade greutatea. Fiecare exercițiu din aplicație are desen și pași.' },
     { k:['mic dejun', 'pranz', 'prânz', 'cina', 'cină', 'mese', 'ce mananc', 'ce mănânc'], a:'La fiecare masă pune o sursă de proteine (25–40 g), carbohidrați (orez, cartofi, ovăz, pâine) și legume. Meniurile pe zile și variantele sunt în fila Mâncare.' },
     { k:['carbohidrat'], a:'Carbohidrații dau energie pentru antrenament. Mulți se descurcă bine cu 3–6 g pe kg corp pe zi. Alege orez, cartofi, ovăz, fructe. Ținta ta e în fila Mâncare.' },
     { k:['grasimi', 'grăsimi'], a:'Grăsimile sunt necesare pentru hormoni: cel puțin 0,8 g pe kg corp pe zi (ulei de măsline, nuci, pește, ouă).' },
     { k:['alcool'], a:'Alcoolul îți strică somnul și scade recuperarea și sinteza proteică. Dacă bei, fă-o rar și cu moderație.' },
-    { k:['incepator', 'începător', 'cum incep', 'cum încep'], a:'Începe cu 2–3 zile pe săptămână tot corpul, la nivel Ușor, cu greutăți mici și tehnică bună. Fă testul „Alege-mi tu de unde încep" din fila Sală și crești de nivel când ești pregătit.' },
-    { k:['zi de odihna', 'zi de odihnă', 'recuperare', 'odihna', 'odihnă'], a:'Ia 1–2 zile de odihnă pe săptămână, cu plimbare și stretching. Mușchiul crește în pauze, nu în sală. Vezi „Cât de odihnit ești azi" în fila Recuperare.' }
+    { k:['incepator', 'incepatoare', 'cum incep', 'de unde incep', 'de unde pornesc', 'prima data la sala'], a:'Începe cu 2–3 zile pe săptămână tot corpul, la nivel Ușor, cu greutăți mici și tehnică bună. Fă testul „Alege-mi tu de unde încep" din fila Sport și urci de nivel pe măsură ce prinzi putere.' },
+    { k:['zi de odihna', 'zi de odihnă', 'recuperare', 'odihna', 'odihnă'], a:'Ia 1–2 zile de odihnă pe săptămână, cu plimbare și stretching. Mușchiul crește în pauze, nu în sală. Vezi „Câtă energie ai azi" în Sport → Recuperare.' }
   ];
   function norm(t){ return String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function answer(q){
-    var n = norm(q), best = null, bs = 0;
-    KB.forEach(function(e, idx){ var sc = 0; e.k.forEach(function(k){ if(n.indexOf(norm(k)) >= 0) sc += norm(k).length; }); if(idx === 0 && sc) sc += 100; if(sc > bs){ bs = sc; best = e; } });
+    // cuvintele-cheie se caută de la început de cuvânt (ca „apa” să nu se potrivească în „aparat”); un spațiu la final = cuvânt întreg
+    var n = ' ' + norm(q).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ', best = null, bs = 0;
+    KB.forEach(function(e, idx){ var sc = 0, seen = {}; e.k.forEach(function(k){ var kk = norm(k).replace(/[^a-z0-9 ]+/g, ' '); if(seen[kk]) return; seen[kk] = 1; if(n.indexOf(' ' + kk) >= 0) sc += kk.length; }); if(sc && idx === 0) sc += 200; else if(sc && e.m) sc += 100; if(sc > bs){ bs = sc; best = e; } });
     return best ? best.a : 'Nu am un răspuns exact pentru asta în baza mea. Încearcă o întrebare despre creatină, proteine, somn, serii și repetări, platou, deficit sau surplus, încălzire, stretching sau suplimente. Pentru probleme de sănătate, întreabă un medic.';
   }
   var CHIPS = ['Cât somn am nevoie?', 'Cum iau creatina?', 'De ce nu mai cresc?', 'Câte proteine pe zi?', 'Cât să mă odihnesc între serii?', 'Ce fac la febra musculară?'];

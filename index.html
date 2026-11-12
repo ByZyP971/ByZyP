@@ -8,27 +8,34 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="By ZyP">
 <meta name="theme-color" content="#050505">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://bskujbfaynbeqjonqydb.supabase.co wss://bskujbfaynbeqjonqydb.supabase.co wss://stream.binance.com:9443 https://api.binance.com https://data-api.binance.vision https://api.coingecko.com https://min-api.cryptocompare.com https://api.rss2json.com https://eth.blockscout.com https://ethereum-rpc.publicnode.com https://eth.llamarpc.com https://cloudflare-eth.com https://cointelegraph.com; frame-src https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script src="boot.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
-<title>By ZyP</title>
-<meta name="description" content="By ZyP: planul tău zilnic pentru sală, suplimente, mâncare și disciplină, cu notificări pe telefon.">
+<title>By ZyP · Planul tău de sală, mâncare și suplimente</title>
+<meta name="description" content="Aplicație gratuită în română pentru începători la sală: plan de antrenament pe nivelul tău, mâncare explicată simplu, suplimente la ora ta și clasament cu prietenii.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="By ZyP · Sală, suplimente, mâncare, disciplină">
-<meta property="og:description" content="Planul tău zilnic, simplu și cu notificări pe telefon.">
+<meta property="og:site_name" content="By ZyP">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="By ZyP · Planul tău de sală, mâncare și suplimente">
+<meta property="og:description" content="Plan de antrenament pe nivelul tău, mâncare explicată simplu, suplimente la ora ta și clasament cu prietenii. Gratuit, în română.">
 <meta property="og:image" content="https://byzyp971.github.io/ByZyP/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="By ZyP, aplicația ta de sală">
 <meta property="og:url" content="https://byzyp971.github.io/ByZyP/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="By ZyP">
-<meta name="twitter:description" content="Planul tău zilnic pentru sală, suplimente și mâncare.">
+<meta name="twitter:title" content="By ZyP · Planul tău de sală, mâncare și suplimente">
+<meta name="twitter:description" content="Plan de antrenament pe nivelul tău, mâncare explicată simplu, suplimente la ora ta și clasament cu prietenii.">
 <meta name="twitter:image" content="https://byzyp971.github.io/ByZyP/og.png">
 
 <link rel="stylesheet" href="leaflet.css?v=1">
-<link rel="stylesheet" href="app.css?v=24">
+<link rel="stylesheet" href="app.css?v=26">
 </head>
 <body>
 <div id="authGate" class="auth-gate" style="display:none;">
@@ -47,7 +54,7 @@
   </div>
 </div>
 <div class="lightbox" id="lightbox"><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div></div>
-<div class="rest-timer" id="restTimer"><b id="rtTime">1:30</b><span id="rtLabel">pauză</span><button id="rtAdd">+15s</button><button id="rtStop">✕</button></div>
+<div class="rest-timer" id="restTimer"><b id="rtTime">1:30</b><span id="rtLabel">pauză</span><button id="rtAdd">+15s</button><button id="rtStop" aria-label="Oprește pauza">✕</button></div>
 <div id="splash" aria-hidden="true">
   <div class="sp2-glow"></div>
   <div class="sp2-emblem">
@@ -68,11 +75,11 @@
     <div class="brand">
       <div class="brand-mark"></div>
       <div style="min-width:0;overflow:hidden;">
-        <h1 id="headerName" style="font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Reset</h1>
-        <div class="brand-sub" id="headerSub">viață nouă, zi de zi</div>
+        <h1 id="headerName" style="font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">By ZyP</h1>
+        <div class="brand-sub" id="headerSub">planul tău, zi de zi</div>
       </div>
     </div>
-    <button class="theme-btn" id="themeBtn" aria-label="Temă">◐</button>
+    <button class="theme-btn" id="themeBtn" aria-label="Schimbă tema: luminoasă sau întunecată">◐</button>
   </header>
 
   <main>
@@ -114,7 +121,7 @@
       <div class="sec-h">Planul zilei</div>
       <div class="plan-tiles" id="planTiles"></div>
 
-      <div class="sec-h">💊 Suplimente</div>
+      <div class="sec-h" id="suppTitle">💊 Suplimente</div>
       <div class="card" id="suppCard"></div>
 
       <div class="sec-h">Cifrele tale</div>
@@ -162,7 +169,7 @@
           <div id="photoThumbWrap"><div class="photo-placeholder">📷</div></div>
           <div class="photo-label">Poză de progres pentru azi</div>
           <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;">
-          <button class="theme-btn" id="photoBtn" style="width:auto;padding:0 12px;">+</button>
+          <button class="theme-btn" id="photoBtn" aria-label="Adaugă o poză" style="width:auto;padding:0 12px;">+</button>
         </div>
         <div class="note-wrap"><textarea id="todayNote" placeholder="✍️ Cum a fost ziua? Ce a mers bine, ce a fost greu…" rows="2"></textarea></div>
       </div>
@@ -181,10 +188,10 @@
     <!-- SPORT -->
     <section class="view" id="view-sport">
       <div class="seg" id="sportSeg">
-        <button class="seg-btn active" data-sseg="plan">📅 Program</button>
-        <button class="seg-btn" data-sseg="gym">🏋️ Sală</button>
-        <button class="seg-btn" data-sseg="rec">😴 Recuperare</button>
-        <button class="seg-btn" data-sseg="coach">🧠 Antrenor</button>
+        <button class="seg-btn active" data-sseg="plan"><span class="sg-i" aria-hidden="true">📅</span>Program</button>
+        <button class="seg-btn" data-sseg="gym"><span class="sg-i" aria-hidden="true">🏋️</span>Sală</button>
+        <button class="seg-btn" data-sseg="rec"><span class="sg-i" aria-hidden="true">😴</span>Recuperare</button>
+        <button class="seg-btn" data-sseg="coach"><span class="sg-i" aria-hidden="true">🧠</span>Antrenor</button>
       </div>
 
       <div data-sseg-card="rec"><div id="recRoot"></div></div>
@@ -197,7 +204,7 @@
           <div class="day-pills" id="phasePills">
             <button class="day-pill" data-phase="5">2 zile · Tot corpul</button>
             <button class="day-pill" data-phase="3">3 zile · Tot corpul</button>
-            <button class="day-pill" data-phase="4">4 zile · Upper/Lower</button>
+            <button class="day-pill" data-phase="4">4 zile · Sus/Jos</button>
             <button class="day-pill" data-phase="1">5 zile · Lu–Vi</button>
             <button class="day-pill" data-phase="2">6 zile · Lu–Sâ</button>
             <button class="day-pill" data-phase="6">🏠 Acasă · gantere</button>
@@ -221,10 +228,10 @@
         </div>
         <div class="card">
           <div class="card-title">Regulile progresului</div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Se schimbă în fiecare săptămână</b> — exercițiile și repetările variază (volum, forță, pump, mix), ca mușchii să nu se obișnuiască și să crească în continuare</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Dublă progresie</b> — când faci toate seriile la capătul de sus al repetărilor, crești greutatea cu 2,5–5 kg data viitoare</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>1–2 repetări în rezervă</b> — oprește seria când mai puteai face 1–2</div></div>
-          <div class="tl-row"><span class="tl-dot"></span><div><b>Pauze</b> — 2–3 min la exercițiile mari, 1–2 min la izolări</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Ce rămâne și ce se schimbă</b> — primele două exerciții din fiecare zi rămân aceleași 6 săptămâni, ca să vezi cum crești la ele. Celelalte se schimbă în fiecare săptămână, ca să nu te plictisești</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Când pui mai multă greutate</b> — când reușești la toate seriile numărul cel mai mare de repetări din plan, data viitoare pune cu 2,5–5 kg mai mult</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>1–2 repetări în rezervă</b> — oprește seria când simți că ai mai putea face doar 1–2 repetări</div></div>
+          <div class="tl-row"><span class="tl-dot"></span><div><b>Pauze</b> — 2–3 minute la exercițiile mari (mai mulți mușchi odată), 1–2 minute la cele mici (un singur mușchi)</div></div>
           <div class="tl-row"><span class="tl-dot"></span><div><b>Somn 7–9 ore și proteine</b> — acolo se construiește mușchiul</div></div>
         </div>
       </div>
@@ -237,11 +244,11 @@
 
     <section class="view" id="view-food">
       <div class="seg" id="foodSeg">
-        <button class="seg-btn active" data-fseg="calc">🍽️ Azi</button>
-        <button class="seg-btn" data-fseg="plan">📖 Reguli</button>
-        <button class="seg-btn" data-fseg="menu">📅 Săptămâna</button>
-        <button class="seg-btn" data-fseg="shop">🛒 Coș</button>
-        <button class="seg-btn" data-fseg="sweet">🍫 Desert</button>
+        <button class="seg-btn active" data-fseg="calc"><span class="sg-i" aria-hidden="true">🍽️</span>Azi</button>
+        <button class="seg-btn" data-fseg="plan"><span class="sg-i" aria-hidden="true">📖</span>Reguli</button>
+        <button class="seg-btn" data-fseg="menu"><span class="sg-i" aria-hidden="true">📅</span>Săptămâna</button>
+        <button class="seg-btn" data-fseg="shop"><span class="sg-i" aria-hidden="true">🛒</span>Coș</button>
+        <button class="seg-btn" data-fseg="sweet"><span class="sg-i" aria-hidden="true">🍫</span>Desert</button>
       </div>
 
       <div class="card nu-card" data-fseg-card="calc" id="nuCard"><div id="nuTop"></div><div id="nuMain"></div></div>
@@ -266,12 +273,12 @@
           <div class="plate-circle">
             <div class="pl-veg">½<br><small>legume</small></div>
             <div class="pl-pro">¼<br><small>proteină</small></div>
-            <div class="pl-carb">¼<br><small>carbo</small></div>
+            <div class="pl-carb">¼<br><small>garnitură</small></div>
           </div>
           <ul class="food-list" style="flex:1;">
             <li><b>Jumătate</b> legume sau salată</li>
             <li><b>Un sfert</b> proteină: pui, pește, ouă, lactate, năut</li>
-            <li><b>Un sfert</b> carbohidrați integrali: orez, ovăz, cartof, paste integrale</li>
+            <li><b>Un sfert</b> garnitură (carbohidrați): orez, ovăz, cartofi, paste integrale</li>
             <li>Plus puțin <b>ulei de măsline</b> sau nuci</li>
           </ul>
         </div>
@@ -290,7 +297,7 @@
         <div class="card-title">Mai mult / mai puțin</div>
         <div class="mm2">
           <div><div class="mm2-h pos">Mai mult</div><ul class="food-list"><li>Legume, fructe întregi</li><li>Pește de 2× pe săptămână</li><li>Leguminoase (năut, fasole)</li><li>Cereale integrale</li><li>Ulei de măsline, nuci</li></ul></div>
-          <div><div class="mm2-h neg">Mai puțin</div><ul class="food-list"><li>Zahăr și dulciuri</li><li>Sucuri, chiar „naturale”</li><li>Carne roșie, mezeluri</li><li>Prăjeli, fast-food</li><li>Produse ultra-procesate</li></ul></div>
+          <div><div class="mm2-h neg">Mai puțin</div><ul class="food-list"><li>Zahăr și dulciuri</li><li>Sucuri, chiar „naturale”</li><li>Carne roșie, mezeluri</li><li>Prăjeli, fast-food</li><li>Mâncare gata făcută, din pungă</li></ul></div>
         </div>
       </div>
 
@@ -299,7 +306,7 @@
         <div class="hint" style="margin:0 0 10px;">💶 Țintă de buget: sub 10 € pe zi. Estimat 6–8 € pe zi (aprox. 45–55 € pe săptămână), cu prețuri medii din Spania. Gătești doar la aragaz.</div>
         <div class="day-pills" id="dayPills"></div>
         <div id="menuDays"><div class="mm-day" data-day="Luni"><div class="mm-dayname">Luni</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă din 3 ouă cu spanac și roșii + pâine integrală</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Piept de pui la tigaie + bulgur sau orez + salată cu ulei de măsline</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt natural + o banană</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pulpe de pui la tigaie + legume sote</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Marți"><div class="mm-dayname">Marți</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Iaurt natural + ovăz + banană</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Paste integrale cu ton, roșii și măsline</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Brânză de vaci + castravete</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pulpe de pui înăbușite la oală + cartofi fierți + salată</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Miercuri"><div class="mm-dayname">Miercuri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">3 ouă fierte + feta + roșii + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Pui la tigaie + orez + broccoli</span><span class="mm-p">~40g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Hummus + morcovi + 2 ouă fierte</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Tocăniță de năut cu pui și legume</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Joi"><div class="mm-dayname">Joi</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Clătite din ovăz, banană și ouă + iaurt</span><span class="mm-p">~25g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Orez + 3 ouă + legume sotate + feta</span><span class="mm-p">~30g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt natural + ovăz</span><span class="mm-p">~20g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Ton din conservă + orez + salată mare</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Vineri"><div class="mm-dayname">Vineri</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Brânză de vaci + roșii + castraveți + pâine integrală</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Chiftele de pui la tigaie + piure + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Kefir + o banană</span><span class="mm-p">~15g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Salată grecească cu pui</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Sâmbătă"><div class="mm-dayname">Sâmbătă</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Omletă cu ciuperci și brânză</span><span class="mm-p">~28g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Macrou sau sardine din conservă + cartofi fierți + salată</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Iaurt + fructe</span><span class="mm-p">~18g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Pui la wok cu legume + orez</span><span class="mm-p">~35g</span></div></div><div class="mm-day" data-day="Duminică"><div class="mm-dayname">Duminică</div><div class="mm-row"><span class="mm-slot">Dimineața</span><span class="mm-food">Ochiuri + roșii + pâine integrală</span><span class="mm-p">~22g</span></div><div class="mm-row"><span class="mm-slot">Prânz</span><span class="mm-food">Masă liberă: o proteină + multe legume</span><span class="mm-p">~35g</span></div><div class="mm-row"><span class="mm-slot">Gustare</span><span class="mm-food">Fructe + iaurt</span><span class="mm-p">~8g</span></div><div class="mm-row"><span class="mm-slot">Seara</span><span class="mm-food">Supă de legume + pui sau ou + salată</span><span class="mm-p">~25g</span></div></div></div>
-        <div class="hint">Gramele sunt aproximative (proteine pe masă). Poți schimba zilele între ele cum vrei — contează proteina + legumele la fiecare masă.</div>
+        <div class="hint">Gramele sunt aproximative (proteine pe masă). Poți schimba zilele între ele cum vrei. Contează să ai proteină și legume la fiecare masă.</div>
       </div>
 
       <div class="card" data-fseg-card="menu">
@@ -320,7 +327,7 @@
 
       <div class="card" data-fseg-card="sweet">
         <div class="card-title">Deserturi fără zahăr · 18 rețete</div>
-        <div class="dessert-card"><div class="dessert-name">Clătite proteice cu banană</div><div class="dessert-ing">1 banană zdrobită + 2 ouă + o mână de ovăz — amesteci și le faci la tigaie antiaderentă.</div></div><div class="dessert-card"><div class="dessert-name">Iaurt cu fructe și nuci</div><div class="dessert-ing">Iaurt natural + banană + ovăz + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Bile din curmale și cacao</div><div class="dessert-ing">Banană pasată + ovăz + cacao pudră — blender, bilute, 30 min la frigider.</div></div><div class="dessert-card"><div class="dessert-name">Măr fiert cu scorțișoară</div><div class="dessert-ing">Măr tăiat cuburi + scorțișoară + o lingură de apă — 10 min la foc mic, acoperit, apoi ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brânză dulce cu cacao</div><div class="dessert-ing">Brânză de vaci + cacao + scorțișoară + banană zdrobită pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Chia pudding</div><div class="dessert-ing">Semințe de chia + lapte + scorțișoară, peste noapte la frigider, dimineața fructe deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Banană înghețată cu cacao</div><div class="dessert-ing">Felii de banană congelate, date prin cacao pudră.</div></div><div class="dessert-card"><div class="dessert-name">„Înghețată” de banană</div><div class="dessert-ing">2 banane congelate date la blender până devin cremoase. Poți adăuga cacao sau unt de arahide 100%.</div></div><div class="dessert-card"><div class="dessert-name">Pară fiartă cu nuci</div><div class="dessert-ing">Pară tăiată în jumătăți, puțină apă și scorțișoară — 12 min la foc mic, acoperit, ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brioșe din ovăz și banană</div><div class="dessert-ing">2 banane + 2 ouă + 150 g ovăz + scorțișoară + un pumn de afine. În forme de brioșe, 20 min la 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Prăjitură de ovăz cu mere</div><div class="dessert-ing">Ovăz + 2 ouă + mere rase + scorțișoară + nuci. În tavă, 25 min la 180°C. Tai pătrățele.</div></div><div class="dessert-card"><div class="dessert-name">Batoane din ovăz și curmale</div><div class="dessert-ing">Curmale pasate + ovăz + ovăz — presezi în tavă, frigider 1 oră, tai batoane.</div></div><div class="dessert-card"><div class="dessert-name">Ciocolată caldă fără zahăr</div><div class="dessert-ing">Lapte cald + cacao pudră + scorțișoară + o curmală mixată pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Căpșuni cu iaurt și cacao</div><div class="dessert-ing">Căpșuni tăiate + iaurt natural + un praf de cacao și banană.</div></div><div class="dessert-card"><div class="dessert-name">Mousse de cacao cu banană</div><div class="dessert-ing">2 banane coapte + 2 linguri cacao — la blender, frigider 30 min. Cremos ca o mousse.</div></div><div class="dessert-card"><div class="dessert-name">Pepene / fructe de sezon</div><div class="dessert-ing">Cel mai simplu desert: un bol mare de fructe proaspete, reci, cu câteva frunze de mentă.</div></div><div class="dessert-card"><div class="dessert-name">Tartine dulci de orez expandat</div><div class="dessert-ing">Rondele de orez expandat + unt de arahide 100% + felii subțiri de banană + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Budincă de orez cu lapte</div><div class="dessert-ing">Orez fiert în lapte cu scorțișoară și coajă de lămâie, îndulcit doar cu stafide sau banană.</div></div>
+        <div class="dessert-card"><div class="dessert-name">Clătite proteice cu banană</div><div class="dessert-ing">1 banană zdrobită + 2 ouă + o mână de ovăz — amesteci și le faci la tigaie antiaderentă.</div></div><div class="dessert-card"><div class="dessert-name">Iaurt cu banană și ovăz</div><div class="dessert-ing">Iaurt natural + banană + ovăz + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Biluțe din banană, ovăz și cacao</div><div class="dessert-ing">Banană pasată + ovăz + cacao pudră — amesteci la blender, faci biluțe și le ții 30 min la frigider.</div></div><div class="dessert-card"><div class="dessert-name">Măr fiert cu scorțișoară</div><div class="dessert-ing">Măr tăiat cuburi + scorțișoară + o lingură de apă — 10 min la foc mic, acoperit, apoi ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brânză dulce cu cacao</div><div class="dessert-ing">Brânză de vaci + cacao + scorțișoară + banană zdrobită pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Chia pudding</div><div class="dessert-ing">Semințe de chia + lapte + scorțișoară, peste noapte la frigider, dimineața fructe deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Banană înghețată cu cacao</div><div class="dessert-ing">Felii de banană congelate, date prin cacao pudră.</div></div><div class="dessert-card"><div class="dessert-name">„Înghețată” de banană</div><div class="dessert-ing">2 banane congelate date la blender până devin cremoase. Poți adăuga cacao sau unt de arahide 100%.</div></div><div class="dessert-card"><div class="dessert-name">Pară fiartă cu scorțișoară</div><div class="dessert-ing">Pară tăiată în jumătăți, puțină apă și scorțișoară — 12 min la foc mic, acoperit, ovăz deasupra.</div></div><div class="dessert-card"><div class="dessert-name">Brioșe din ovăz și banană</div><div class="dessert-ing">2 banane + 2 ouă + 150 g ovăz + scorțișoară + un pumn de afine. În forme de brioșe, 20 min la 180°C.</div></div><div class="dessert-card"><div class="dessert-name">Prăjitură de ovăz cu mere</div><div class="dessert-ing">Ovăz + 2 ouă + mere rase + scorțișoară + nuci. În tavă, 25 min la 180°C. Tai pătrățele.</div></div><div class="dessert-card"><div class="dessert-name">Batoane din ovăz și curmale</div><div class="dessert-ing">Curmale pasate + ovăz — presezi în tavă, ții 1 oră la frigider, apoi tai batoane.</div></div><div class="dessert-card"><div class="dessert-name">Ciocolată caldă fără zahăr</div><div class="dessert-ing">Lapte cald + cacao pudră + scorțișoară + o curmală mixată pentru dulceață.</div></div><div class="dessert-card"><div class="dessert-name">Căpșuni cu iaurt și cacao</div><div class="dessert-ing">Căpșuni tăiate + iaurt natural + un praf de cacao și banană.</div></div><div class="dessert-card"><div class="dessert-name">Mousse de cacao cu banană</div><div class="dessert-ing">2 banane coapte + 2 linguri cacao — la blender, frigider 30 min. Cremos ca o mousse.</div></div><div class="dessert-card"><div class="dessert-name">Pepene / fructe de sezon</div><div class="dessert-ing">Cel mai simplu desert: un bol mare de fructe proaspete, reci, cu câteva frunze de mentă.</div></div><div class="dessert-card"><div class="dessert-name">Tartine dulci de orez expandat</div><div class="dessert-ing">Rondele de orez expandat + unt de arahide 100% + felii subțiri de banană + scorțișoară.</div></div><div class="dessert-card"><div class="dessert-name">Budincă de orez cu lapte</div><div class="dessert-ing">Orez fiert în lapte cu scorțișoară și coajă de lămâie, îndulcit doar cu stafide sau banană.</div></div>
         <div class="hint">Dulceața vine doar din fructe — fără zahăr și fără miere.</div>
       </div>
     </section>
@@ -328,9 +335,9 @@
     <!-- MONEY -->
     <section class="view" id="view-money">
       <div class="seg" id="moneySeg">
-        <button class="seg-btn active" data-seg="worth">💼 Avere</button>
-        <button class="seg-btn" data-seg="trading">📊 Trading</button>
-        <button class="seg-btn" data-seg="invest">🪙 Investiții</button>
+        <button class="seg-btn active" data-seg="worth"><span class="sg-i" aria-hidden="true">💼</span>Avere</button>
+        <button class="seg-btn" data-seg="trading"><span class="sg-i" aria-hidden="true">📊</span>Trading</button>
+        <button class="seg-btn" data-seg="invest"><span class="sg-i" aria-hidden="true">🪙</span>Investiții</button>
       </div>
       <div class="card wh-card" data-seg-card="worth">
         <div class="wh-glow"></div>
@@ -347,7 +354,7 @@
       </div>
 
       <div class="card" data-seg-card="worth" id="walletCard">
-        <div class="card-title">🦊 Portofelul tău MetaMask</div>
+        <div class="card-title">🦊 Portofelul tău Ethereum</div>
         <div id="walletBody"></div>
       </div>
 
@@ -462,7 +469,7 @@
         <div class="field-row"><label>Rezultat ($, + sau -)</label><input type="number" id="tradeResult" inputmode="decimal" placeholder="0"></div>
         <button class="primary-btn" id="tradeAddBtn">Adaugă tranzacție</button>
         <button class="ghost-btn" id="tradeResetBtn">Resetează jurnalul de trading</button>
-        <div class="hint">Adaugi o tranzacție când închizi o poziție — pui suma investită și rezultatul (câștig sau pierdere).</div>
+        <div class="hint">Adaugi o tranzacție după ce ai închis-o: scrii suma investită și rezultatul (câștig sau pierdere).</div>
       </div>
 
       <div class="card" data-seg-card="trading">
@@ -490,7 +497,7 @@
         <button class="primary-btn" id="investSaveBtn">Salvează luna curentă</button>
         <div class="invest-bars" id="investBars"></div>
         <div style="margin-top:12px;"><button class="past-toggle hx-btn" data-hx="invest" data-label="istoricul investițiilor">Arată istoricul investițiilor ▾</button><div class="hx-body" data-hxb="invest" style="display:none;margin-top:10px;"><div id="investHistory"></div></div></div>
-        <div class="hint">Revino în chat pentru o analiză a pieței înainte să aloci suma din fiecare lună.</div>
+        <div class="hint">Notează aici, o dată pe lună, cât ai pus deoparte. Nu e o recomandare de investiții.</div>
       </div>
     </section>
 
@@ -539,9 +546,9 @@
           <div class="hint" style="margin-top:0;">Se salvează automat. Atinge poza de sus ca s-o schimbi.</div>
           <div class="prof-tools">
             <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
-            <button class="ghost-btn" id="importBtn">📥 Importă backup</button>
-            <button class="ghost-btn" id="exportBtn">📤 Descarcă backup</button>
-            <button class="ghost-btn" id="logoutBtn" style="color:var(--danger);">Deconectare</button>
+            <button class="ghost-btn" id="importBtn">📥 Încarcă o copie salvată (backup)</button>
+            <button class="ghost-btn" id="exportBtn">📤 Descarcă o copie a datelor (backup)</button>
+            <button class="ghost-btn" id="logoutBtn" style="color:var(--danger);">Ieși din cont</button>
             <button class="ghost-btn" id="delAccBtn" style="color:var(--danger);border-color:color-mix(in srgb, var(--danger) 40%, transparent);">❌ Șterge contul definitiv</button>
             <button class="ghost-btn" id="resetAllBtn" style="color:var(--danger);border-color:color-mix(in srgb, var(--danger) 40%, transparent);">🗑️ Resetează tot (de la zero)</button>
             <div class="hint" id="toolsMsg" style="margin-top:0;"></div>
@@ -604,9 +611,9 @@
       </div>
           <div class="card" id="legalCard">
         <div class="card-title">ℹ️ Important</div>
-        <details style="margin:0 0 10px;"><summary style="cursor:pointer;font-weight:700;color:var(--gold);">🔒 Confidențialitate (pe scurt)</summary>
-        <div class="hint" style="margin:8px 0 0;">Salvăm doar emailul tău și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Fiecare cont vede doar datele lui. Dacă intri în clasament sau în chatul global, numele de utilizator ales, nivelul, punctele și mesajele tale se văd public pentru toți utilizatorii. Nu e nevoie de numele real. Le poți șterge oricând ștergând contul. Nu vindem și nu dăm datele nimănui. <b>Poza de profil și avatarul</b> se văd public în clasament și chat. <b>Prieteni și locație:</b> locația ta se vede doar dacă o pornești tu, doar de prietenii cărora alegi să le-o arăți, e aproximativă (cam 100 m), se trimite doar cât aplicația e deschisă și dispare după 30 de minute; o oprești oricând din butonul 🙈 de pe hartă. Poți bloca pe oricine. <b>Servicii folosite:</b> datele stau la Supabase (server în UE), iar harta e desenată de OpenStreetMap și CARTO, care primesc doar zona de hartă afișată, nu cine ești. Aplicația e pentru persoane de <b>cel puțin 16 ani</b>. Poți descărca tot din „Descarcă backup” și poți șterge contul definitiv din Profil, oricând. Notificările folosesc un cod al telefonului, salvat în contul tău, pe care îl poți opri din setările telefonului.</div></details>
-        <div class="hint" style="margin:0;">By ZyP e o aplicație de organizare și motivație. Nu oferă sfaturi medicale, nutriționale sau financiare. Programele de antrenament, mesele și suplimentele sunt orientative: dacă ai probleme de sănătate, iei medicamente sau ești însărcinată, vorbește întâi cu medicul. Informațiile despre bani și criptomonede nu sunt recomandări de investiții, iar valorile pot scădea. Datele tale se salvează în contul tău și pe telefonul tău.</div>
+        <details style="margin:0 0 10px;"><summary class="legal-sum">🔒 Confidențialitate (pe scurt)</summary>
+        <div class="hint" style="margin:8px 0 0;"><b>Contul tău:</b> salvăm emailul cu care ți-ai făcut cont și datele pe care le scrii în aplicație (obiceiuri, greutate, antrenamente, poze, setări de notificări). Nu cerem numele real. Datele tale private le vezi doar tu. <b>Ce se vede public:</b> dacă intri în clasament sau în chat, numele de utilizator ales, poza de profil sau avatarul, descrierea, nivelul, punctele și mesajele tale se văd de toți cei care folosesc aplicația. <b>Prieteni și locație:</b> locația ta se vede doar dacă o pornești tu și doar de prietenii cărora alegi să le-o arăți. E aproximativă (cam 100 m), se trimite doar cât aplicația e deschisă și dispare după 30 de minute. O oprești oricând din butonul 🙈 de pe hartă. <b>Blocare:</b> poți bloca pe oricine; persoana blocată nu te mai poate adăuga și nu îți mai vede profilul. <b>Servicii folosite:</b> datele din cont stau la Supabase, serviciul care ține baza de date. Harta e desenată de OpenStreetMap și CARTO, care primesc doar zona de hartă afișată, nu cine ești. Dacă folosești partea de Bani, prețurile și știrile vin de la servicii publice de internet, iar adresa publică de portofel, dacă o scrii, e trimisă unui astfel de serviciu ca să citească soldul. Clipurile cu exerciții se deschid de pe un site de video extern. <b>Notificări:</b> folosesc un cod al telefonului, salvat în contul tău; le oprești oricând din setările telefonului. <b>Ștergerea datelor:</b> poți descărca tot din „Descarcă o copie a datelor” și poți șterge contul definitiv din Profil → „Editează profilul” → „Șterge contul definitiv”, oricând. Nu vindem datele tale. <b>Vârstă:</b> aplicația e pentru persoane de cel puțin 16 ani.</div></details>
+        <div class="hint" style="margin:0;">By ZyP e o aplicație de organizare și motivație. Nu oferă sfaturi medicale, nutriționale sau financiare. Programele de antrenament, mesele și suplimentele sunt orientative: dacă ai probleme de sănătate, iei medicamente sau ești însărcinată, vorbește întâi cu medicul. <span class="mod-money-txt">Informațiile despre bani și criptomonede nu sunt recomandări de investiții, iar valorile pot scădea.</span> Datele tale se salvează în contul tău și pe telefonul tău.</div>
       </div>
           <div class="card" id="prefCard">
         <div class="card-title">⚙️ Personalizează aplicația</div>
@@ -633,22 +640,22 @@
 </div>
 
 
-<div id="syncBanner" style="display:none;position:fixed;left:0;right:0;bottom:64px;z-index:30;text-align:center;">
-  <span style="background:var(--gold);color:#1A1200;font-size:11.5px;padding:6px 14px;border-radius:20px;display:inline-block;">Mod offline — datele se salvează doar pe acest telefon</span>
+<div id="syncBanner" style="display:none;position:fixed;left:12px;right:74px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:30;text-align:center;pointer-events:none;">
+  <span style="background:var(--gold);color:var(--accent-ink);font-size:12px;font-weight:700;line-height:1.3;padding:6px 14px;border-radius:16px;display:inline-block;">Fără legătură la cont: datele se salvează doar pe acest telefon</span>
 </div>
 
 <script src="core.js?v=2"></script>
-<script src="cloud.js?v=3"></script>
-<script src="main.js?v=17"></script>
-<script src="notify.js?v=5"></script>
-<script src="auth-ui.js?v=2"></script>
-<script src="onboarding.js?v=7"></script>
-<script src="admin.js?v=1"></script>
+<script src="cloud.js?v=4"></script>
+<script src="main.js?v=20"></script>
+<script src="notify.js?v=6"></script>
+<script src="auth-ui.js?v=3"></script>
+<script src="onboarding.js?v=8"></script>
+<script src="admin.js?v=2"></script>
 <script src="leaflet.js?v=1"></script>
-<script src="friends.js?v=6"></script>
-<script src="avatar.js?v=9"></script>
-<script src="community.js?v=11"></script>
-<script src="music.js?v=4"></script>
-  <script src="fit.js?v=1"></script>
+<script src="friends.js?v=8"></script>
+<script src="avatar.js?v=11"></script>
+<script src="community.js?v=14"></script>
+<script src="music.js?v=5"></script>
+  <script src="fit.js?v=2"></script>
 </body>
 </html>

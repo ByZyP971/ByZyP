@@ -4,7 +4,7 @@
   var esc = window.zEsc || function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var root = document.getElementById('topRoot'); if(!root) return;
   var TIERS = [[1,'Începător','#9aa3a0'],[4,'Bronz','#cd7f32'],[7,'Argint','#c9d3dc'],[11,'Aur','#ffd24a'],[16,'Platină','#5ee0e8'],[23,'Diamant','#6aa8ff'],[35,'Legendă','#ff5d8f']];
-  function tier(lv){ var t = TIERS[0]; for(var i=0;i<TIERS.length;i++) if(lv >= TIERS[i][0]) t = TIERS[i]; return t; }
+  function tier(lv){ lv = +lv || 1; var t = TIERS[0]; for(var i=0;i<TIERS.length;i++) if(lv >= TIERS[i][0]) t = TIERS[i]; return t; }
   function lvOf(score){ return Math.floor(Math.sqrt(Math.max(score,0)/25)) + 1; }
   function emblem(lv, px){
     var c = tier(lv)[2];
@@ -14,11 +14,25 @@
       '<text x="24" y="34" text-anchor="middle" font-size="'+(lv>99?14:18)+'" font-weight="800" fill="'+c+'" font-family="Inter,sans-serif">'+lv+'</text></svg>';
   }
   function toast(m){ if(window.zToast) window.zToast(m); }
-  function errMsg(e){ var m = (e && e.message) || 'Eroare'; return String(m).replace(/^.*?:\s*/, ''); }
-  function rpc(name, args){ var sb = window.__sb; if(!sb) return Promise.reject(new Error('Nu ești conectat')); return sb.rpc(name, args||{}).then(function(r){ if(r.error) throw r.error; return r.data; }); }
+  // mesaj pe înțeles: serverul vechi (funcție lipsă), fără internet, sesiune expirată; altfel textul trimis de server
+  function errMsg(e){
+    var m = String((e && e.message) || ''), c = String((e && e.code) || '');
+    if(c === 'PGRST202' || c === '42883' || c === '42501' || c === '42P01' || c === '42703' || /could not find the function|does not exist|schema cache|permission denied/i.test(m)) return 'Partea asta nu e încă pornită pe server. Încearcă mai târziu.';
+    if(/failed to fetch|networkerror|load failed|network request failed|timeout|timed out/i.test(m)) return 'Nu există conexiune la internet. Încearcă din nou.';
+    if(c === 'PGRST301' || /jwt/i.test(m)) return 'Sesiunea a expirat. Ieși din cont și intră din nou.';
+    if(!m || (typeof Error !== 'undefined' && (e instanceof TypeError || e instanceof ReferenceError || e instanceof RangeError || e instanceof SyntaxError))) return 'Ceva nu a mers. Încearcă din nou.';
+    m = m.replace(/^.*?:\s*/, ''); return m.charAt(0).toUpperCase() + m.slice(1); }
+  function num(v){ v = +v; return isFinite(v) ? Math.round(v) : 0; }
+  function rpc(name, args){ var sb = window.__sb; if(!sb) return Promise.reject(new Error('Intră mai întâi în cont')); return sb.rpc(name, args||{}).then(function(r){ if(r.error) throw r.error; return r.data; }); }
+  // dacă serverul are încă funcția veche (fără parametrul nou), mai încearcă o dată fără el
+  function rpcOpt(name, args, key){
+    return rpc(name, args).catch(function(e){
+      if(!(key in args) || !e || !(e.code === 'PGRST202' || /could not find the function/i.test(e.message || ''))) throw e;
+      var a = {}, k; for(k in args) if(k !== key) a[k] = args[k];
+      return rpc(name, a); }); }
   function stats(){ try{ return window.__zStats ? window.__zStats() : {score:0,streak:0}; }catch(e){ return {score:0,streak:0}; } }
 
-  var me = null, board = null, seg = 'rank', lastId = 0, chatTimer = null, scoreTimer = null, isAdmin = false, loaded = false, busy = false;
+  var me = null, board = null, seg = 'rank', lastId = 0, chatGen = 0, chatTimer = null, scoreTimer = null, isAdmin = false, loaded = false, busy = false, period = 'week', thumbTried = false;
   var blocked = []; try{ blocked = JSON.parse(localStorage.getItem('zyp_blocked')||'[]')||[]; }catch(e){}
   function saveBlocked(){ try{ localStorage.setItem('zyp_blocked', JSON.stringify(blocked.slice(-200))); }catch(e){} }
   function active(){ var v = document.getElementById('view-top'); return !!(v && v.classList.contains('active')); }
@@ -38,6 +52,26 @@
     if(!('IntersectionObserver' in window)){ for(var i = 0; i < Math.min(els.length, 30); i++) avPaint(els[i]); return; }
     if(!avObs) avObs = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ avObs.unobserve(e.target); avPaint(e.target); } }); }, { rootMargin: '120px' });
     els.forEach(function(e){ avObs.observe(e); }); }
+  // poza mică (64 px) pentru clasament și chat, făcută din poza mare
+  function mkThumb(d){
+    return new Promise(function(res){
+      if(!d || !AV_RE.test(d)){ res(null); return; }
+      var im = new Image();
+      im.onload = function(){ try{
+        var s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 64;
+        c.getContext('2d').drawImage(im, (im.width-s)/2, (im.height-s)/2, s, s, 0, 0, 64, 64);
+        var q = .7, t = c.toDataURL('image/jpeg', q); while(t.length > 6000 && q > .3){ q -= .1; t = c.toDataURL('image/jpeg', q); }
+        res(t.length <= 6000 && AV_RE.test(t) ? t : null); }catch(e){ res(null); } };
+      im.onerror = function(){ res(null); }; im.src = d; }); }
+  // pozele venite odată cu lista: le punem direct în memorie, fără altă cerere
+  function avSeed(nick, a, hasAv, mine){
+    var k = String(nick || '').toLowerCase(); if(!k) return;
+    if(a && typeof a === 'string' && a.length <= 6000 && AV_RE.test(a)){ if(!(mine && AVC[k])) AVC[k] = a; }
+    else if(hasAv === false && !mine) AVC[k] = ''; }
+  // conturile vechi, care au poză dar nu și poză mică: o fac o singură dată, automat
+  function fixThumb(){
+    if(thumbTried || !me || !me.has_avatar || me.has_thumb) return; thumbTried = true;
+    avFetch(me.nick).then(mkThumb).then(function(t){ if(t) return rpc('set_my_thumb', { p_avatar_s: t }).then(function(){ if(me) me.has_thumb = true; }); }).catch(function(){}); }
   function avEl(nick, lv, px, cls){
     var t = tier(lv || 1), k = String(nick || '?'), c = AVC[k.toLowerCase()];
     return '<span class="sn-av ' + (cls || '') + '" data-av="' + esc(k) + '"' + (c ? ' data-done="1"' : '') + ' style="--px:' + px + 'px;--c:' + t[2] + '">' + (c ? '<img alt="" src="' + c + '">' : esc(k.charAt(0).toUpperCase())) + '</span>'; }
@@ -50,7 +84,7 @@
       '<p>Vezi unde ești față de ceilalți și vorbește în chatul global. Alege un nume de utilizator.</p>' +
       '<input id="topNick" class="top-in" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ex: Cristi_Fit">' +
       '<div class="top-hint">3–20 caractere: litere, cifre, _ sau . · <b>Numele se vede public, tuturor.</b> Nu folosi numele real, emailul sau telefonul.</div>' +
-      '<div class="top-rules">Reguli: fii respectuos, fără link-uri și spam. Mesajele pot fi raportate și ascunse, iar conturile care încalcă regulile sunt blocate.</div>' +
+      '<div class="top-rules">Reguli: vorbește frumos, fără link-uri și spam. Mesajele pot fi raportate și ascunse, iar conturile care încalcă regulile sunt blocate.</div>' +
       '<button class="top-btn" id="topJoin">Intră</button><div class="top-err" id="topErr"></div></div>';
     document.getElementById('topJoin').addEventListener('click', function(){
       var n = document.getElementById('topNick').value.trim(), er = document.getElementById('topErr'); er.textContent = '';
@@ -64,6 +98,7 @@
   function progress(score, lv){ var a = 25*(lv-1)*(lv-1), b = 25*lv*lv; return Math.max(0, Math.min(100, Math.round((score-a)/(b-a)*100))); }
   function renderMain(){
     if(!me || !me.nick){ root.innerHTML = '<div class="top-load">Se încarcă…</div>'; loaded = false; return; }
+    me.score = num(me.score); me.rank = num(me.rank); me.streak = num(me.streak); me.level = num(me.level);
     var lv = me.level || lvOf(me.score), t = tier(lv), heroOn = !!(window.zAvatar && window.zAvatar.has());
     root.innerHTML =
       '<div class="sn-me">' + (heroOn ?
@@ -80,8 +115,9 @@
     var ab = document.getElementById('snAvt'); if(ab) ab.addEventListener('click', function(){
       if(!window.zAvatar){ toast('Avatarul nu e disponibil'); return; }
       rpc('get_public_profile', { p_nick: me.nick }).then(function(p){ window.zAvatar.open(function(d){
-        rpc('set_my_extra', { p_bio: (p && p.bio) || '', p_avatar: d, p_clear_avatar: false }).then(function(){ AVC[me.nick.toLowerCase()] = d; toast('Avatar salvat!'); renderMain(); }).catch(function(e){ toast(errMsg(e)); }); }); }).catch(function(e){ toast(errMsg(e)); }); });
+        mkThumb(d).then(function(th){ return rpcOpt('set_my_extra', { p_bio: (p && p.bio) || '', p_avatar: d, p_clear_avatar: false, p_avatar_s: th }, 'p_avatar_s'); }).then(function(){ AVC[me.nick.toLowerCase()] = d; toast('Avatar salvat!'); renderMain(); }).catch(function(e){ toast(errMsg(e)); }); }); }).catch(function(e){ toast(errMsg(e)); }); });
     avHydrate(root);
+    fixThumb();
     showSeg();
     startScoreTimer();
   }
@@ -89,35 +125,55 @@
 
   // ---------- clasament ----------
   function row(r){
+    r = { nick: String(r.nick == null ? '?' : r.nick), rank: num(r.rank), level: num(r.level) || 1, streak: num(r.streak), score: num(r.score), me: !!r.me };
     var t = tier(r.level);
     return '<div class="sn-row' + (r.me ? ' me' : '') + '" data-prof="' + esc(r.nick) + '"><span class="sn-rk">' + r.rank + '</span>' + avEl(r.nick, r.level, 48) +
       '<span class="sn-rn"><b>' + esc(r.nick) + (r.me ? ' <em>tu</em>' : '') + '</b><small><span style="color:' + t[2] + '">● ' + esc(t[1]) + '</span> · Nivel ' + r.level + (r.streak ? ' · 🔥 ' + r.streak : '') + '</small></span><span class="sn-sc">' + r.score + '<small>pct</small></span></div>';
   }
   function podium(r, place){
     if(!r) return '<div class="sn-pod p' + place + '"></div>';
+    r = { nick: String(r.nick == null ? '?' : r.nick), level: num(r.level) || 1, score: num(r.score) };
     return '<div class="sn-pod p' + place + '" data-prof="' + esc(r.nick) + '">' + (place === 1 ? '<span class="sn-crown">👑</span>' : '') + avEl(r.nick, r.level, place === 1 ? 84 : 66, 'ring m' + place) +
       '<div class="sn-pn">' + esc(r.nick) + '</div><div class="sn-ps">' + r.score + ' pct</div><div class="sn-pb"><span>' + place + '</span></div></div>';
   }
+  function perSwitch(){
+    return '<div class="sn-acts" id="topPer" style="margin:0 0 4px">' +
+      '<button class="sn-b' + (period === 'week' ? ' alt' : '') + '" data-per="week" style="flex:1;padding:10px 8px;font-size:13.5px">Săptămâna asta</button>' +
+      '<button class="sn-b' + (period === 'all' ? ' alt' : '') + '" data-per="all" style="flex:1;padding:10px 8px;font-size:13.5px">Din totdeauna</button></div>';
+  }
   function renderBoard(){
     var b = document.getElementById('topBody'); if(!b) return;
-    b.innerHTML = '<div class="top-load">Se încarcă clasamentul…</div>';
-    rpc('get_leaderboard', {p_limit:100}).then(function(d){
-      board = d; me = d.me || me; if(!document.getElementById('topBody') || seg !== 'rank') return;
-      var top = d.top || [], html = '';
-      html += '<div class="sn-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
-      if(top.length > 3) html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
-      html += '<div class="sn-invite">' + (top.length < 4 ? '👋 Ești printre primii aici. ' : '') + 'Cheamă un prieten și vedeți care strânge mai multe puncte.<br><button class="sn-b alt" data-invite="1" style="margin-top:10px">📨 Invită un prieten</button></div>';
+    var per = period;
+    b.innerHTML = perSwitch() + '<div class="top-load">Se încarcă clasamentul…</div>';
+    rpcOpt('get_leaderboard', {p_limit:100, p_period:per}, 'p_period').then(function(d){
+      d = d || {}; board = d; me = d.me || me; if(!document.getElementById('topBody') || seg !== 'rank' || period !== per) return;
+      var old = !d.period; if(old) period = 'all';   // server vechi: există doar clasamentul din totdeauna
+      var wk = period === 'week', top = (Array.isArray(d.top) ? d.top : []).filter(function(r){ return r && r.nick != null; }), html = old ? '' : perSwitch();
+      top.forEach(function(r){ avSeed(r.nick, r.avatar_s, r.has_av, r.me); });
+      if(!top.length) html += '<div class="top-load">' + (wk ? 'Nimeni nu a strâns puncte săptămâna asta. Fii primul! 🏆' : 'Nimeni încă. Fii primul! 🏆') + '</div>';
+      else {
+        html += '<div class="sn-podium">' + podium(top[1],2) + podium(top[0],1) + podium(top[2],3) + '</div>';
+        if(top.length > 3) html += '<div class="sn-list">' + top.slice(3).map(row).join('') + '</div>';
+        html += '<div class="sn-invite">' + (top.length < 4 ? '👋 Ești printre primii aici. ' : '') + 'Cheamă un prieten și vedeți care strânge mai multe puncte.<br><button class="sn-b alt" data-invite="1" style="margin-top:10px">📨 Invită un prieten</button></div>';
+      }
       var inTop = top.some(function(r){ return r.me; });
-      if(me && !inTop) html += '<div class="sn-pin">' + row({rank:me.rank, nick:me.nick, score:me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
-      if(!top.length) html = '<div class="top-load">Nimeni încă. Fii primul! 🏆</div>';
-      var tn = d.total || top.length; html += '<div class="top-foot">' + (tn === 1 ? 'Un cont în clasament' : tn + (tn >= 20 ? ' de' : '') + ' conturi în clasament') + '</div>';
-      document.getElementById('topBody').innerHTML = html; avHydrate(document.getElementById('topBody'));
-    }).catch(function(e){ var bb = document.getElementById('topBody'); if(bb) bb.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
+      if(me && !inTop) html += '<div class="sn-pin">' + row({rank:d.my_rank != null ? d.my_rank : me.rank, nick:me.nick, score:d.my_score != null ? d.my_score : me.score, streak:me.streak, level:me.level||lvOf(me.score), me:true}) + '</div>';
+      var tn = d.total != null ? num(d.total) : top.length;
+      html += '<div class="top-foot">' + (tn === 1 ? 'Un cont' : tn + (tn >= 20 ? ' de' : '') + ' conturi') + (wk ? ' cu puncte săptămâna asta. Clasamentul săptămânii se resetează luni.' : ' în clasament') + '</div>';
+      var bb = document.getElementById('topBody'); bb.innerHTML = html;
+      // rândurile fără poză mică: cerem profilul doar pentru primele 12
+      var pend = bb.querySelectorAll('.sn-av[data-av]:not([data-done])'), n = 0;
+      for(var i = 0; i < pend.length; i++){ if(AVC[pend[i].getAttribute('data-av').toLowerCase()] !== undefined) continue; if(++n > 12) pend[i].setAttribute('data-done', '1'); }
+      avHydrate(bb);
+    }).catch(function(e){ var bb = document.getElementById('topBody'); if(bb && seg === 'rank' && period === per) bb.innerHTML = perSwitch() + '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
   }
+  root.addEventListener('click', function(ev){ var el = ev.target.closest('[data-per]'); if(!el || seg !== 'rank') return; var p = el.getAttribute('data-per') === 'all' ? 'all' : 'week'; if(p === period) return; period = p; renderBoard(); });
 
   // ---------- chat ----------
   function fmtT(at){ try{ return new Date(at).toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
   function msgHtml(m){
+    if(!m || m.nick == null) return '';
+    m = { id: num(m.id), nick: String(m.nick), lvl: num(m.lvl) || 1, body: m.body, at: m.at, mine: !!m.mine };
     if(!m.mine && blocked.indexOf(m.nick.toLowerCase()) >= 0) return '';
     var t = tier(m.lvl);
     var acts = m.mine ? '<button class="top-ma" style="min-width:36px;min-height:36px;font-size:15px" data-del="' + m.id + '" title="Șterge">🗑</button>' :
@@ -128,16 +184,16 @@
   }
   function renderChat(){
     var b = document.getElementById('topBody'); if(!b) return;
-    lastId = 0;
+    lastId = 0; chatGen++;
     b.innerHTML = '<div class="sn-chat"><div class="sn-msgs top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
       '<div class="sn-send"><input id="topMsgIn" maxlength="300" autocomplete="off" placeholder="Trimite un mesaj…"><button id="topSend" aria-label="Trimite">➤</button></div>' +
-      '<div class="top-err" id="topCErr"></div><div class="top-hint">Fără link-uri. Fii respectuos. 🚩 raportează, 🚫 blochează un utilizator.</div></div>';
+      '<div class="top-err" id="topCErr"></div><div class="top-hint">Fără link-uri. Vorbește frumos. 🚩 raportează, 🚫 blochează un utilizator.</div></div>';
     var box = document.getElementById('topMsgs');
     box.addEventListener('click', function(ev){
       var el = ev.target.closest('button'); if(!el) return;
       var id = el.getAttribute('data-rep') || el.getAttribute('data-del'), nk = el.getAttribute('data-blk') || el.getAttribute('data-ban');
       if(el.hasAttribute('data-rep')){ if(confirm('Raportezi acest mesaj?')) rpc('report_chat', {p_id:+id}).then(function(){ toast('Mesaj raportat. Mulțumim!'); }).catch(function(e){ toast(errMsg(e)); }); }
-      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi pe ' + nk + '? Nu îi mai vezi mesajele, iar el nu te mai poate adăuga și nu îți mai vede profilul.')){ blocked.push(nk.toLowerCase()); saveBlocked(); rpc('block_user', { p_nick: nk }).then(function(){ toast('Blocat'); }).catch(function(){}); box.querySelectorAll('.sn-msg').forEach(function(x){ var h = x.querySelector('.sn-mh'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
+      else if(el.hasAttribute('data-blk')){ if(confirm('Blochezi pe ' + nk + '? Nu îi mai vezi mesajele, iar el nu te mai poate adăuga și nu îți mai vede profilul.')){ blocked.push(nk.toLowerCase()); saveBlocked(); rpc('block_user', { p_nick: nk }).catch(function(){}); box.querySelectorAll('.sn-msg').forEach(function(x){ var h = x.querySelector('.sn-mh'); if(h && h.textContent.toLowerCase() === nk.toLowerCase()) x.remove(); }); toast('Utilizator blocat'); } }
       else if(el.hasAttribute('data-del')){ if(confirm('Ștergi mesajul?')) rpc('delete_chat', {p_id:+id}).then(function(){ var x = box.querySelector('[data-id="' + id + '"]'); if(x) x.remove(); }).catch(function(e){ toast(errMsg(e)); }); }
       else if(el.hasAttribute('data-ban')){ if(confirm('Blochezi contul ' + nk + '?')) rpc('admin_ban', {p_nick:nk, p_on:true}).then(function(){ toast('Cont blocat'); }).catch(function(e){ toast(errMsg(e)); }); }
     });
@@ -149,19 +205,24 @@
     document.getElementById('topSend').addEventListener('click', send);
     document.getElementById('topMsgIn').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); send(); } });
     pull(true);
-    chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 10000);
+    startChat();
   }
+  function startChat(){ stopChat(); chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 10000); }
   function pull(scroll){
     var box = document.getElementById('topMsgs'); if(!box) return;
-    rpc('get_chat', {p_after:lastId, p_limit:80}).then(function(d){
-      isAdmin = !!d.admin; var msgs = d.msgs || [];
+    var gen = chatGen, after = lastId;
+    rpc('get_chat', {p_after:after, p_limit:80}).then(function(d){
+      if(gen !== chatGen || !box.isConnected) return;            // între timp ai ieșit din chat
+      if(after !== lastId){ pull(scroll); return; }                // altă cerere a adus deja mesajele: nu le pune de două ori
+      d = d || {}; isAdmin = !!d.admin; var msgs = (Array.isArray(d.msgs) ? d.msgs : []).filter(function(m){ return m && +m.id > lastId; }), avs = d.avs || {}, ak;
+      for(ak in avs) if(Object.prototype.hasOwnProperty.call(avs, ak)) avSeed(ak, avs[ak]);
       if(lastId === 0) box.innerHTML = '';
       if(!msgs.length){ if(lastId === 0) box.innerHTML = '<div class="top-load">Niciun mesaj încă. Scrie primul! 👋</div>'; return; }
       var near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-      var html = msgs.map(msgHtml).join(''); lastId = msgs[msgs.length-1].id;
+      var html = msgs.map(msgHtml).join(''); lastId = num(msgs[msgs.length-1].id);
       box.insertAdjacentHTML('beforeend', html);
       if(scroll || near) box.scrollTop = box.scrollHeight; avHydrate(box);
-    }).catch(function(){});
+    }).catch(function(e){ if(gen === chatGen && lastId === 0 && box.isConnected) box.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
   }
   function stopChat(){ if(chatTimer){ clearInterval(chatTimer); chatTimer = null; } }
 
@@ -197,7 +258,9 @@
     }).catch(function(e){ var b = document.getElementById('topPf'); if(b) b.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
   }
   function renderProfile(p){
-    var box = document.getElementById('topPf'); if(!box) return; var t = tier(p.level);
+    var box = document.getElementById('topPf'); if(!box) return;
+    p.nick = String(p.nick == null ? '?' : p.nick); p.level = num(p.level) || 1; p.rank = num(p.rank); p.score = num(p.score); p.streak = num(p.streak); p.bio = p.bio == null ? '' : String(p.bio);
+    var t = tier(p.level);
     box.innerHTML =
       '<div class="top-pf">' + avatarHtml(p, 112) +
       '<div class="top-pf-nick">' + esc(p.nick) + '</div>' +
@@ -236,7 +299,7 @@
     document.getElementById('pfCancel').addEventListener('click', function(){ renderProfile(p); });
     document.getElementById('pfSave').addEventListener('click', function(){
       var btn = this, er = document.getElementById('pfErr'); er.textContent = ''; btn.disabled = true;
-      rpc('set_my_extra', {p_bio:bio.value, p_avatar:newAv, p_clear_avatar:clear}).then(function(np){ toast('Profil salvat'); renderProfile(np); }).catch(function(e){ btn.disabled = false; er.textContent = errMsg(e); });
+      mkThumb(newAv).then(function(th){ return rpcOpt('set_my_extra', {p_bio:bio.value, p_avatar:newAv, p_clear_avatar:clear, p_avatar_s:th}, 'p_avatar_s'); }).then(function(np){ if(newAv || clear) AVC[String(p.nick).toLowerCase()] = newAv || ''; toast('Profil salvat'); if(np && np.nick) renderProfile(np); else openProfile(p.nick); }).catch(function(e){ btn.disabled = false; er.textContent = errMsg(e); });
     });
   }
   root.addEventListener('click', function(ev){ var el = ev.target.closest('[data-prof]'); if(el && !ev.target.closest('.top-ma')) openProfile(el.getAttribute('data-prof')); });
@@ -259,6 +322,8 @@
   }
   function startScoreTimer(){ if(scoreTimer) return; scoreTimer = setInterval(function(){ if(active()) sync(); }, 120000); }
   function stopTimers(){ stopChat(); if(scoreTimer){ clearInterval(scoreTimer); scoreTimer = null; } }
+  // când pleci din Top: oprește tot ce merge în fundal (chat, hartă, sincronizare); la întoarcere se reface ecranul
+  function leaveTop(){ stopTimers(); chatGen++; if(window.zFriends){ try{ window.zFriends.leave(); }catch(e){} } }
 
   // ---------- pornire ----------
   function open(){
@@ -271,9 +336,12 @@
       if(!p){ me = null; renderJoin(); return; }
       if(p.banned){ root.innerHTML = '<div class="card"><h3>Cont blocat</h3><p class="top-hint">Contul tău a fost blocat din comunitate pentru încălcarea regulilor.</p></div>'; return; }
       me = p; return sync().then(function(){ renderMain(); });
-    }).catch(function(e){ root.innerHTML = '<div class="card top-join"><h3>Clasamentul nu e disponibil încă</h3><p class="top-hint">' + esc(errMsg(e)) + '</p></div>'; }).then(function(){ busy = false; });
+    }).catch(function(e){ root.innerHTML = '<div class="card top-join"><h3>Clasamentul nu e disponibil acum</h3><p class="top-hint">' + esc(errMsg(e)) + '</p><button class="top-btn" id="topRetry">Încearcă din nou</button></div>'; var rb = document.getElementById('topRetry'); if(rb) rb.addEventListener('click', function(){ setTimeout(open, 0); }); }).then(function(){ busy = false; });
   }
   var tab = document.querySelector('.tab[data-view="top"]');
   if(tab) tab.addEventListener('click', function(){ setTimeout(open, 60); });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && active() && seg === 'chat') pull(false); });
+  document.querySelectorAll('.tab[data-view]').forEach(function(t){ if(t !== tab) t.addEventListener('click', leaveTop); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ stopChat(); return; }
+    if(active() && seg === 'chat' && document.getElementById('topMsgs')){ pull(false); startChat(); } });
 })();

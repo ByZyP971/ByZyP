@@ -5,12 +5,13 @@
   function fmt(t){ if(!t) return '—'; try{ return new Date(t).toLocaleString('ro-RO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return '—'; } }
   function render(list){
     var legal = document.getElementById('legalCard'); if(!legal || document.getElementById('adminCard')) return;
+    list = list.filter(function(u){ return u && typeof u === 'object'; });
     var now = Date.now(), day = 864e5;
     var n7 = list.filter(function(u){ return u.created && now - new Date(u.created) < 7*day; }).length;
     var act = list.filter(function(u){ return u.last && now - new Date(u.last) < 7*day; }).length;
     var pu = list.filter(function(u){ return u.push; }).length;
     var rows = list.map(function(u){
-      var m = u.mods ? Object.keys(u.mods).filter(function(k){return u.mods[k];}).join(', ') : '';
+      var m = (u.mods && typeof u.mods === 'object') ? Object.keys(u.mods).filter(function(k){return u.mods[k];}).join(', ') : '';
       return '<div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px;line-height:1.45">'
         + '<b>'+esc(u.email||'(fără email)')+'</b><br>'
         + '<span style="opacity:.7">înscris '+esc(fmt(u.created))+' · ultima logare '+esc(fmt(u.last))+'</span><br>'
@@ -22,10 +23,11 @@
       + rows;
     legal.parentNode.insertBefore(c, legal);
   }
+  var tries = 0;
   function load(){
-    var sb = window.__sb; if(!sb || !sb.rpc) return;
+    var sb = window.__sb; if(!sb || !sb.rpc || !sb.auth){ if(++tries < 4) setTimeout(load, 4000); return; }   // contul se poate conecta mai târziu
     sb.auth.getSession().then(function(r){
-      if(!r || !r.data || !r.data.session) return;
+      if(!r || !r.data || !r.data.session){ if(++tries < 4) setTimeout(load, 4000); return; }
       return sb.rpc('admin_overview').then(function(x){ if(x && !x.error && Array.isArray(x.data)) render(x.data); });
     }).catch(function(){});
   }

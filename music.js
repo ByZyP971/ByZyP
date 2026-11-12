@@ -37,16 +37,19 @@
   function play(style, force){
     var t = TR[style]; if(!t) return;
     if(!au){ au = new Audio(); au.loop = true; au.preload = 'auto'; au.addEventListener('play', label); au.addEventListener('pause', label);
-      au.addEventListener('error', function(){ if(window.zToast) window.zToast('Nu pot reda muzica acum.'); }); }
+      au.addEventListener('error', function(){ if(!cur) return;   /* fișierul lipsește sau nu e internet: mesaj scurt și playerul se închide curat */
+        stop(); if(window.zToast) window.zToast('Muzica nu e disponibilă acum. Încearcă mai târziu.'); }); }
     if(cur === style && !force){ toggle(); return; }
     cur = style; au.src = t.f; ui().hidden = false; label(); meta();
-    var p = au.play(); if(p && p.catch) p.catch(function(){ if(window.zToast) window.zToast('Apasă din nou ▶️ ca să pornească muzica.'); label(); });
+    var p; try{ p = au.play(); }catch(e){ p = null; }
+    if(p && p.catch) p.catch(function(e){ if(e && e.name === 'NotAllowedError' && cur === style){ if(window.zToast) window.zToast('Apasă pe ▶️ ca să pornească muzica.'); } label(); });   /* fișier lipsă: se ocupă evenimentul „error”; schimbare rapidă de piesă: nimic de spus */
   }
-  function toggle(on){ if(!au) return; var want = (typeof on === 'boolean') ? on : au.paused; if(want){ var p = au.play(); if(p && p.catch) p.catch(function(){}); } else au.pause(); label(); }
-  function stop(){ if(au){ au.pause(); au.removeAttribute('src'); au.load(); } cur = null; if(bar) bar.hidden = true; }
+  function toggle(on){ if(!au || !cur) return; var want = (typeof on === 'boolean') ? on : au.paused; if(want){ var p = au.play(); if(p && p.catch) p.catch(function(){}); } else au.pause(); label(); }
+  function stop(){ cur = null; if(au){ try{ au.pause(); au.removeAttribute('src'); au.load(); }catch(e){} } if(bar) bar.hidden = true;
+    try{ if('mediaSession' in navigator){ navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } }catch(e){} }
   document.addEventListener('click', function(e){ var b = e.target.closest('[data-mus]'); if(b){ e.preventDefault(); play(b.getAttribute('data-mus')); } });
 
-  // ---------- piese cu voce: listă pe stil, se deschid pe YouTube ----------
+  // ---------- piese cu voce: listă pe stil, se deschid într-o pagină cu videoclipuri ----------
   var SONGS = {
     heavy:[['Eminem','Till I Collapse'],['Kanye West','Power'],['Survivor','Eye of the Tiger'],['AC/DC','Thunderstruck'],['Metallica','Enter Sandman']],
     pump:[['Eminem','Lose Yourself'],['Kendrick Lamar','HUMBLE.'],['50 Cent','In Da Club'],['Travis Scott','SICKO MODE'],['Drake','Started From the Bottom']],
@@ -62,9 +65,9 @@
     var t = TR[style]; if(!t || !SONGS[style]) return; closeSongs();
     sheet = document.createElement('div'); sheet.className = 'z-yt'; sheet.id = 'zSongs';
     sheet.innerHTML = '<div class="z-yt-box"><button class="z-yt-x" data-y="x" aria-label="Închide">✕</button><div class="z-yt-h">🎤 ' + eh(t.n) + ' · ' + t.bpm + ' BPM</div>' +
-      '<p class="z-yt-p">Piese cu voce care se potrivesc la acest exercițiu. Apeși pe una și se deschide pe YouTube.</p>' +
+      '<p class="z-yt-p">Piese cu voce care se potrivesc la acest exercițiu. Apeși pe una și se deschide într-o pagină cu videoclipuri.</p>' +
       SONGS[style].map(function(x){ return '<a class="z-song" target="_blank" rel="noopener" href="' + yt(x[0] + ' ' + x[1] + ' official') + '"><span>▶️</span><b>' + eh(x[1]) + '</b><small>' + eh(x[0]) + '</small></a>'; }).join('') +
-      '<a class="z-song z-song-mix" target="_blank" rel="noopener" href="' + yt(MIX[style]) + '"><span>🔀</span><b>Mai multe piese ca astea</b><small>căutare pe YouTube</small></a></div>';
+      '<a class="z-song z-song-mix" target="_blank" rel="noopener" href="' + yt(MIX[style]) + '"><span>🔀</span><b>Mai multe piese ca astea</b><small>căutare de videoclipuri</small></a></div>';
     document.body.appendChild(sheet);
     sheet.addEventListener('click', function(e){ if(e.target === sheet || e.target.closest('[data-y="x"]')) closeSongs(); });
   }

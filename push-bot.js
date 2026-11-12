@@ -1,4 +1,4 @@
-// By ZyP — push bot, run by GitHub Actions every ~5 minutes.
+// By ZyP — push bot, run by GitHub Actions every ~10 minutes (the cron can be several minutes late: every window below is wider than that).
 // Sends: motivation at 08:30 / 14:30 / 21:30, supplements at 09:00 / 20:00 / 22:00, Ethereum summary 10:00 / 18:00 + news (local time) and a warning before every red (High) news.
 import webpush from 'web-push';
 import fs from 'fs';
@@ -10,9 +10,16 @@ const TZ = process.env.APP_TZ || 'Atlantic/Canary';
 const TEST = process.env.TEST_PUSH === 'true';
 const STATE = 'sent.json';
 let sent = {}; try { sent = JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) {}
+if (!sent || typeof sent !== 'object' || Array.isArray(sent)) sent = {};   // a damaged state file must not crash the run
 const GOLD_PUSH = false; // alertele și știrile pe aur sunt oprite pentru moment (pune true ca să revină)
 const status = Array.isArray(sent._status) ? sent._status : [];
 let changed = false;
+// an unexpected error must not lose what was already sent (that would repeat notifications on the next run): log it loudly, keep the state, end the run
+process.on('uncaughtException', (e) => {
+  console.log('UNEXPECTED ERROR — the run stopped early:', (e && e.stack) || e);
+  try { status.push({ t: new Date().toISOString(), title: 'Eroare neașteptată a robotului', ok: false, code: 'crash', err: String((e && e.message) || e).slice(0, 120) }); sent._status = status.slice(-15); fs.writeFileSync(STATE, JSON.stringify(sent)); } catch (x) {}
+  process.exit(0);
+});
 // a wrong secret must NOT crash the run (red X + e-mails every 5 min): log it, show it in the app (Profil → Notificări) and stop quietly
 function bail(msg) {
   console.log('CONFIG ERROR:', msg);
@@ -30,7 +37,7 @@ const okSub = (x) => { try { if (!x || !x.endpoint || !x.keys) return false; con
 const KEY = process.env.BYZYP_KEY;
 if (KEY) {
   try {
-    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_push_subs', { method: 'POST',
+    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_push_subs', { method: 'POST', signal: AbortSignal.timeout(15000),
       headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
     if (r.ok) { const j = await r.json(); subs = (Array.isArray(j) ? j : []).filter(okSub); console.log('subscriptions from account:', subs.length); }
     else console.log('account lookup failed: HTTP', r.status);
@@ -40,19 +47,29 @@ if (SUB && SUB.trim()) {
   try { const j = JSON.parse(SUB.trim()); for (const x of (Array.isArray(j) ? j : [j])) if (okSub(x) && !subs.some(y => y.endpoint === x.endpoint)) subs.push(x); }
   catch (e) { if (!subs.length) bail('PUSH_SUB nu e un cod valid. Copiază din nou codul întreg din aplicație și lipește-l în secret.'); }
 }
-if (!subs.length) bail('Nu am niciun cod de telefon. În aplicație: Profil → Notificări → Activează (codul se salvează singur în cont).');
+if (!subs.length) {
+  const NOSUB = 'Nu am niciun cod de telefon. În aplicație: Profil → Notificări → Activează (codul se salvează singur în cont).';
+  if (!KEY) bail(NOSUB);
+  // the owner's phone is missing, but the other accounts must still get their notifications: note it and go on
+  console.log('OWNER: no subscription —', NOSUB);
+  const last = status[status.length - 1];
+  if (!(last && last.code === 'config' && last.err === NOSUB)) { status.push({ t: new Date().toISOString(), title: 'Configurare notificări', ok: false, code: 'config', err: NOSUB }); changed = true; }
+}
+const OWNER = subs.length > 0;
+let nOk = 0, nFail = 0;   // totals for the last log line
 
 function local(d) {
   const p = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false })
     .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
-  return { date: `${p.year}-${p.month}-${p.day}`, hm: +p.hour * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
+  return { date: `${p.year}-${p.month}-${p.day}`, hm: (+p.hour % 24) * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
 }
 async function send(title, body, tag, url) {
   let ok = false;
+  if (!subs.length) return false;
   for (const s of subs) {
-    try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: url || './' }), { TTL: 1800, urgency: 'high' });
-      ok = true; console.log('sent:', title, r && r.statusCode); status.push({ t: new Date().toISOString(), title, ok: true, code: r && r.statusCode }); }
-    catch (e) { console.log('push error', e.statusCode, e.body || e.message); status.push({ t: new Date().toISOString(), title, ok: false, code: e.statusCode || 0, err: String(e.body || e.message).slice(0, 120) }); }
+    try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: url || './' }), { TTL: 1800, urgency: 'high', timeout: 8000 });
+      ok = true; nOk++; console.log('sent:', title, r && r.statusCode); status.push({ t: new Date().toISOString(), title, ok: true, code: r && r.statusCode }); }
+    catch (e) { nFail++; console.log('OWNER push FAILED:', title, '| code', e.statusCode || 0, '|', String(e.body || e.message).slice(0, 200)); status.push({ t: new Date().toISOString(), title, ok: false, code: e.statusCode || 0, err: String(e.body || e.message).slice(0, 120) }); }
   }
   changed = true;
   return ok;
@@ -150,8 +167,8 @@ async function ethNews() {
   } catch (e) { console.log('eth news:', e.message); return []; }
 }
 {
-  const inDay = L.hm >= 8 * 60 && L.hm <= 22 * 60 + 30;
-  const px = (inDay || TEST) ? await ethPrice() : null;
+  const inDay = OWNER && L.hm >= 8 * 60 && L.hm <= 22 * 60 + 30;
+  const px = (inDay || (TEST && OWNER)) ? await ethPrice() : null;
   const news = inDay ? await ethNews() : [];
   let sentNow = false;
   if (px) {
@@ -237,7 +254,7 @@ const FUNX = [
     'Patul te iubește, dar nu te face mai puternic. Sus, că ziua nu se bifează singură.',
     'Ai deschis ochii, deci prima repetare e făcută. Restul vin mai ușor.',
     'Cafeaua întâi, scuzele niciodată. Uită-te ce ai azi în plan.',
-    'Azi e o zi bună să fii cu 1% mai bun decât ieri. Ieri oricum n-ai făcut mare lucru.',
+    'Azi e o zi bună să faci cu 1% mai mult decât ieri. Un pas mic se pune și el.',
     'Bună dimineața! Perna a depus plângere că ai plecat. Am respins-o.',
     'Soarele s-a trezit, gantera s-a trezit, numai tu te mai gândești. Hai!',
     'Azi nu trebuie să fii perfect. Trebuie doar să apari.',
@@ -254,34 +271,36 @@ const FUNX = [
   { k: 'fx-pm', h: 16 * 60, t: ['😂 Pauză de râs', '🤣 By ZyP are o vorbă', '🧐 Gândul de după-amiază', '☕ Pauza de la 4'], b: [
     'Liftul e stricat în mintea ta de azi. Ia scările, fesierii îți mulțumesc.',
     'Abdomenul se face în bucătărie. Păcat că acolo e și frigiderul.',
-    'Nu ești obosit, ești neantrenat la capitolul chef. Se rezolvă cu o serie.',
+    'Nu e oboseală, e doar cheful care lipsește. Se rezolvă cu o serie.',
     'Scaunul ăla te-a ținut destul. Ridică-te 2 minute, că nu sunteți căsătoriți.',
-    'Azi cineva mai leneș ca tine a mers la sală. Gândește-te la asta.',
+    'Azi cineva cu și mai puțin chef a mers la sală. Gândește-te la asta.',
     'Dulcele de la 4 nu e foame, e plictiseală cu zahăr. Bea apă și mai vorbim.',
     'Motivația vine după ce începi, nu înainte. E nesimțită, știu.',
     'Corpul tău poate aproape orice. Mintea e cea care trebuie convinsă.',
     'Febra musculară e doar corpul care îți scrie o recenzie. De 5 stele.',
     'Dacă ar fi ușor, s-ar numi canapea, nu sală.' ] },
   { k: 'fx-eve', h: 19 * 60 + 30, t: ['🌆 Cum a fost ziua?', '✅ Verificare de seară', '📋 Raport de seară', '🕖 Mai e timp'], b: [
-    'Mai sunt câteva ore din azi. Destul cât să bifezi un lucru de care să fii mândru.',
+    'Mai sunt câteva ore din azi. Destul cât să bifezi un lucru cu care să te mândrești.',
     'Deschide aplicația și bifează ce ai făcut. Ce nu ai făcut, mai ai timp.',
     'Cina cu proteină, nu cu regrete. Vezi meniul de azi.',
     'Ziua nu e gata până nu bifezi. Hai, două minute.',
     'Canapeaua te vrea acum. Arată-i că mai ai un lucru de făcut întâi.',
-    'Ai mâncat ca un sportiv sau ca un adolescent singur acasă? Fii sincer.',
+    'Ai mâncat ca la carte sau ca un copil rămas singur acasă? Spune drept.',
     'O plimbare de 15 minute după masă. Digestia zice mersi.',
     'Seara e pentru cei care n-au apucat dimineața. Încă se pune.' ] },
   { k: 'fx-sleep', h: 22 * 60 + 30, t: ['🌙 La nani, ajunge pe azi', '😴 Ora de somn', '🛌 Mușchii cresc noaptea', '📵 Telefonul jos'], b: [
-    'Mușchii cresc în somn, nu pe TikTok. Lasă telefonul jos.',
+    'Mușchii cresc în somn, nu pe ecran. Lasă telefonul jos.',
     'Încă un video și e 2 noaptea. Ne știm. Noapte bună.',
     'Somnul e cel mai ieftin supliment. Ia doza întreagă: 7–8 ore.',
     'Mâine ai nevoie de energie. Azi ai nevoie de pernă.',
-    'Ai făcut ce ai putut azi. Restul îl repari mâine, odihnit.',
+    'Ai făcut ce ai putut azi. Restul îl repari mâine, după un somn bun.',
     'Telefonul are încărcător. Și tu ai: se numește pat.',
     'Noapte bună! Gantera se odihnește deja, ia exemplu.',
     'Cine doarme bine ridică mai mult. Cine scrolează ridică doar degetul.' ] }
 ];
 const funPick = (arr, n) => arr[((n % arr.length) + arr.length) % arr.length];
+const quiet = (hm) => hm < 7 * 60 || hm >= 23 * 60;   // nobody gets a notification between 23:00 and 07:00 (their own local time)
+const MAX_PER_DAY = 12;                                // safety limit per account per day (reminders first, jokes last)
 
 // ---------- OTHER USERS: every account gets its own funny notifications, on its own time zone and only for the modules it chose ----------
 const FUNU = [
@@ -310,9 +329,9 @@ const UFOOD = [
   ['🍚 Orezul nu se face singur', 'Pune apa la fiert și deschide meniul. Mâncarea simplă face mușchi simpli.']
 ];
 const USUPP = [
-  { h: 9 * 60, k: 'am', t: ['🤦 Hei, vitaminele!', '🐟 Peștele așteaptă, ia Omega 3!', '🧟 Zombie, bagă vitaminele!'], b: ['Se apropie 9:00. Ia suplimentele de dimineață, cu micul dejun.', 'Dimineața e momentul vitaminelor. Deschide bifa din aplicație și ia-le acum.'] },
-  { h: 20 * 60 + 30, k: 'ev', t: ['🛡️ Ora suplimentelor de seară', '🧪 Zincul nu se ia singur'], b: ['Se apropie cina. Ia suplimentele de seară cu mâncarea, ca să nu te supere stomacul.', 'Cina e gata? Atunci și suplimentele de seară. Bifează-le în aplicație.'] },
-  { h: 22 * 60, k: 'ng', t: ['🌙 Magneziul, apoi la nani', '😴 Somnul începe cu magneziul'], b: ['Se apropie somnul. Ia ce ai de luat înainte de culcare și lasă telefonul jos.', 'Telefonul jos, magneziul sus. Somn bun!'] }
+  { h: 9 * 60, k: 'am', t: ['💊 Hei, vitaminele!', '🐟 Nu uita de suplimente', '☀️ Vitaminele de dimineață'], b: ['Ia suplimentele de dimineață, cu micul dejun și un pahar de apă.', 'Dimineața e momentul vitaminelor. Deschide bifa din aplicație și ia-le acum.'] },
+  { h: 20 * 60 + 30, k: 'ev', t: ['🛡️ Ora suplimentelor de seară', '🧪 Suplimentele de seară'], b: ['Se apropie cina. Ia suplimentele de seară cu mâncarea, ca să nu te supere stomacul.', 'Cina e gata? Atunci și suplimentele de seară. Bifează-le în aplicație.'] },
+  { h: 22 * 60, k: 'ng', t: ['🌙 Suplimentele de seară, apoi la nani', '😴 Înainte de somn'], b: ['Se apropie somnul. Ia ce ai de luat înainte de culcare și lasă telefonul jos.', 'Telefonul jos, suplimentele de culcare luate. Somn bun!'] }
 ];
 function localTz(d, tz) {
   try {
@@ -323,13 +342,13 @@ function localTz(d, tz) {
 }
 { // owner: the same extra funny notifications
   const dnO = Math.floor(Date.parse(L.date + 'T00:00:00Z') / 86400000);
-  for (const f of FUNX) { const key = `${f.k}-${L.date}`; if (L.hm >= f.h && L.hm < f.h + 40 && !sent[key]) { await send(funPick(f.t, dnO + 3), funPick(f.b, dnO * 3 + 5), f.k); sent[key] = Date.now(); changed = true; } }
+  for (const f of FUNX) { const key = `${f.k}-${L.date}`; if (OWNER && !quiet(L.hm) && L.hm >= f.h && L.hm < f.h + 40 && !sent[key]) { await send(funPick(f.t, dnO + 3), funPick(f.b, dnO * 3 + 5), f.k); sent[key] = Date.now(); changed = true; } }
 }
 
 if (KEY) {
   let all = [];
   try {
-    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_all_push', { method: 'POST',
+    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_all_push', { method: 'POST', signal: AbortSignal.timeout(15000),
       headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
     if (r.ok) { const j = await r.json(); all = Array.isArray(j) ? j : []; } else console.log('all-users lookup failed: HTTP', r.status);
   } catch (e) { console.log('all-users lookup failed:', e.message); }
@@ -338,12 +357,18 @@ if (KEY) {
   for (const k of Object.keys(dead)) if (Date.now() - dead[k] > 30 * 86400000) delete dead[k];
   const others = all.filter(u => u && okSub(u.sub) && !mine.has(u.sub.endpoint));
   console.log('other users:', others.length);
-  for (const u of others) {
+  // how many notifications each account already got today (key = u-<id>-<date>-<kind>)
+  const dayCount = {};
+  for (const k of Object.keys(sent)) { const m = /^(u-[A-Za-z0-9_]+-\d{4}-\d\d-\d\d)-/.exec(k); if (m) dayCount[m[1]] = (dayCount[m[1]] || 0) + 1; }
+  const JOKES = (k) => k === 'joke' || k === 'food' || k.startsWith('fx-');
+  let uOk = 0, uFail = 0, uDead = 0, uBad = 0;
+  const doUser = async (u) => {
     const id = String(u.sub.endpoint).slice(-14).replace(/[^A-Za-z0-9]/g, '_');
-    if (dead[id]) continue;                                   // expired subscription seen in an earlier run
+    if (dead[id]) return;                                     // expired subscription seen in an earlier run
     const M = u.mods && typeof u.mods === 'object' ? u.mods : {};
-    const on = (m) => M[m] === undefined || +M[m] !== 0;
-    const U = localTz(now, u.tz || TZ);
+    const on = (m) => M[m] === undefined || M[m] === null || +M[m] !== 0;
+    const U = localTz(now, typeof u.tz === 'string' && u.tz && u.tz.length <= 64 ? u.tz : TZ);
+    if (quiet(U.hm)) return;                                  // night for this account
     const dn = Math.floor(Date.parse(U.date + 'T00:00:00Z') / 86400000), salt = id.length * 7 + id.charCodeAt(id.length - 1);
     const up = (arr, z = 0) => arr[(dn + salt + z) % arr.length];
     const todo = [];
@@ -356,16 +381,18 @@ if (KEY) {
       // the user's own schedule: only the supplements he chose, at the time he chose, a few minutes before
       if (SC.on !== false) {
         const lead = [5, 10, 15, 20, 30].includes(+SC.lead) ? +SC.lead : 15;
-        const clean = (x) => String(x || '').replace(/[^\p{L}\p{N} +\-.,()]/gu, '').slice(0, 40);
+        const clean = (x) => typeof x === 'string' ? x.slice(0, 200).replace(/<[^>]*>/g, ' ').replace(/[^\p{L}\p{N} +\-.,()]/gu, '').replace(/\s+/g, ' ').replace(/^[ +\-.,()]+/, '').trim().slice(0, 40) : '';
         SC.g.slice(0, 6).forEach((g, gi) => {
-          const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(g && g.t || '')); if (!m || !Array.isArray(g.n)) return;
+          const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(g && typeof g.t === 'string' ? g.t : ''); if (!m || !Array.isArray(g.n)) return;
           // if the phone reported today's ticks, remind only for what is still not taken; everything taken -> no notification
           const fresh = Array.isArray(g.p) && g.d === U.date;
           const names = (fresh ? g.p : g.n).slice(0, 12).map(clean).filter(Boolean); if (!names.length) return;
-          const at = (+m[1]) * 60 + (+m[2]), fire = at - lead;
-          if (fire >= 0 && U.hm >= fire && U.hm < fire + 25) {
+          const at = (+m[1]) * 60 + (+m[2]); let fire = at - lead;
+          if (at < 7 * 60) return;                             // a supplement set for the night: no notification while people sleep
+          fire = Math.max(7 * 60, Math.min(fire, 22 * 60 + 35)); // a little before the chosen time, but never inside the quiet hours
+          if (U.hm >= fire && U.hm < fire + 25) {
             const list = names.length > 4 ? names.slice(0, 4).join(', ') + ' și încă ' + (names.length - 4) : names.join(', ');
-            todo.push(['sp' + gi + '-' + m[1] + m[2], [up(['💊 Ora suplimentelor', '🤦 Hei, vitaminele!', '🧟 Zombie, bagă vitaminele!', '🐟 Nu uita de suplimente'], gi), 'La ' + m[1] + ':' + m[2] + ': ' + list + '. Doza e cea de pe ambalaj sau de la medic.']]);
+            todo.push(['sp' + gi + '-' + m[1] + m[2], [up(['💊 Ora suplimentelor', '💊 Hei, vitaminele!', '⏰ E timpul pentru suplimente', '🐟 Nu uita de suplimente'], gi), 'La ' + m[1] + ':' + m[2] + ': ' + list + '. Doza e cea de pe ambalaj sau de la medic.']]);
           }
         });
       }
@@ -373,17 +400,18 @@ if (KEY) {
     // ---- personalized by THIS account's own results (stats saved by the phone) ----
     const S = u.stats && typeof u.stats === 'object' ? u.stats : null;
     if (S && on('sport')) {
-      const num = (x) => Math.max(0, Math.min(9999, +x || 0));
+      const num = (x) => Math.max(0, Math.min(9999, Math.round(typeof x === 'number' || typeof x === 'string' ? +x || 0 : 0)));
       const mon = new Date(Date.parse(U.date + 'T00:00:00Z') - ((['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(U.wd)) * 86400000)).toISOString().slice(0, 10);
       const stale = !String(u.at || '').slice(0, 10) || String(u.at).slice(0, 10) < mon;   // phone not opened this week -> this week counts as 0
       const w = stale ? 0 : num(S.w), s2 = stale ? 0 : num(S.s), pw = stale ? num(S.w) : num(S.pw), ps = stale ? num(S.s) : num(S.ps);
       const rec = stale ? 0 : num(S.rec), st = num(S.st);
-      const la = /^\d{4}-\d\d-\d\d$/.test(S.la || '') ? S.la : '';
-      const gap = la ? Math.round((dn - Math.floor(Date.parse(la + 'T00:00:00Z') / 86400000))) : 99;
+      const la = typeof S.la === 'string' && /^\d{4}-\d\d-\d\d$/.test(S.la) && !isNaN(Date.parse(S.la + 'T00:00:00Z')) ? S.la : '';
+      const gapRaw = la ? Math.round((dn - Math.floor(Date.parse(la + 'T00:00:00Z') / 86400000))) : 99;
+      const gap = gapRaw < 0 ? 99 : gapRaw;   // a date in the future is not believed
       if (U.wd === 'Sun' && U.hm >= 19 * 60 && U.hm < 19 * 60 + 40) {
         let t, b;
-        if (w === 0 && pw === 0) { t = '📊 Raportul săptămânii'; b = 'Zero antrenamente săptămâna asta și zero și cea trecută. Luni începem cu stângul sau cu dreptul, dar începem!'; }
-        else if (w === 0) { t = '📊 Raportul tău: săptămână liberă?'; b = `Săptămâna trecută ai făcut ${pw} antrenamente (${ps} serii). Asta... nimic. Gantera a întrebat de tine. Luni revenim!`; }
+        if (w === 0 && pw === 0) { t = '📊 Raportul săptămânii'; b = 'Niciun antrenament bifat în ultimele două săptămâni. Luni începem cu stângul sau cu dreptul, dar începem!'; }
+        else if (w === 0) { t = '📊 Raportul tău: săptămână liberă?'; b = `Săptămâna trecută ai făcut ${pw} antrenamente (${ps} serii). Săptămâna asta, pauză. Gantera a întrebat de tine. Luni revenim!`; }
         else if (w > pw) { t = '📈 Raportul tău: ai crescut!'; b = `${w} antrenamente și ${s2} serii săptămâna asta, față de ${pw} și ${ps} cea trecută. Așa se face!` + (rec ? ` Plus ${rec} recorduri noi 🏆` : ''); }
         else if (w === pw) { t = '📊 Raportul tău: constant'; b = `${w} antrenamente și ${s2} serii, la fel de serios ca săptămâna trecută (${ps} serii).` + (s2 > ps ? ' Ba chiar cu mai multe serii!' : ' Săptămâna viitoare încearcă o serie în plus la fiecare exercițiu.') + (rec ? ` Recorduri noi: ${rec} 🏆` : ''); }
         else { t = '📊 Raportul tău: puțin sub ritm'; b = `${w} antrenamente săptămâna asta, față de ${pw} cea trecută. Nicio dramă, luni refacem ritmul.`; }
@@ -400,21 +428,31 @@ if (KEY) {
         else if (pw > 0 && w < pw) todo[gi] = ['gym', ['💪 Hai să egalezi săptămâna trecută', `Ai ${w} antrenamente săptămâna asta față de ${pw} cea trecută. Azi mai bifezi unul?`]];
       }
     }
+    todo.sort((a, b) => (JOKES(a[0]) ? 1 : 0) - (JOKES(b[0]) ? 1 : 0));   // reminders first, jokes last (matters only near the daily limit)
+    const dk = `u-${id}-${U.date}`;
     for (const [k, [title, body]] of todo) {
-      const key = `u-${id}-${U.date}-${k}`;
+      const key = `${dk}-${k}`;
       if (sent[key]) continue;
-      try { await webpush.sendNotification(u.sub, JSON.stringify({ title, body, tag: 'u-' + k, url: './' }), { TTL: 1800, urgency: 'high', timeout: 8000 }); console.log('sent to user', id, k); sent[key] = Date.now(); changed = true; }
+      if ((dayCount[dk] || 0) >= MAX_PER_DAY) { console.log('daily limit reached for user', id, '- skipped', k); continue; }
+      try { await webpush.sendNotification(u.sub, JSON.stringify({ title, body, tag: 'u-' + k, url: './' }), { TTL: 1800, urgency: 'high', timeout: 8000 }); console.log('sent to user', id, k); sent[key] = Date.now(); dayCount[dk] = (dayCount[dk] || 0) + 1; changed = true; uOk++; }
       catch (e) {
-        const code = e.statusCode || 0; console.log('user push error', id, code || e.message);
-        if (code === 404 || code === 410) { dead[id] = Date.now(); sent._dead = dead; changed = true; break; }   // subscription is gone: stop retrying this phone
-        // any other error: not marked as sent, so it is retried on the next run while still inside its time window
+        const code = (e && e.statusCode) || 0; console.log('USER push FAILED:', id, k, '| code', code, '|', String((e && (e.body || e.message)) || e).slice(0, 160));
+        if (code === 404 || code === 410) { dead[id] = Date.now(); sent._dead = dead; changed = true; uDead++; break; }   // subscription is gone: stop retrying this phone
+        uFail++; break;   // any other error (slow or broken phone service): not marked as sent, retried on the next run while still inside its time window
       }
     }
-  }
+  };
+  // several accounts at once, and one bad record or one slow phone service never stops the others
+  const queue = others.slice();
+  const worker = async () => { for (let u = queue.shift(); u; u = queue.shift()) { try { await doUser(u); } catch (e) { uBad++; console.log('USER record skipped (bad data):', String(e && e.message || e).slice(0, 160)); } } };
+  await Promise.all(Array.from({ length: Math.min(8, queue.length) }, worker));
+  nOk += uOk; nFail += uFail + uDead;
+  console.log(`other users summary: sent ${uOk}, failed ${uFail}, expired phones ${uDead}, bad records ${uBad}`);
 }
 
 // keep state small (last 4 days)
-for (const k of Object.keys(sent)) if (!k.startsWith('_') && Date.now() - sent[k] > 4 * 86400000) { delete sent[k]; changed = true; }
+for (const k of Object.keys(sent)) if (!k.startsWith('_') && !(Date.now() - sent[k] <= 4 * 86400000)) { delete sent[k]; changed = true; }
 sent._status = status.slice(-15);
 if (changed) fs.writeFileSync(STATE, JSON.stringify(sent));
 console.log('local time', L.date, L.hhmm, L.wd, '| changed:', changed);
+console.log(nFail ? `RESULT: ${nOk} sent, ${nFail} FAILED (see the lines with FAILED above). The run still ends green so the next one can retry.` : `RESULT: ${nOk} sent, 0 failed.`);

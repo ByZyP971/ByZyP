@@ -165,10 +165,14 @@
     'Nu negocia cu pofta. Ea pierde de fiecare dată când tu nu cedezi.',
     'Ai început o viață nouă. Azi e încă o pagină din ea.'
   ];
+  // conținut personal: țigări doar dacă omul a ales obiceiul „Fără țigări”, bani/aur doar dacă are modulul Bani
+  var Z_SMOKE = HABITS.some(function(h){ return h.key === 'nosmoke'; });
+  function zMod(k){ try{ var p = JSON.parse(localStorage.getItem('zyp_prefs_v1') || 'null'); if(!p || !p.mods) return true; return !!p.mods[k]; }catch(e){ return true; } }
+  (function(){ var mon = zMod('money'), q = QUOTES.filter(function(t){ return (Z_SMOKE || !/fum|țigăr|otrăv/i.test(t)) && (mon || !/financiar|banii/i.test(t)); }); if(q.length) QUOTES = q; })();
   var prevDone = -1;
 
   function parseKg(str){ var t = String(str == null ? '' : str).replace(',', '.').replace(/[^0-9.]/g, ''), i = t.indexOf('.'); if(i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, ''); var v = parseFloat(t); return (v >= 20 && v <= 400) ? Math.round(v * 1000) / 1000 : null; }
-  function fmtKg(v){ var r = Math.round(v * 100); return (r / 100).toFixed(r % 10 === 0 ? 1 : 2); }
+  function fmtKg(v){ var r = Math.round(v * 100); return (r / 100).toFixed(r % 10 === 0 ? 1 : 2).replace('.', ','); }
   function getEntry(key){
     var e = data[key];
     if(!e) return { habits:{}, note:'', weight:null, photo:null };
@@ -253,8 +257,8 @@
     reader.readAsDataURL(file);
   });
 
-  function allDone(entry){ if(!entry) return false; return HABITS.every(function(h){ return !!entry.habits[h.key]; }); }
-  function doneCount(entry){ if(!entry) return 0; return HABITS.reduce(function(n,h){ return n + (entry.habits[h.key]?1:0); }, 0); }
+  function allDone(entry){ if(!entry || !entry.habits) return false; return HABITS.every(function(h){ return !!entry.habits[h.key]; }); }
+  function doneCount(entry){ if(!entry || !entry.habits) return 0; return HABITS.reduce(function(n,h){ return n + (entry.habits[h.key]?1:0); }, 0); }
 
   // statistici pentru clasament (scor + serie), folosite de community.js
   window.__zStats = function(){
@@ -300,7 +304,7 @@
     var sf = 0, c2 = new Date(today);
     if(!(data[todayKey] && data[todayKey].habits && data[todayKey].habits.nosmoke)) c2.setDate(c2.getDate()-1);
     while(true){ var k2 = dateKey(c2); if(data[k2] && data[k2].habits && data[k2].habits.nosmoke){ sf++; c2.setDate(c2.getDate()-1); } else break; }
-    var sfe = document.getElementById('smokeFree'); if(sfe) sfe.textContent = sf;
+    var sfe = document.getElementById('smokeFree'); if(sfe){ sfe.textContent = sf; if(!Z_SMOKE && sfe.parentNode) sfe.parentNode.style.display = 'none'; }
     var keysAll = Object.keys(data).sort();
     var dn = 1; if(keysAll.length){ dn = Math.round((today - new Date(keysAll[0] + 'T00:00:00'))/86400000) + 1; }
     var dne = document.getElementById('dayNum'); if(dne) dne.textContent = Math.max(1, dn);
@@ -324,10 +328,11 @@
       var d = new Date(mon); d.setDate(d.getDate()+i);
       var k = dateKey(d), n = doneCount(data[k]);
       var fut = d > today, isNow = k === todayKey;
-      var lv = n >= 5 ? 'l5' : n >= 4 ? 'l3' : n >= 2 ? 'l2' : n >= 1 ? 'l1' : '';
-      html += '<div class="hm ' + lv + (fut?' fut':'') + (isNow?' now':'') + '" title="' + k + ' · ' + n + '/5">' + d.getDate() + '</div>';
+      var HN = HABITS.length, lv = n >= HN ? 'l5' : n >= HN * 0.75 ? 'l3' : n >= HN * 0.4 ? 'l2' : n >= 1 ? 'l1' : '';
+      html += '<div class="hm ' + lv + (fut?' fut':'') + (isNow?' now':'') + '" title="' + k + ' · ' + n + '/' + HABITS.length + '">' + d.getDate() + '</div>';
     }
     hm.innerHTML = html;
+    var lg = document.querySelector('.hm-legend span:last-child'); if(lg) lg.textContent = HABITS.length + '/' + HABITS.length;
   }
 
   function fireConfetti(){
@@ -365,9 +370,11 @@
     } else {
       newsHtml = '<div class="pt wide" data-go="news"><div class="pt-l">📰 Știri</div><div class="pt-t">Nicio știre importantă încărcată</div><div class="pt-a">Se actualizează automat · vezi știrile →</div></div>';
     }
-    el.innerHTML =
-      '<div class="pt" data-go="sport"><div class="pt-l">🏋️ Sport azi</div><div class="pt-t">' + woLabel(code) + '</div><div class="pt-s">' + sportSub + '</div><div class="pt-a">' + sportA + '</div></div>' +
-      '<div class="pt" data-go="food"><div class="pt-l">🍽️ Prânz azi</div><div class="pt-t">' + (lunch || 'Vezi meniul') + '</div><div class="pt-s">' + (dinner ? 'Seara: ' + dinner : '') + '</div><div class="pt-a">Meniul complet →</div></div>' +
+    var noSport = root.classList.contains('pf-nosport'), noFood = root.classList.contains('pf-nofood');
+    var sh = document.getElementById('suppCard'); sh = sh && sh.previousElementSibling; if(sh && sh.classList.contains('sec-h')) sh.style.display = root.classList.contains('pf-nosupp') ? 'none' : '';
+    el.innerHTML = (noSport ? '' :
+      '<div class="pt" data-go="sport"><div class="pt-l">🏋️ Sport azi</div><div class="pt-t">' + woLabel(code) + '</div><div class="pt-s">' + sportSub + '</div><div class="pt-a">' + sportA + '</div></div>') + (noFood ? '' :
+      '<div class="pt" data-go="food"><div class="pt-l">🍽️ Prânz azi</div><div class="pt-t">' + (lunch || 'Vezi meniul') + '</div><div class="pt-s">' + (dinner ? 'Seara: ' + dinner : '') + '</div><div class="pt-a">Meniul complet →</div></div>') +
       newsHtml + goldTileHtml();
     el.querySelectorAll('.pt').forEach(function(t){ t.addEventListener('click', function(){
       var g = t.getAttribute('data-go');
@@ -567,31 +574,31 @@
     1:{ label:'5 zile · Luni–Vineri', days:[
       { code:'m1', name:'Push · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
       { code:'m2', name:'Pull · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
-      { code:'m3', name:'Legs · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
+      { code:'m3', name:'Legs · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['hip','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
       { code:'m4', name:'Upper · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'10–12',2],['lat','c',3,'10–12',2],['press','c',3,'10–12',2],['rowC','c',3,'10–12',2],['pushdown','i',2,'12–15',2],['bb','i',2,'12–15',2]] },
       { code:'m5', name:'Lower · Picioare', focus:'Picioare și abdomen', img:'', off:0, slots:[['lpress','c',3,'10–12',2],['quad2','c',3,'10–12',2],['lcurl','i',3,'12–15',2],['lext','i',3,'12–15',2],['calf','i',3,'15–20',2],['crunch','i',3,'12–20',2]] }
     ], rest:[5,6] },
     2:{ label:'6 zile · Push / Pull / Legs ×2', days:[
       { code:'s1', name:'Push A · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
       { code:'s2', name:'Pull A · Spate, Biceps', focus:'Spate și biceps', img:'', off:0, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
-      { code:'s3', name:'Legs A · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
+      { code:'s3', name:'Legs A · Picioare', focus:'Picioare', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['hip','i',3,'12–15',0],['calf','i',3,'15–20',0]] },
       { code:'s4', name:'Push B · Piept, Umeri, Triceps', focus:'Piept, umeri și triceps', img:'', off:3, slots:[['benchP','c',3,'10–12',0],['inclP','c',3,'10–12',0],['press','c',3,'10–12',0],['lat2','i',3,'12–15',0],['pushdown','i',3,'12–15',0],['crunch','i',3,'12–20',0]] },
       { code:'s5', name:'Pull B · Spate, Biceps', focus:'Spate și biceps', img:'', off:3, slots:[['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rowH','c',3,'10–12',0],['rear','i',3,'12–15',0],['bb','i',3,'12–15',0],['ham','i',2,'12–15',0]] },
-      { code:'s6', name:'Legs B · Picioare', focus:'Picioare', img:'', off:3, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0]] }
+      { code:'s6', name:'Legs B · Picioare', focus:'Picioare', img:'', off:3, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['rdl','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['hip','i',3,'12–15',0],['calf','i',3,'15–20',0]] }
     ], rest:[6] },
     3:{ label:'3 zile · Tot corpul', dayIdx:[0,2,4], days:[
       { code:'f1', name:'Tot corpul A', focus:'Tot corpul', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
-      { code:'f2', name:'Tot corpul B', focus:'Tot corpul', img:'', off:1, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
+      { code:'f2', name:'Tot corpul B', focus:'Tot corpul', img:'', off:1, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['hip','i',3,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
       { code:'f3', name:'Tot corpul C', focus:'Tot corpul', img:'', off:2, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['rowC','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['bb','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] }
     ], rest:[1,3,5,6] },
     4:{ label:'4 zile · Upper / Lower', dayIdx:[0,1,3,4], days:[
       { code:'u1', name:'Upper A · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:0, slots:[['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['press','c',3,'10–12',0],['rowC','c',3,'10–12',0],['pushdown','i',2,'12–15',0],['bb','i',2,'12–15',0]] },
       { code:'u2', name:'Lower A · Picioare', focus:'Picioare și abdomen', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['squat','c',3,'10–12',0],['lcurl','i',3,'12–15',0],['lext','i',3,'12–15',0],['calf','i',3,'15–20',0],['crunch','i',3,'12–20',0]] },
       { code:'u3', name:'Upper B · Partea de sus', focus:'Piept, spate, umeri, brațe', img:'', off:3, slots:[['inclP','c',3,'10–12',0],['rowH','c',3,'10–12',0],['lat2','i',3,'12–15',0],['rear','i',3,'12–15',0],['pushdown','i',2,'12–15',0],['bb','i',2,'12–15',0]] },
-      { code:'u4', name:'Lower B · Picioare', focus:'Picioare și spate jos', img:'', off:3, slots:[['rdl','c',3,'10–12',0],['quad2','c',3,'10–12',0],['ham','i',3,'12–15',0],['lext','i',2,'12–15',0],['calf','i',3,'15–20',0],['crunch','i',3,'12–20',0]] }
+      { code:'u4', name:'Lower B · Picioare', focus:'Picioare și spate jos', img:'', off:3, slots:[['rdl','c',3,'10–12',0],['quad2','c',3,'10–12',0],['hip','i',3,'12–15',0],['lext','i',2,'12–15',0],['calf','i',3,'15–20',0],['crunch','i',3,'12–20',0]] }
     ], rest:[2,5,6] },
     5:{ label:'2 zile · Tot corpul', dayIdx:[0,3], days:[
-      { code:'d1', name:'Tot corpul A', focus:'Tot corpul', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['plank','t',3,'30–40 s',0]] },
+      { code:'d1', name:'Tot corpul A', focus:'Tot corpul', img:'', off:0, slots:[['lpress','c',3,'10–12',0],['benchP','c',3,'10–12',0],['lat','c',3,'10–12',0],['press','c',2,'10–12',0],['lcurl','i',2,'12–15',0],['hip','i',3,'12–15',0],['plank','t',3,'30–40 s',0]] },
       { code:'d2', name:'Tot corpul B', focus:'Tot corpul', img:'', off:2, slots:[['squat','c',3,'10–12',0],['inclP','c',3,'10–12',0],['rowC','c',3,'10–12',0],['rdl','c',2,'10–12',0],['pushdown','i',2,'12–15',0],['crunch','i',3,'12–20',0]] }
     ], rest:[1,2,4,5,6] }
   };
@@ -732,12 +739,17 @@
       fr({ seat:true, kn:[55,52], ft:[54,68] })],
       s:['Așezat la mașină, picioarele larg depărtate, pernele pe interiorul coapselor, spatele lipit de spătar.','Strânge coapsele una spre alta, ține 1 secundă, apoi deschide încet.','Nu folosi avânt. Alege o greutate cu care controlezi și deschiderea.'] }
   };
+  // mișcări fără desen potrivit: doar pași în cuvinte (mai bine fără desen decât cu unul greșit)
+  FIGS.rear = { t:'Fluturări inverse', s:['Aplecat din șold, cu spatele drept (sau cu pieptul pe pernă, la mașină). Brațele atârnă în față, coatele ușor îndoite.','Deschide brațele în lateral până la nivelul umerilor, strânge omoplații 1 secundă, apoi coboară încet.','Greutate mică. Nu ridica umerii spre urechi și nu te ajuta cu balans din spate.'] };
+  FIGS.facepull = { t:'Face pull', s:['Scripetele la nivelul feței, cu coarda. Ține capetele corzii, fă un pas în spate, brațele întinse.','Trage coarda spre față, cu coatele sus și în lateral, până când mâinile ajung lângă urechi. Strânge omoplații 1 secundă și revino încet.','Greutate mică. Nu te lăsa pe spate și nu trage cu avânt.'] };
+  FIGS.hyper = { t:'Hiperextensii', s:['Pe banca romană, cu perna sub șolduri și picioarele fixate. Brațele încrucișate la piept, spatele drept.','Coboară trunchiul încet, din șold, apoi urcă până când corpul e din nou drept. Strânge fesele sus.','Nu urca mai sus de linia dreaptă a corpului și nu arcui spatele. Mișcare lentă, fără avânt.'] };
+  FIGS.superman = { t:'Superman', s:['Culcat pe burtă, pe saltea, cu brațele întinse în față și picioarele întinse.','Ridică în același timp brațele, pieptul și picioarele câțiva centimetri de la podea. Ține 2 secunde, apoi coboară încet.','Privește în jos, nu da capul pe spate. Ridică puțin, fără să forțezi spatele.'] };
   function patOf(name){
     var n = name.toLowerCase();
     var R = [[/flotări pe bancă|dips/, 'dips'],[/flotări/, 'pushup'],[/fandări/, 'lunge'],[/ridicări pe vârfuri/, 'calf'],[/leg press/, 'legpress'],
       [/flexii picioare|flexii culcat/, 'lcurl'],[/extensii (picioare|cu coborâre|cu pauză|pe un picior)/, 'lext'],
-      [/hip thrust|pod pentru|kickback la scripete/, 'hip'],[/deadlift|good morning|hiperextensii/, 'hinge'],[/step-up/, 'lunge'],[/ridicări de umeri|shrug/, 'shrug'],[/ridicări laterale/, 'lateral'],[/ridicări frontale/, 'front'],
-      [/fluturări inverse|face pull/, 'lateral'],[/ramat vertical|ramat la bărbie/, 'upright'],[/ramat/, 'row'],[/flexii|curl|spider/, 'curl'],[/împins umeri|arnold/, 'press'],[/împins.*înclinat/, 'incline'],
+      [/hip thrust|pod pentru|kickback la scripete/, 'hip'],[/superman/, 'superman'],[/hiperextensii/, 'hyper'],[/deadlift|good morning/, 'hinge'],[/step-up/, 'lunge'],[/ridicări de umeri|shrug/, 'shrug'],[/ridicări laterale/, 'lateral'],[/ridicări frontale/, 'front'],
+      [/face pull/, 'facepull'],[/fluturări inverse/, 'rear'],[/ramat vertical|ramat la bărbie/, 'upright'],[/ramat/, 'row'],[/flexii|curl|spider/, 'curl'],[/împins umeri|arnold/, 'press'],[/împins.*înclinat/, 'incline'],
       [/împins la scripete|fluturări|crossover/, 'fly'],[/împins/, 'bench'],
       [/skull/, 'skull'],[/peste cap|deasupra capului/, 'overhead'],[/extensii|kickback/, 'pushdown'],[/tracțiuni/, 'pulldown'],[/pulldown|pullover/, 'sarm'],
       [/adductori/, 'adduct'],[/genuflexiuni|hack/, 'squat'],[/îndreptări/, 'hinge'],[/plank|hollow/, 'plank'],[/crunch|genunchi din atârnat/, 'crunch']];
@@ -758,6 +770,7 @@
   function musicBtn(pat){ var m = musicFor(pat); return '<button class="yt-btn" style="margin-top:6px;width:100%;text-align:left" data-songs="' + m[3] + '">🎤 Piese cu voce: ' + m[0] + ' · ' + m[2] + ' BPM</button><button class="yt-btn" style="margin-top:6px;width:100%;text-align:left;opacity:.8" data-mus="' + m[3] + '">🎧 Doar instrumental, în aplicație</button>'; }
   function figHtml(key){
     var F = FIGS[key]; if(!F) return '';
+    if(!F.f) return '<ol class="fg-steps"><li><b>Start:</b> ' + F.s[0] + '</li><li><b>Mișcarea:</b> ' + F.s[1] + '</li><li><b>Atenție:</b> ' + F.s[2] + '</li></ol>';
     function box(svg, lab){ return '<div class="fg-box"><svg viewBox="0 -8 120 84" class="fg">' + svg + '</svg><span>' + lab + '</span></div>'; }
     return '<div class="fg-row">' + box(F.f[0], key === 'plank' ? 'POZIȚIE' : 'START') + box(F.f[1], key === 'plank' ? 'ȚINE 30–60 s' : 'SFÂRȘIT') + '</div>' +
       '<ol class="fg-steps"><li><b>Start:</b> ' + F.s[0] + '</li><li><b>Mișcarea:</b> ' + F.s[1] + '</li><li><b>Atenție:</b> ' + F.s[2] + '</li></ol>';
@@ -1009,25 +1022,50 @@
       'superman back extension form'],
   };
   Object.keys(ENP2).forEach(function(k){ ENP[k] = ENP[k].concat(ENP2[k]); });
-  // exercițiile unei zile, pentru o anumită săptămână (alta variantă la fiecare săptămână, ciclu de 8)
-  function buildDay(plan, d, week){
-    var wv = ((week - 1) % 4 + 4) % 4, ex = [];
-    d.slots.forEach(function(s){
-      var vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8;
-      if(plan.home){ var hb = (sp.level === 'easy' ? 0 : sp.level === 'hard' ? 4 : 2); vi = hb + ((week - 1 + (d.off || 0) + (s[4] || 0)) % 4); }
-      var HARD = /haltera|T-bar|Pendlay|Arnold|21 \(|Good morning|Deadlift|hexagonală|un picior|bulgăr|mergând|laterale, sprijinit|elastic|cross-body|dinamic|rotație|atârnat|frontale|goblet|split|stiff|între glezne|disc|la bară|alternative|o mână|un braț|pe rând|aplecat|pauză|coborâre lentă|serie lungă|parțiale|stâlp|înclinată \(|Hollow|superman|Plank cu|priză inversă|vârfurile|Pullover cu|cu picioarele ridicate/i;
+  // exercițiile unei zile, pentru o anumită săptămână.
+  // Primele 2 exerciții mari ale zilei rămân aceleași un bloc de 6 săptămâni (se schimbă pe bloc); restul se schimbă în fiecare săptămână.
+  var HARD_RE = /haltera|T-bar|Pendlay|Arnold|21 \(|Good morning|Deadlift|hexagonală|un picior|bulgăr|mergând|laterale, sprijinit|elastic|cross-body|dinamic|rotație|atârnat|frontale|goblet|split|stiff|între glezne|disc|la bară|alternative|o mână|un braț|pe rând|aplecat|pauză|coborâre lentă|serie lungă|parțiale|stâlp|înclinată \(|Hollow|superman|Plank cu|priză inversă|vârfurile|Pullover cu|cu picioarele ridicate/i;
+  var HOLD_RE = /^plank|hollow/i;   // exerciții ținute pe timp (secunde), nu pe repetări
+  var BLOCK_W = 6;
+  function waveIdx(week){ return ((week - 1) % 4 + 4) % 4; }
+  // începători: primele 4 săptămâni fără valul greu, doar 10–12 repetări
+  function learnWk(week){ return sp.level === 'easy' && week <= 4; }
+  var LEARN_TXT = ['Învățare', 'Primele săptămâni: învață mișcarea. Greutate ușoară spre medie, aceleași repetări în fiecare săptămână, tehnică curată.'];
+  function waveTxt(week){ return learnWk(week) ? LEARN_TXT : WAVE[waveIdx(week)]; }
+  // ce variante din listă are voie nivelul curent, pentru un slot
+  function slotAllowed(plan, key){
+    var out = [], i, lvl = sp.level || 'mid';
+    if(plan.home){ var hb = (lvl === 'easy' ? 0 : lvl === 'hard' ? 4 : 2); for(i = hb; i < hb + 4; i++) out.push(i); return out; }
+    for(i = 0; i < POOL[key].length; i++){ if(lvl === 'hard' || !HARD_RE.test(POOL[key][i].split('|')[0])) out.push(i); }
+    return out;
+  }
+  function buildDay(plan, d, week, sw){
+    var learn = learnWk(week), wv = learn ? 0 : waveIdx(week), ex = [], mains = 0;
+    var blk = Math.floor((Math.max(1, week) - 1) / BLOCK_W);
+    d.slots.forEach(function(s, si){
+      var main = s[1] === 'c' && mains < 2; if(main) mains++;
+      var step = main ? blk : (week - 1);
+      var vi = (step + (d.off || 0) + (s[4] || 0)) % 8;
+      if(plan.home){ var hb = (sp.level === 'easy' ? 0 : sp.level === 'hard' ? 4 : 2); vi = hb + ((step + (d.off || 0) + (s[4] || 0)) % 4); }
       var lvl = sp.level || 'mid';
-      if(!plan.home && lvl !== 'hard'){ for(var tr = 0; tr < 8 && HARD.test(POOL[s[0]][vi].split('|')[0]); tr++) vi = (vi + 1) % 8;
-      if(!plan.home && HARD.test(POOL[s[0]][vi].split('|')[0])) vi = (week - 1 + (d.off || 0) + (s[4] || 0)) % 8; }
+      if(!plan.home && lvl !== 'hard'){ for(var tr = 0; tr < 8 && HARD_RE.test(POOL[s[0]][vi].split('|')[0]); tr++) vi = (vi + 1) % 8;
+      if(!plan.home && HARD_RE.test(POOL[s[0]][vi].split('|')[0])) vi = (step + (d.off || 0) + (s[4] || 0)) % 8; }
+      var vi0 = vi;
+      if(sw && sw[si] != null && POOL[s[0]][+sw[si]]) vi = +sw[si];   // schimbat de utilizator, doar pentru ziua aceea
       var p = POOL[s[0]][vi].split('|');
-      var type = s[1], reps = wv === 0 ? s[3] : WREPS[type][wv];
-      var tip = p[1] + (type === 't' ? '' : (wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
+      var type = s[1], base = s[3];
+      // ținut pe timp → secunde; mișcare → repetări (indiferent ce scrie în slot)
+      if(HOLD_RE.test(p[0])){ if(type !== 't'){ type = 't'; base = '30–40 s'; } }
+      else if(type === 't'){ type = 'i'; base = '12–20'; }
+      var reps = wv === 0 ? base : WREPS[type][wv];
+      var tip = p[1] + (type === 't' ? '' : (learn ? ' · Primele săptămâni: învață mișcarea, nu forța greutatea.' : wv === 1 ? ' · Greutate mare, oprește la 1–2 repetări rezervă.' : wv === 2 ? ' · Greutate mai mică, simte mușchiul.' : ''));
       var nsets = lvl === 'easy' ? Math.max(2, s[2] - 1) : lvl === 'hard' ? (type === 't' ? s[2] : Math.min(5, s[2] + 1)) : s[2];
-      ex.push([p[0], nsets, reps, String(WREST[type][wv]), tip, '', patOf(p[0]), ytUrl(ENP[s[0]][vi]), type]);
+      ex.push([p[0], nsets, reps, String(WREST[type][wv]), tip, '', patOf(p[0]), ytUrl(ENP[s[0]][vi]), type, vi, vi0, s[0], main ? 1 : 0]);
     });
     return { name: d.name, focus: d.focus, ex: ex, img: '', code: d.code };
   }
-  function buildWO(phase, week){ var o = {}; PLANS[phase].days.forEach(function(d){ o[d.code] = buildDay(PLANS[phase], d, week); }); return o; }
+  // dkey (opțional): data pentru care se aplică schimbările făcute de utilizator cu „Schimbă exercițiul”
+  function buildWO(phase, week, dkey){ var o = {}; PLANS[phase].days.forEach(function(d){ o[d.code] = buildDay(PLANS[phase], d, week, dkey && sp.swap ? sp.swap[dkey + '|' + d.code] : null); }); return o; }
   window.__spBuild = buildWO; window.__patOf = patOf; window.__POOL = POOL;
   function buildWEEK(phase){
     var days = PLANS[phase].days, out = [];
@@ -1060,6 +1098,8 @@
   var sp = {}; try{ sp = JSON.parse(localStorage.getItem(SP_KEY) || '{}') || {}; }catch(e){ sp = {}; }
   function spSave(){ try{ localStorage.setItem(SP_KEY, JSON.stringify(sp)); }catch(e){} }
   sp.phase = ([2,3,4,5,6].indexOf(sp.phase) >= 0 ? sp.phase : 1); sp.level = (sp.level === 'easy' || sp.level === 'hard') ? sp.level : 'mid'; sp.sets = sp.sets || {}; sp.mob = sp.mob || {};
+  if(!sp.swap || typeof sp.swap !== 'object') sp.swap = {};
+  (function(){ var lim = new Date(); lim.setDate(lim.getDate() - 60); var lk = dateKey(lim); Object.keys(sp.swap).forEach(function(k){ if(k.split('|')[0] < lk) delete sp.swap[k]; }); })();
   if(sp.phase && sp.level && !sp.legacy && !sp.placed){ var _lr = { easy:0, mid:1, hard:2 }, _pl = { 5:'easy', 3:'easy', 6:'easy', 4:'mid', 1:'hard', 2:'hard' }; if(_lr[sp.level] < _lr[_pl[sp.phase]]) sp.legacy = 1; }
   function mondayOf(d){ var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
   function mKey(d){ return dateKey(d); }
@@ -1075,7 +1115,7 @@
   var selDay = wIdx;
   var curWo = null;
   var viewW = progWeek();
-  function refreshWO(){ WO = buildWO(sp.phase, progWeek()); }
+  function refreshWO(){ WO = buildWO(sp.phase, progWeek(), todayKey); }
   refreshWO();
 
   function woOfDay(i){ return WEEK[sp.phase][i][0]; }
@@ -1095,7 +1135,7 @@
     var code = woOfDay(wIdx);
     var el = document.getElementById('spToday');
     var tdy = new Date();
-    var html = '<div class="spt-l">Azi · ' + ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][wIdx] + ' ' + tdy.getDate() + ' ' + monthShort[tdy.getMonth()] + ' · săpt. ' + progWeek() + ' · ' + WAVE[(progWeek()-1)%4][0] + '</div>' +
+    var html = '<div class="spt-l">Azi · ' + ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'][wIdx] + ' ' + tdy.getDate() + ' ' + monthShort[tdy.getMonth()] + ' · săpt. ' + progWeek() + ' · ' + waveTxt(progWeek())[0] + '</div>' +
       '<div class="spt-t">' + woLabel(code) + '</div><div class="spt-s">' + woSub(code) + '</div>';
     if(WO[code]){
       var ex = WO[code].ex, sets = ex.reduce(function(a,e){ return a+e[1]; },0);
@@ -1110,10 +1150,10 @@
   }
   function renderWeek(){
     var strip = document.getElementById('wkStrip');
-    var nowW = progWeek(), wv = (viewW - 1) % 4;
+    var nowW = progWeek(), wvT = waveTxt(viewW);
     var mon = new Date(thisMon); mon.setDate(mon.getDate() + 7 * (viewW - nowW));
     document.getElementById('wkTitle').textContent = 'Săptămâna ' + viewW + ' · ' + rangeLabel(mon) + (viewW === nowW ? ' · acum' : '');
-    document.getElementById('wkNav').innerHTML = '<button class="ghost-btn" id="wkPrev"' + (viewW <= 1 ? ' disabled' : '') + '>‹ înapoi</button><div class="wk-wave"><b>' + WAVE[wv][0] + '</b><span>' + WAVE[wv][1] + '</span></div><button class="ghost-btn" id="wkNext">înainte ›</button>';
+    document.getElementById('wkNav').innerHTML = '<button class="ghost-btn" id="wkPrev"' + (viewW <= 1 ? ' disabled' : '') + '>‹ înapoi</button><div class="wk-wave"><b>' + wvT[0] + '</b><span>' + wvT[1] + '</span></div><button class="ghost-btn" id="wkNext">înainte ›</button>';
     document.getElementById('wkPrev').addEventListener('click', function(){ if(viewW > 1){ viewW--; renderWeek(); } });
     document.getElementById('wkNext').addEventListener('click', function(){ viewW++; renderWeek(); });
     strip.innerHTML = WEEK[sp.phase].map(function(d,i){
@@ -1131,7 +1171,7 @@
       var day = buildWO(sp.phase, viewW)[code];
       det.innerHTML = '<div class="wk-detail"><div class="wk-dn">' + dn + '</div><b>' + day.name + '</b>' +
         day.ex.map(function(e,i){ return '<div class="wk-ex"><span>' + (i+1) + '. ' + e[0] + '</span><em>' + e[1] + ' × ' + e[2] + '</em></div>'; }).join('') +
-        (viewW === nowW ? '<button class="primary-btn" id="wkOpen" style="margin-top:12px;">Deschide antrenamentul →</button>' : '<div class="hint" style="margin-top:10px;">Așa arată săptămâna ' + viewW + '. Exercițiile se schimbă singure în fiecare luni.</div>') +
+        (viewW === nowW ? '<button class="primary-btn" id="wkOpen" style="margin-top:12px;">Deschide antrenamentul →</button>' : '<div class="hint" style="margin-top:10px;">Așa arată săptămâna ' + viewW + '. Primele două exerciții rămân aceleași 6 săptămâni, restul se mai schimbă de la o săptămână la alta.</div>') +
         '</div>';
       var wo = document.getElementById('wkOpen'); if(wo) wo.addEventListener('click', function(){ curWo = code; sshow('gym'); });
       bindImgs(det);
@@ -1156,14 +1196,14 @@
     var pl = plannedSets(), lvl = sp.level || 'mid', nxt = LV_NEXT[lvl], cur = wkStats(0).s, a = wkStats(-1).s, b = wkStats(-2).s;
     var q = (pl && a >= pl*0.8 ? 1 : 0) + (pl && b >= pl*0.8 ? 1 : 0);
     var locked = Object.keys(PH_LV).filter(function(k){ return !phOpen(+k); }).map(function(k){ return PLANS[k].label; });
-    bd.innerHTML = '<div class="lb-top"><span class="lb-ic">' + LV_IC[lvl] + '</span><div><b>Nivelul tău: ' + LV_TXT[lvl] + '</b><span>' + (nxt ? 'Spre ' + LV_TXT[nxt] + ': ' + q + '/2 săptămâni cu aproape toate seriile terminate' : 'Nivel maxim: ai toate programele deblocate') + '</span></div></div>' +
+    bd.innerHTML = '<div class="lb-top"><span class="lb-ic">' + LV_IC[lvl] + '</span><div><b>Nivelul tău: ' + LV_TXT[lvl] + '</b><span>' + (nxt ? 'Spre ' + LV_TXT[nxt] + ': ' + Math.min(4, lvlWeeks()) + '/4 săptămâni la acest nivel · ' + q + '/2 săptămâni la rând cu aproape toate seriile terminate' : 'Nivel maxim: ai toate programele deblocate') + '</span></div></div>' +
       (nxt && pl ? '<div class="lb-bar"><i style="width:' + Math.min(100, Math.round(100 * Math.min(cur, pl) / pl)) + '%"></i></div><div class="lb-s">Săptămâna asta: ' + Math.min(cur, pl) + ' din ' + pl + ' serii</div>' : '') +
       (locked.length ? '<div class="lb-s">🔒 Se deblochează: ' + locked.join(' · ') + '</div>' : '');
   }
   document.querySelectorAll('#phasePills .day-pill').forEach(function(p){
     p.addEventListener('click', function(){
       var ph = +p.getAttribute('data-phase');
-      if(!phOpen(ph)){ var h = document.getElementById('phaseHint'); if(h) h.textContent = '🔒 Acest program se deblochează la nivelul ' + LV_TXT[PH_LV[ph]] + '. Termină 2 săptămâni la rând cu aproape toate seriile bifate ca să urci de nivel.'; return; }
+      if(!phOpen(ph)){ var h = document.getElementById('phaseHint'); if(h) h.textContent = '🔒 Acest program se deblochează la nivelul ' + LV_TXT[PH_LV[ph]] + '. Urci de nivel după cel puțin 4 săptămâni la nivelul tău, dacă în ultimele 2 termini aproape toate seriile.'; return; }
       sp.phase = ph; spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); });
   });
 
@@ -1185,7 +1225,7 @@
   window.__zData = function(){ try{
     var W = nuKgNow(), P = nuProf(), D = W ? nuCalc(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal) : null;
     var ws = Object.keys(data).filter(function(k){ var e = data[k]; return e && e.weight != null && +e.weight >= 20 && +e.weight <= 400; }).sort().map(function(k){ return { d:k, v:+data[k].weight }; });
-    return { weights:ws, kg:W ? W.kg : null, cm:P.cm, age:P.age, sex:nu.sex, goal:nu.goal, kcal:D ? Math.round(D.kcal) : null, prot:D ? Math.round(D.P) : null,
+    return { weights:ws, kg:W ? W.kg : null, cm:P.cm, cmSet:parseFloat((profile || {}).height) > 0, age:P.age, sex:nu.sex, goal:nu.goal, kcal:D ? Math.round(D.kcal) : null, prot:D ? Math.round(D.P) : null,
       week:window.__zWeek(), planned:plannedSets(), level:sp.level || 'mid', phase:sp.phase || 1, klog:sp.klog || {}, sets:sp.sets || {}, todayKey:todayKey };
   }catch(e){ return null; } };
   window.__zBasics = function(o){ o = o || {};
@@ -1194,27 +1234,45 @@
     try{ nuRender(); }catch(e){}
   };
   window.__zGoal = function(g){ if(['gain','maintain','lose'].indexOf(g) < 0) return; nu.goal = g; try{ nuSaveCfg(); nuRender(); }catch(e){} };
-  function exDone(d, name){ // were all sets of this exercise ticked on that day? (null = unknown)
-    var res = null;
-    Object.keys(sp.sets || {}).forEach(function(k){ if(k.split('|')[0] !== d) return; var code = k.split('|')[1], w = WO && WO[code]; if(!w) return;
-      w.ex.forEach(function(e, ei){ if(e[0] !== name) return; var n = 0; for(var q=0;q<e[1];q++){ if(sp.sets[k][ei + '-' + q]) n++; } res = (n >= e[1]); }); });
-    return res; }
-  function kgSug(n, i){ if(!i.last) return '';
-    var ok = exDone(i.last.d, n), k = i.last.kg, up = k >= 20 ? 2.5 : 1, lw = wkRange(-1), when = (i.last.d >= lw[0] && i.last.d <= lw[1]) ? 'Săptămâna trecută' : 'Data trecută';
-    var tgt = Math.round((k + up) * 2) / 2;
-    return '<div class="kg-sug">🎯 ' + when + ': <b>' + k + ' kg</b> → ' + (ok === false ? 'azi repetă <b>' + k + ' kg</b> și închide toate seriile' : 'azi încearcă <b>' + tgt + ' kg</b>') + '</div>'; }
+  // la ce repetări a fost notată greutatea și dacă s-au închis toate seriile în ziua aceea (null = nu știm)
+  function logCtx(x, name){
+    if(!x) return null;
+    if(x.r != null && x.n) return { r: String(x.r), ok: (x.dn || 0) >= x.n };
+    var out = null;
+    try{
+      var wk = Math.max(1, weeksBetween(sp.progStart, new Date(x.d + 'T00:00:00')) + 1), W = buildWO(sp.phase, wk, x.d);
+      Object.keys(W).forEach(function(code){ var o = sp.sets[x.d + '|' + code]; if(!o) return;
+        W[code].ex.forEach(function(e, ei){ if(e[0] !== name) return; var n = 0; for(var q=0;q<e[1];q++){ if(o[ei + '-' + q]) n++; } out = { r: e[2], ok: n >= e[1] }; }); });
+    }catch(err){ out = null; }
+    return out; }
+  // notează lângă greutatea de azi: repetările zilei și câte serii au fost bifate (ca sfatul de data viitoare să nu depindă de programul de atunci)
+  function klogMark(w, key){ if(!w || !sp.klog) return; var cur = sp.sets[key] || {};
+    w.ex.forEach(function(e, ei){ var L = sp.klog[e[0]]; if(!L) return; var n = 0; for(var q=0;q<e[1];q++){ if(cur[ei + '-' + q]) n++; }
+      L.forEach(function(x){ if(x.d === todayKey){ x.r = e[2]; x.n = e[1]; x.dn = n; } }); }); }
+  function repRng(t){ t = String(t || ''); if(/\ds|\d s|sec/.test(t)) return null; var m = t.match(/(\d+)\D+(\d+)/); if(m) return [+m[1], +m[2]]; m = t.match(/(\d+)/); return m ? [+m[1], +m[1]] : null; }
+  function kgSug(n, i, reps){ if(!i.last) return '';
+    var c = logCtx(i.last, n), ok = c ? c.ok : null, k = i.last.kg, up = k >= 20 ? 2.5 : 1, lw = wkRange(-1), when = (i.last.d >= lw[0] && i.last.d <= lw[1]) ? 'Săptămâna trecută' : 'Data trecută';
+    var tgt = Math.round((k + up) * 2) / 2, a = c ? repRng(c.r) : null, b = repRng(reps), diff = (a && b) ? ((b[0] + b[1]) / 2 - (a[0] + a[1]) / 2) : 0;
+    var head = '<div class="kg-sug">🎯 ' + when + ': <b>' + k + ' kg</b>' + (a && diff ? ' la ' + c.r + ' repetări' : '') + ' → ', msg;
+    if(diff >= 3){ var less = Math.round(k * (diff >= 6 ? 0.85 : 0.9) * 2) / 2; if(less >= k) less = k;
+      msg = diff >= 6 ? 'azi ai mult mai multe repetări (' + reps + '), deci ia mai puțin: cam <b>' + less + ' kg</b>'
+        : 'azi ai mai multe repetări (' + reps + '): rămâi la <b>' + k + ' kg</b>' + (less < k ? ' sau coboară spre ' + less + ' kg dacă e prea greu' : ''); }
+    else if(diff <= -3){ msg = ok === false ? 'azi ai mai puține repetări (' + reps + '): rămâi la <b>' + k + ' kg</b> și închide toate seriile' : 'azi ai mai puține repetări (' + reps + '), deci poți urca: încearcă <b>' + tgt + ' kg</b>'; }
+    else msg = ok === false ? 'azi repetă <b>' + k + ' kg</b> și închide toate seriile' : 'azi încearcă <b>' + tgt + ' kg</b>';
+    return head + msg + '</div>'; }
   function weekCard(){ var a = wkStats(0), b = wkStats(-1); if(!b.s && !a.s) return '';
     function dl(x, y){ var d = x - y; return d > 0 ? ' <i class="up">▲ +' + d + '</i>' : d < 0 ? ' <i class="dn">▼ ' + d + '</i>' : ' <i>=</i>'; }
     return '<div class="wk-rep"><b>📊 Raportul tău</b><div>Săptămâna trecută: <b>' + b.w + '</b> antrenamente · <b>' + b.s + '</b> serii</div><div>Săptămâna asta: <b>' + a.w + '</b> antrenamente' + dl(a.w, b.w) + ' · <b>' + a.s + '</b> serii' + dl(a.s, b.s) + '</div>' + (a.rec ? '<div>🏆 Recorduri noi: <b>' + a.rec + '</b></div>' : '') + '</div>'; }
   function plannedSets(){ var t = 0; Object.keys(WO).forEach(function(c){ WO[c].ex.forEach(function(e){ t += e[1]; }); }); return t; }
   var LV_NEXT = { easy:'mid', mid:'hard' }, LV_NAME = { easy:'Ușor', mid:'Mediu', hard:'Greu' };
+  function lvlWeeks(){ return Math.max(0, sp.lvlAt ? weeksBetween(sp.lvlAt, new Date()) : progWeek() - 1); }
   function lvlCard(){
-    var pl = plannedSets(); if(!pl || progWeek() < 3) return '';
-    var a = wkStats(-1).s, b = wkStats(-2).s, since = sp.lvlAt ? weeksBetween(sp.lvlAt, new Date()) : 99;
-    var ok = a >= pl * 0.8 && b >= pl * 0.8 && since >= 2;
+    var pl = plannedSets(); if(!pl || progWeek() < 5) return '';
+    var a = wkStats(-1).s, b = wkStats(-2).s, since = lvlWeeks();
+    var ok = a >= pl * 0.8 && b >= pl * 0.8 && since >= 4;   // minim 4 săptămâni la nivelul curent
     if(!ok) return '';
     if(!LV_NEXT[sp.level]) return '<div class="wk-up"><b>🏆 Ești la nivelul maxim</b><div>Două săptămâni la rând ai terminat aproape toate seriile. Continuă să crești greutățile.</div></div>';
-    return '<div class="wk-up"><b>🚀 Ești pregătit de nivelul următor</b><div>Ultimele 2 săptămâni ai terminat aproape toate seriile. Treci de la <b>' + LV_NAME[sp.level] + '</b> la <b>' + LV_NAME[LV_NEXT[sp.level]] + '</b>: exerciții mai grele și mai multe serii.</div><button class="yt-btn" data-lvlup="1" style="margin-top:8px;width:100%">Da, urcă-mă la ' + LV_NAME[LV_NEXT[sp.level]] + '</button></div>';
+    return '<div class="wk-up"><b>🚀 Poți trece la nivelul următor</b><div>Ai cel puțin 4 săptămâni la acest nivel și în ultimele 2 ai terminat aproape toate seriile. Treci de la <b>' + LV_NAME[sp.level] + '</b> la <b>' + LV_NAME[LV_NEXT[sp.level]] + '</b>: exerciții mai grele și mai multe serii.</div><button class="yt-btn" data-lvlup="1" style="margin-top:8px;width:100%">Da, urcă-mă la ' + LV_NAME[LV_NEXT[sp.level]] + '</button></div>';
   }
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('[data-lvlup]'); if(!b || !LV_NEXT[sp.level]) return;
@@ -1238,7 +1296,7 @@
       if(days > phMaxDays(level)) days = phMaxDays(level);
       var phase = ans[0] === 1 ? 6 : days === 2 ? 5 : days === 3 ? 3 : days === 4 ? 4 : 1;
       var label = PLANS[phase].label;
-      ov.innerHTML = '<div class="zp-box"><div class="zp-n">Planul tău de start</div><h3>' + label + '</h3><p>Nivel: <b>' + LV_NAME[level] + '</b></p><p class="zp-s">' + (level === 'easy' ? 'Pornești ușor, ca să înveți mișcările corect.' : level === 'mid' ? 'Ai deja baza, mergem pe un ritm serios.' : 'Ai experiență, începi direct cu exerciții avansate.') + ' Vezi doar ce e pentru nivelul tău, restul se deblochează pe rând. Crești odată cu aplicația: după 2 săptămâni în care termini aproape toate seriile, îți propun nivelul următor.</p><button class="zp-opt zp-go">Începe așa</button><button class="zp-x">Refă testul</button></div>';
+      ov.innerHTML = '<div class="zp-box"><div class="zp-n">Planul tău de start</div><h3>' + label + '</h3><p>Nivel: <b>' + LV_NAME[level] + '</b></p><p class="zp-s">' + (level === 'easy' ? 'Pornești ușor, ca să înveți mișcările corect.' : level === 'mid' ? 'Ai deja baza, mergem pe un ritm serios.' : 'Ai experiență, începi direct cu exerciții avansate.') + ' Vezi doar ce e pentru nivelul tău, restul se deblochează pe rând. Crești odată cu aplicația: după cel puțin 4 săptămâni, dacă termini aproape toate seriile, îți propun nivelul următor.</p><button class="zp-opt zp-go">Începe așa</button><button class="zp-x">Refă testul</button></div>';
       ov.querySelector('.zp-go').addEventListener('click', function(){
         close();
         if(apply){ sp.phase = phase; sp.level = level; sp.placed = 1; delete sp.legacy; sp.lvlAt = mKey(thisMon); spSave(); curWo = null; refreshWO(); renderSport(); renderPlanTiles(); }
@@ -1252,20 +1310,20 @@
     L.forEach(function(x){ if(x.kg > best) best = x.kg; if(x.d !== td) last = x; });
     var cur = L.filter(function(x){ return x.d === td; })[0];
     return { cur: cur ? cur.kg : (last ? last.kg : ''), last: last, best: best }; }
-  function kgRow(n){ var i = kgInfo(n), t = '';
+  function kgRow(n, reps){ var i = kgInfo(n), t = '';
     if(i.last) t += 'Ultima dată: <b>' + i.last.kg + ' kg</b>'; if(i.best) t += (t ? ' · ' : '') + 'Record: <b>' + i.best + ' kg</b>';
-    return '<div class="kg-row"><label>Greutate</label><input class="kg-in" type="number" inputmode="decimal" step="0.5" min="0" max="500" placeholder="kg" value="' + i.cur + '" data-n="' + String(n).replace(/"/g,'&quot;') + '"><span class="kg-t">' + (t || 'Notează greutatea și îți arăt progresul.') + '</span></div>' + kgSug(n, i); }
+    return '<div class="kg-row"><label>Greutate</label><input class="kg-in" type="number" inputmode="decimal" step="0.5" min="0" max="500" placeholder="kg" value="' + i.cur + '" data-n="' + String(n).replace(/"/g,'&quot;') + '"><span class="kg-t">' + (t || 'Notează greutatea și îți arăt progresul.') + '</span></div>' + kgSug(n, i, reps); }
   function renderWo(){
     renderWoPills();
     var w = WO[curWo], key = todayKey + '|' + curWo;
     var st = sp.sets[key] || {};
     var total = w.ex.reduce(function(a,e){ return a+e[1]; },0);
     var done = Object.keys(st).filter(function(k){ return st[k]; }).length;
-    var pw = progWeek(), wv = (pw - 1) % 4;
-    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + WAVE[wv][0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
+    var pw = progWeek(), wvT = waveTxt(pw);
+    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + wvT[0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
       weekCard() + lvlCard() +
-      '<div class="wo-warm">' + WAVE[wv][1] + '</div>' +
+      '<div class="wo-warm">' + wvT[1] + '</div>' +
       '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
     var nowEi = -1;
     w.ex.forEach(function(e,ei){ var d0 = 0; for(var q=0;q<e[1];q++){ if(st[ei + '-' + q]) d0++; } if(nowEi < 0 && d0 < e[1]) nowEi = ei; });
@@ -1279,20 +1337,22 @@
       html += '<div class="ex' + (fin ? ' ex-done' : '') + (ei === nowEi ? ' ex-now' : '') + '" id="ex' + ei + '">' + (ei === nowEi ? '<div class="ex-flag">ACUM</div>' : '') +
         '<div class="ex-top"><span class="ex-bn">' + (fin ? '✓' : (ei+1)) + '</span><div class="ex-tt"><span class="ex-n">' + e[0] + '</span>' +
         '<div class="ex-pills"><b>' + e[1] + ' × ' + e[2] + '</b><i>⏱ pauză ' + e[3] + ' s</i></div></div></div>' +
-        (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') + kgRow(e[0]) +
+        (e[4] ? '<div class="ex-tip">' + e[4] + '</div>' : '') + kgRow(e[0], e[2]) + (e[9] !== e[10] ? '<div class="ex-tip">🔁 Schimbat de tine, doar pentru azi.</div>' : '') +
         '<a class="yt-btn" href="' + e[7] + '" target="_blank" rel="noopener">▶️ Vezi video: cum se face</a>' + musicBtn(e[6]) +
-        '<details class="ex-how"' + (ei === nowEi ? ' open' : '') + '><summary>📖 Desen și pași</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
+        '<button class="yt-btn" style="margin-top:6px;width:100%;text-align:left;opacity:.8" data-swap="' + ei + '">🔁 Schimbă exercițiul</button>' +
+        '<details class="ex-how"' + (ei === nowEi ? ' open' : '') + '><summary>' + (FIGS[e[6]] && !FIGS[e[6]].f ? '📖 Pași' : '📖 Desen și pași') + '</summary>' + figHtml(e[6]) + '</details><div class="ex-sets">';
       for(var si=0; si<e[1]; si++){ var k = ei + '-' + si; html += '<button class="set-b' + (st[k]?' on':'') + '" data-k="' + k + '" data-rest="' + e[3] + '">' + (st[k] ? '✓' : (si+1)) + '</button>'; }
       html += '<button class="rest-b" data-rest="' + e[3] + '">⏱ pauză</button></div>' +
         (fin ? '<button class="ex-fin undo" data-ei="' + ei + '" data-undo="1">↩ Nu e terminat</button>' : '<button class="ex-fin" data-ei="' + ei + '">✅ Am terminat exercițiul · următorul →</button>') + '</div>';
     });
-    if(done === total) html += '<div class="wo-done">🏆 Antrenament complet! L-am bifat și pe fila Azi.</div>';
-    html += '<div class="hint">Atinge fiecare serie după ce o termini (pornește pauza) sau apasă „Am terminat exercițiul” ca să treci la următorul. Progresul se resetează în fiecare zi. Luni viitoare exercițiile se schimbă.</div>';
+    if(done === total) html += '<div class="wo-done">🏆 Antrenament complet!' + (HABITS.some(function(h){ return h.key === 'training'; }) ? ' L-am bifat și pe fila Azi.' : '') + '</div>';
+    html += '<div class="hint">Atinge fiecare serie după ce o termini (pornește pauza) sau apasă „Am terminat exercițiul” ca să treci la următorul. Bifele se resetează în fiecare zi. Primele două exerciții rămân aceleași 6 săptămâni, ca să le înveți și să vezi cum cresc kilogramele; celelalte se mai schimbă de la o săptămână la alta, ca să nu te plictisești.</div>';
     var card = document.getElementById('woCard');
     card.innerHTML = html;
     bindImgs(card);
     function afterChange(){
       var cur = sp.sets[key] || {}, d2 = Object.keys(cur).filter(function(x){ return cur[x]; }).length;
+      klogMark(w, key); spSave();
       if(d2 === total){
         var entry = getEntry(todayKey);
         if(!entry.habits.training){ entry.habits = Object.assign({}, entry.habits, { training:true }); writeDay(todayKey, entry); renderToday(); renderStreaks(); renderPastDays(); }
@@ -1315,7 +1375,7 @@
         afterChange();
         if(!undo){
           var allDone = true; for(var jj = 0; jj < w.ex.length; jj++){ var cc = 0; for(var rr = 0; rr < w.ex[jj][1]; rr++){ if(cur[jj + '-' + rr]) cc++; } if(cc < w.ex[jj][1]) allDone = false; }
-          zToast(allDone ? zJoke(['🏆 Antrenament terminat! Du-te la muncă, Hercule, ai muncit destul pentru azi.','🦍 Gata! Mușchii zic mulțumesc, șeful zice „unde ești?".','🔥 Terminat! Acum whey, mâncare și somn. În ordinea asta.']) : zJoke(['💪 Încă unul în buzunar! Următorul, nu scrolla.','😎 Ușor ca un pui la tigaie. Mai departe!','🦵 Hai că nu te omoară. Încă un exercițiu!','🏋️ Bara zice „bravo". Gantera zice „și eu".','🔥 Mușchiul crește chiar acum. Stai liniștit și mergi la următorul.']));
+          zToast(allDone ? zJoke(['🏆 Antrenament terminat! Ai muncit destul pentru azi, bravo.','🦍 Gata! Mușchii zic mulțumesc, șeful zice „unde ești?".','🔥 Terminat! Acum apă, mâncare bună și somn. În ordinea asta.']) : zJoke(['💪 Încă unul în buzunar! Următorul, nu scrolla.','😎 Ușor ca un pui la tigaie. Mai departe!','🦵 Hai că nu te omoară. Încă un exercițiu!','🏋️ Bara zice „bravo". Gantera zice „și eu".','🔥 Mușchiul lucrează chiar acum. Respiră și mergi la următorul.']));
           var nx = -1; for(var j=0;j<w.ex.length && nx<0;j++){ var c2 = 0; for(var r=0;r<w.ex[j][1];r++){ if(cur[j + '-' + r]) c2++; } if(c2 < w.ex[j][1]) nx = j; }
           var tgt = document.getElementById(nx >= 0 ? 'ex' + nx : 'woCard');
           if(tgt && tgt.scrollIntoView) setTimeout(function(){ tgt.scrollIntoView({ behavior:'smooth', block:'start' }); }, 60);
@@ -1329,9 +1389,19 @@
       sp.klog = sp.klog || {}; var L = (sp.klog[n] || []).filter(function(x){ return x.d !== todayKey; });
       if(isFinite(v) && v > 0 && v <= 500){ L.push({ d: todayKey, kg: Math.round(v*2)/2 }); L.sort(function(a,b){ return a.d < b.d ? -1 : 1; }); sp.klog[n] = L.slice(-60);
         var prev = Math.max.apply(null, L.filter(function(x){ return x.d !== todayKey; }).map(function(x){ return x.kg; }).concat([0]));
-        if(prev > 0 && v > prev) zToast(zJoke(['🏆 Record nou la ' + n + '! ' + v + ' kg. Hercule e mândru.','💥 ' + v + ' kg! Ai trecut de recordul de până acum.'])); }
+        if(prev > 0 && v > prev) zToast(zJoke(['🏆 Record nou la ' + n + '! ' + v + ' kg. Bravo, se vede munca!','💥 ' + v + ' kg! Ai trecut de recordul de până acum.'])); }
       else { sp.klog[n] = L; }
-      spSave(); }); });
+      klogMark(w, key); spSave(); }); });
+    card.querySelectorAll('[data-swap]').forEach(function(b){ b.addEventListener('click', function(){
+      var ei = +b.getAttribute('data-swap'), e = w.ex[ei]; if(!e) return;
+      var al = slotAllowed(PLANS[sp.phase], e[11]), used = {}, nv = -1, st0 = al.indexOf(e[9]);
+      w.ex.forEach(function(x, xi){ if(xi !== ei) used[x[0]] = 1; });
+      for(var j = 1; j <= al.length && nv < 0; j++){ var cv = al[(st0 + j) % al.length]; if(cv !== e[9] && !used[POOL[e[11]][cv].split('|')[0]]) nv = cv; }
+      if(nv < 0){ zToast('Nu am altă variantă potrivită pentru acest exercițiu.'); return; }
+      var m = sp.swap[key] || {}; if(nv === e[10]) delete m[ei]; else m[ei] = nv;
+      if(Object.keys(m).length) sp.swap[key] = m; else delete sp.swap[key];
+      spSave(); refreshWO(); renderWo(); renderSpToday();
+    }); });
   }
 
   /* rest timer */
@@ -1406,7 +1476,12 @@
     { id:'mel', g:4, ic:'😴', n:'Melatonină', w:'Hormonul somnului: ajută să adormi mai repede, de exemplu la schimbarea fusului orar.', d:'Cu 30–60 minute înainte de somn, doza mică de pe etichetă. Doar ocazional.' }
   ];
   var SUPP_OWN = 'zyp_supps_v1';
-  function suppOwn(){ try{ var o = JSON.parse(localStorage.getItem(SUPP_OWN) || 'null'); if(Array.isArray(o)) return o; }catch(e){} return ['d3k2','om3','cre','whey','zn','mg']; }
+  function suppOwn(){ try{ var o = JSON.parse(localStorage.getItem(SUPP_OWN) || 'null'); if(Array.isArray(o)) return o; }catch(e){}
+    /* lista veche, implicită, rămâne doar pentru cine a bifat deja suplimente cu ea; un om nou pornește cu lista goală și își alege singur */
+    var used = false; try{ var lg = JSON.parse(localStorage.getItem('byzyp_supp_v1') || 'null'); used = !!lg && typeof lg === 'object' && Object.keys(lg).some(function(k){ var d = lg[k] || {}; return Object.keys(d).some(function(x){ return d[x]; }); }); }catch(e){}
+    var def = used ? ['d3k2','om3','cre','whey','zn','mg'] : [];
+    try{ localStorage.setItem(SUPP_OWN, JSON.stringify(def)); }catch(e){}
+    return def; }
   var SUPPS = SUPP_CAT.filter(function(s){ return suppOwn().indexOf(s.id) >= 0; });
   var SUPP_G = [ { t:'09:00', l:'La micul dejun', ic:'🌅' }, { t:'17:30', l:'Înainte de sală', ic:'⚡' }, { t:'19:30', l:'După sală', ic:'💪' }, { t:'20:30', l:'La cină', ic:'🍽️' }, { t:'22:00', l:'Înainte de somn', ic:'🌙' } ];
   var SUPP_KEY = 'byzyp_supp_v1';
@@ -1431,7 +1506,7 @@
         h += '<div class="supp-row' + (day[s.id] ? ' done' : '') + '" data-id="' + s.id + '"><div class="sp-ic">' + s.ic + '</div><div class="sp-tx"><div class="supp-n">' + s.n + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Ce face:</em> ' + s.w + '</div><div class="supp-d"><em style="font-style:normal;font-weight:700;color:var(--gold)">Cum:</em> ' + s.d + '</div></div><div class="sp-ck">' + (day[s.id] ? '✓' : '') + '</div></div>';
       });
     });
-    h += '<div class="hint" style="margin:12px 0 0;">' + (suppCfg().on ? '🔔 Primești notificare cu ' + suppCfg().lead + ' minute înainte de orele tale. Le schimbi la „Alege suplimentele mele”.' : '🔕 Notificările pentru suplimente sunt oprite.') + ' Dozele sunt cele de pe ambalaj sau de la medic. Zincul și magneziul nu se iau împreună.</div>';
+    if(SUPPS.length) h += '<div class="hint" style="margin:12px 0 0;">' + (suppCfg().on ? '🔔 Primești notificare cu ' + suppCfg().lead + ' minute înainte de orele tale. Le schimbi la „Alege suplimentele mele”.' : '🔕 Notificările pentru suplimente sunt oprite.') + ' Dozele sunt cele de pe ambalaj sau de la medic.' + (suppOwn().indexOf('zn') >= 0 && suppOwn().indexOf('mg') >= 0 ? ' Zincul și magneziul nu se iau împreună.' : '') + '</div>';
     if(!SUPPS.length) h += '<div class="hint" style="margin:12px 0 0;">Nu ai ales niciun supliment. Apasă mai jos și alege-le pe ale tale.</div>';
     h += '<button class="onb-skip" id="suppPick" style="display:block;margin:10px 0 0;color:var(--gold);font-weight:700;">✏️ Alege suplimentele mele</button>';
     el.innerHTML = h;
@@ -1460,6 +1535,8 @@
   renderSport();
   sshow('plan');
   renderPlanTiles();
+  // modulele pornite/oprite din Profil sau din ghidul de început: reîmprospătează plăcuțele din fila Azi
+  try{ if(window.MutationObserver) new MutationObserver(function(){ try{ renderPlanTiles(); }catch(e){} }).observe(root, { attributes:true, attributeFilter:['class'] }); }catch(e){}
   // new day or new week while the app stays open → refresh so dates and weeks move forward
   function checkNewDay(){
     if(dateKey(new Date()) === todayKey) return;
@@ -1547,7 +1624,7 @@
     var imc = (w && h) ? (w / Math.pow(h/100, 2)) : null;
     var chip = function(v,l){ return '<div class="prof-chip"><b>' + v + '</b><span>' + l + '</span></div>'; };
     document.getElementById('profChips').innerHTML =
-      chip(profile.age || '–', 'ani') + chip(h ? h : '–', 'cm') + chip(w ? fmtKg(w) : '–', 'kg') + chip(imc ? imc.toFixed(1) : '–', 'IMC');
+      chip(profile.age || '–', 'ani') + chip(h ? h : '–', 'cm') + chip(w ? fmtKg(w) : '–', 'kg') + chip(imc ? imc.toFixed(1).replace('.', ',') : '–', 'IMC');
 
     var cnt = function(key){ return keys.filter(function(k){ return data[k] && data[k].habits && data[k].habits[key]; }).length; };
     var perfect = keys.filter(function(k){ return allDone(data[k]); }).length;
@@ -1556,14 +1633,16 @@
     var tradeSum = trades.reduce(function(a,t){ return a + (t.result||0); }, 0);
     var investSum = investments.reduce(function(a,i){ return a + (i.amount||0); }, 0);
     var tile = function(ic,v,l,cls){ return '<div class="stat-tile"><div class="st-ic">' + ic + '</div><div class="st-v ' + (cls||'') + '">' + v + '</div><div class="st-l">' + l + '</div></div>'; };
+    // arătăm doar ce a ales omul: obiceiurile lui și modulul Bani doar dacă e pornit
+    var hasH = function(key){ return HABITS.some(function(x){ return x.key === key; }); }, pMoney = !root.classList.contains('pf-nomoney') && zMod('money'), HN = HABITS.length;
     document.getElementById('statGrid').innerHTML =
-      tile('🚭', noSmoke, 'zile fără țigări', 'pos') +
-      tile('🍬', noSugar, 'zile fără zahăr', 'pos') +
-      tile('💪', train, 'zile de antrenament') +
-      tile('⭐', perfect, 'zile perfecte (5/5)', 'gold') +
+      (hasH('nosmoke') ? tile('🚭', noSmoke, 'zile fără țigări', 'pos') : '') +
+      (hasH('nosugar') ? tile('🍬', noSugar, 'zile fără zahăr', 'pos') : '') +
+      (hasH('training') ? tile('💪', train, 'zile de antrenament') : '') +
+      tile('⭐', perfect, 'zile perfecte (' + HN + '/' + HN + ')', 'gold') +
       tile('🔥', best, 'cel mai lung șir', 'gold') +
-      tile('📊', (tradeSum>=0?'+':'-') + '€' + Math.abs(tradeSum).toFixed(2), 'trading total', tradeSum>=0?'pos':'neg') +
-      tile('🪙', '€' + investSum.toFixed(0), 'investit total') +
+      (pMoney ? tile('📊', (tradeSum>=0?'+':'-') + '€' + Math.abs(tradeSum).toFixed(2), 'trading total', tradeSum>=0?'pos':'neg') +
+      tile('🪙', '€' + investSum.toFixed(0), 'investit total') : '') +
       tile('📸', keys.filter(function(k){ return data[k] && data[k].photo; }).length, 'poze de progres');
 
     var hasWin = trades.some(function(t){ return t.result > 0; });
@@ -1580,7 +1659,7 @@
       ['🪙','3 luni investite', investments.length >= 3],
       ['⚖️','Prima cântărire', wk.length >= 1],
       ['📸','Prima poză de progres', keys.some(function(k){ return data[k] && data[k].photo; })]
-    ];
+    ].filter(function(b){ if(/țigări/.test(b[1])) return hasH('nosmoke'); if(/zahăr/.test(b[1])) return hasH('nosugar'); if(/antrenament/i.test(b[1])) return hasH('training'); if(/tranzacție|investite/.test(b[1])) return pMoney; return true; });
     var on = badges.filter(function(b){ return b[2]; }).length;
     document.getElementById('badgeCount').textContent = on + ' din ' + badges.length + ' deblocate';
     document.getElementById('badgeGrid').innerHTML = badges.map(function(b){
@@ -3112,12 +3191,13 @@
     var D = nuDay(W.kg, P.cm, P.age, nu.sex, nu.act, nu.goal, nu.v); D.W = W; D.P = P; nu.D = D; var c = D.c, eaten = nuEaten(D), mask = nu.log[todayKey] || 0;
     var sum = { kcal:0, p:0, c:0, f:0 }; D.meals.forEach(function(m){ sum.kcal += m.tot.kcal; sum.p += m.tot.p; sum.c += m.tot.c; sum.f += m.tot.f; });
     var gp = function(v, ic, t){ return '<button data-g="goal" data-v="' + v + '" class="' + (nu.goal === v ? 'on' : '') + '"><i>' + ic + '</i>' + t + '</button>'; };
+    var eg = c.guard ? 'maintain' : nu.goal;   /* cu protecția activă (sub 18 ani / sub greutatea normală) planul e de menținere, deci și textele */
     var needHA = !(parseFloat((profile || {}).height) > 0) || !(parseInt((profile || {}).age, 10) > 0);
     var h = '<div class="nu-q">Ești:</div><div class="nu-pills nu-goal nu-sex"><button data-g="sex" data-v="f" class="' + (nu.sex === 'f' ? 'on' : '') + '"><i>👩</i>Femeie</button><button data-g="sex" data-v="m" class="' + (nu.sex === 'm' ? 'on' : '') + '"><i>👨</i>Bărbat</button></div>' +
       (needHA ? '<div class="nu-tip">📏 Ca să socotesc corect am nevoie și de <b>înălțime</b> și <b>vârstă</b>:<div class="nu-ha"><input id="nuCm" inputmode="numeric" maxlength="3" placeholder="cm" value="' + (parseFloat((profile || {}).height) || '') + '"><input id="nuAge" inputmode="numeric" maxlength="2" placeholder="ani" value="' + (parseInt((profile || {}).age, 10) || '') + '"><button id="nuHaOk">Salvează</button></div></div>' : '') +
-      (c.guard ? '<div class="nu-tip">ℹ️ ' + (c.guard === 'age' ? 'Sub 18 ani nu facem plan de slăbit: corpul tău încă crește. Îți arăt cât să mănânci ca să fii în formă.' : 'Greutatea ta e deja sub cea normală pentru înălțimea ta, așa că nu îți fac plan de slăbit. Îți arăt cât să mănânci ca să te menții sănătos.') + ' Dacă ai întrebări, vorbește cu un medic.</div>' : '') +
+      (c.guard ? '<div class="nu-tip">ℹ️ ' + (c.guard === 'age' ? 'Sub 18 ani nu facem plan de slăbit: corpul tău încă crește. Îți arăt cât să mănânci ca să fii în formă.' : 'Greutatea ta e deja sub cea normală pentru înălțimea ta, așa că nu îți fac plan de slăbit. Îți arăt cât să mănânci ca să îți păstrezi greutatea și sănătatea.') + ' Dacă ai întrebări, vorbește cu un medic.</div>' : '') +
       '<div class="nu-q">Ce vrei să faci?</div><div class="nu-pills nu-goal">' + gp('lose', '🔥', 'Slăbesc') + gp('maintain', '⚖️', 'Rămân la fel') + gp('gain', '💪', 'Pun mușchi') + '</div>' +
-      '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>calorii pe zi</span></div><div class="nu-why">' + (nu.goal === 'lose' ? 'Atât mănânci ca să slăbești încet și sănătos, fără foame.' : nu.goal === 'gain' ? 'Atât mănânci ca să pui mușchi, nu grăsime.' : 'Atât mănânci ca să rămâi la greutatea de acum.') + ' Nu trebuie să numeri nimic: mesele de mai jos adună exact atât.</div><div class="nu-mac">' +
+      '<div class="nu-hero"><div class="nu-kc"><b>' + nuN(Math.round(c.kcal / 10) * 10) + '</b><span>calorii pe zi</span></div><div class="nu-why">' + (eg === 'lose' ? 'Atât mănânci ca să slăbești încet și sănătos, fără foame.' : eg === 'gain' ? 'Atât mănânci ca să pui mușchi, nu grăsime.' : 'Atât mănânci ca să rămâi la greutatea de acum.') + ' Nu trebuie să numeri nimic: mesele de mai jos adună exact atât.</div><div class="nu-mac">' +
       '<div style="--c:#5FBF8F"><b>' + nuN(c.P) + ' g</b><span>Proteină<small>pentru mușchi</small></span></div><div style="--c:#A3FF12"><b>' + nuN(c.C) + ' g</b><span>Carbohidrați<small>pentru energie</small></span></div><div style="--c:#E0685C"><b>' + nuN(c.F) + ' g</b><span>Grăsimi<small>pentru sănătate</small></span></div></div>' +
       '<div class="nu-bars"><div><span>Mâncat azi · calorii</span><em>' + nuN(eaten.kcal) + ' / ' + nuN(Math.round(c.kcal / 10) * 10) + '</em><i style="--w:' + Math.min(100, eaten.kcal / c.kcal * 100).toFixed(0) + '%"></i></div><div><span>Mâncat azi · proteină</span><em>' + nuN(eaten.p) + ' / ' + nuN(c.P) + ' g</em><i style="--w:' + Math.min(100, eaten.p / c.P * 100).toFixed(0) + '%;--b:#5FBF8F"></i></div></div>' +
       '<div class="nu-sub">💧 Bea <b>' + nuN(c.water, 1) + ' L</b> de apă pe zi (cam ' + Math.round(c.water * 4) + ' pahare). În zilele de sală, încă 2 pahare.</div></div>' +
@@ -3135,18 +3215,18 @@
       var pill = function(grp, val, txt, on){ return '<button data-g="' + grp + '" data-v="' + val + '" class="' + (on ? 'on' : '') + '">' + txt + '</button>'; };
       h += '<div class="nu-set"><div class="nu-sl">Cât te miști</div><div class="nu-pills">' + pill('act', '1.2', 'Deloc · nu mă antrenez încă', nu.act === 1.2) + pill('act', '1.375', 'Ușor · 1–3 antrenamente', nu.act === 1.375) + pill('act', '1.55', 'Mediu · 3–5', nu.act === 1.55) + pill('act', '1.725', 'Mult · 6–7', nu.act === 1.725) + '</div>' +
         
-        '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuKgTxt(W.kg) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (nu.goal === 'lose' ? 'Slăbești încet: −15%.' : nu.goal === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (nu.goal === 'lose' ? '2,0' : nu.goal === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
+        '<div class="nu-how"><b>Cum am calculat</b><br>Date: ' + nuKgTxt(W.kg) + ' kg, ' + P.cm + ' cm, ' + P.age + ' ani.<br>Metabolism de bază (Mifflin-St Jeor): <b>' + nuN(c.bmr) + ' kcal</b>. Cu mișcarea ta: <b>' + nuN(c.tdee) + ' kcal</b>. ' + (eg === 'lose' ? 'Slăbești încet: −15%.' : eg === 'gain' ? 'Masă musculară: +10%.' : 'Menținere: fără schimbare.') + '<br>Proteină <b>' + (eg === 'lose' ? '2,0' : eg === 'gain' ? '1,9' : '1,8') + ' g/kg</b>, grăsimi cel puțin 0,8 g/kg (min. 25% din calorii), restul carbohidrați. Mesele: 28% dimineața, 40% la prânz, 32% seara.<br>Cântărești carnea <b>crudă</b>; orezul, pastele, ovăzul, quinoa și lintea <b>uscate</b>.</div></div>';
     }
-    h += '<div class="hint">Estimare orientativă, nu sfat medical. Dacă ai probleme de sănătate sau ești însărcinată, vorbește cu medicul sau cu un dietetician. Fără zahăr adăugat și fără produse procesate, cum ți-ai propus.</div>';
+    h += '<div class="hint">Estimare orientativă, nu sfat medical. Dacă ai probleme de sănătate sau ești însărcinată, vorbește cu medicul sau cu un dietetician. Mesele sunt fără zahăr adăugat și fără produse procesate.</div>';
     main.innerHTML = h;
     main.querySelectorAll('[data-eat]').forEach(function(b){ b.addEventListener('click', function(){ var i = +b.getAttribute('data-eat'); nu.log[todayKey] = (nu.log[todayKey] || 0) ^ (1 << i); nuSaveLog(); nuRender(); }); });
     main.querySelectorAll('[data-var]').forEach(function(b){ b.addEventListener('click', function(){ var k = NU_M[+b.getAttribute('data-var')].k; nu.v[k] = ((nu.v[k] || 0) + 1) % NU_T[k].length; nuSaveCfg(); nuRender(); }); });
     var cf = document.getElementById('nuCfg'); if(cf) cf.addEventListener('click', function(){ nu.open = !nu.open; nuRender(); });
-    var hok = document.getElementById('nuHaOk'); if(hok) hok.addEventListener('click', function(){ var cmv = parseInt(document.getElementById('nuCm').value, 10), agv = parseInt(document.getElementById('nuAge').value, 10); if(!(cmv >= 120 && cmv <= 230) || !(agv >= 13 && agv <= 99)){ toast('Scrie înălțimea în cm și vârsta în ani'); return; } window.__zBasics({ height: cmv, age: agv }); });
+    var hok = document.getElementById('nuHaOk'); if(hok) hok.addEventListener('click', function(){ var cmv = parseInt(document.getElementById('nuCm').value, 10), agv = parseInt(document.getElementById('nuAge').value, 10); if(!(cmv >= 120 && cmv <= 230) || !(agv >= 13 && agv <= 99)){ zToast('Scrie înălțimea în cm și vârsta în ani'); return; } window.__zBasics({ height: cmv, age: agv }); });
     main.querySelectorAll('.nu-pills button').forEach(function(b){ b.addEventListener('click', function(){ var g = b.getAttribute('data-g'), v = b.getAttribute('data-v'); if(g === 'sex') nu.sex = v; else if(g === 'act') nu.act = +v; else nu.goal = v; nuSaveCfg(); nuRender(); }); });
   }
   function nuAnswer(t){        // for Jarvis
-    var D = nuCompute(); if(!D) return zN() + 'nu ai notat încă greutatea. Scrie-o în Mâncare, Calculator, și îți spun tot.';
+    var D = nuCompute(); if(!D) return zN() + 'nu ai notat încă greutatea. Scrie-o în fila Mâncare și îți spun tot.';
     var c = D.c, pick = /dimineata|mic dejun/.test(t) ? 0 : /pranz/.test(t) ? 1 : /seara|cina/.test(t) ? 2 : -1;
     if(pick >= 0){ var m = D.meals[pick]; return zN() + '' + m.m.n.toLowerCase() + ' mănânci ' + m.name.toLowerCase() + ': ' + m.items.map(function(it){ return NU_F[it.k].n.split(' (')[0].toLowerCase().replace(' / ', ' sau ') + ' ' + nuQty(it.k, it.g).replace(/ \(.*\)/, '').replace(' g', ' de grame'); }).join(', ') + '. Asta înseamnă aproximativ ' + nuN(m.tot.kcal) + ' calorii și ' + nuN(m.tot.p) + ' grame de proteină.'; }
     var e = nuEaten(D);
@@ -3672,18 +3752,24 @@
     document.getElementById('rpNext').disabled = rpOffset >= 0;
     var sc = W.pct, dsc = sc - P.pct;
     var msg = sc >= 90 ? ['Săptămână de campion 🏆', 'Aproape tot bifat. Asta e disciplina care schimbă o viață.'] : sc >= 70 ? ['Săptămână foarte bună 💪', 'Ai ținut ritmul. Mai strânge puțin la obiceiul cel mai slab.'] : sc >= 45 ? ['Săptămână ok, se poate mai bine', 'Ai făcut pași. Alege un singur obicei pe care să-l bifezi zilnic săptămâna viitoare.'] : ['Săptămână grea', 'Se întâmplă. Nu contează căderea, contează că revii. Începe mâine cu cel mai ușor obicei.'];
+    var anyTick = HABITS.some(function(x){ return W.hab[x.key] > 0; }), HN = HABITS.length, rpSmoke = HABITS.some(function(x){ return x.key === 'nosmoke'; }), rpTrain = HABITS.some(function(x){ return x.key === 'training'; });
+    if(!anyTick && W.current) msg = ['Săptămâna abia începe', 'Bifează obiceiurile în fila Azi și aici vezi cum merge săptămâna.'];
+    // antrenamente: zilele cu serii bifate în Sport sau cu obiceiul „Antrenament” bifat
+    var rpWo = 0; (function(){ var a = dateKey(W.ws), b = dateKey(W.we), dd = {}; try{ Object.keys(sp.sets || {}).forEach(function(k){ var d = k.split('|')[0]; if(d < a || d > b) return; var o = sp.sets[k] || {}; if(Object.keys(o).some(function(x){ return o[x]; })) dd[d] = 1; }); }catch(e){}
+      Object.keys(data).forEach(function(k){ if(k >= a && k <= b && data[k] && data[k].habits && data[k].habits.training) dd[k] = 1; }); rpWo = Object.keys(dd).length; })();
+    var gainGoal = nu.goal === 'gain';
     var C = 2 * Math.PI * 30, col = sc >= 70 ? 'var(--accent)' : sc >= 45 ? 'var(--gold)' : 'var(--danger)';
     var h = '<div class="rp-score"><svg class="rp-ring" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="37" cy="37" r="30" fill="none" stroke="' + col + '" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + (C * sc / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 37 37)"/><text x="37" y="42" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)" font-family="monospace">' + sc + '%</text></svg>' +
       '<div class="rp-msg"><b>' + msg[0] + '</b><span>' + msg[1] + (rpOffset > -52 ? '<br>Față de săptămâna dinainte: <b style="display:inline;font-size:12px" class="' + (dsc >= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(dsc, 0, '', ' puncte') + '</b>' : '') + '</span></div></div>';
     // habits
     h += '<div class="rp-sec"><h4>✅ Obiceiuri · ' + W.n + ' zile</h4><div class="rp-hab">' + HABITS.map(function(x){ var v = W.hab[x.key]; return '<div><i>' + x.ic + '</i><b class="' + (v === W.n ? 'rp-good' : v <= W.n / 2 ? 'rp-bad' : '') + '">' + v + '/' + W.n + '</b><span>' + ({ nosmoke:'țigări', nosugar:'zahăr', water:'apă', training:'sport', food:'mâncare' }[x.key] || x.label) + '</span></div>'; }).join('') + '</div>' +
-      '<div class="rp-row" style="margin-top:8px;"><span>Zile perfecte (5/5)</span><b>' + W.perfect + '</b></div><div class="rp-row"><span>Zile la rând fără țigări</span><b class="rp-good">' + W.streak + '</b></div>' +
+      '<div class="rp-row" style="margin-top:8px;"><span>Zile perfecte (' + HN + '/' + HN + ')</span><b>' + W.perfect + '</b></div>' + (rpSmoke ? '<div class="rp-row"><span>Zile la rând fără țigări</span><b class="rp-good">' + W.streak + '</b></div>' : '') +
       (W.photos ? '<div class="rp-row"><span>Poze de progres</span><b>' + W.photos + '</b></div>' : '') + '</div>';
     // body
     var wd = (W.wEnd != null && (W.prevW != null || W.wStart != null)) ? W.wEnd - (W.prevW != null ? W.prevW : W.wStart) : null;
     h += '<div class="rp-sec"><h4>⚖️ Corp</h4><div class="rp-row"><span>Greutate la final</span><b>' + (W.wEnd != null ? fmtKg(W.wEnd) + ' kg' : 'nenotată') + '</b></div>' +
-      '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null ? '' : wd <= 0 ? 'rp-good' : 'rp-bad') + '">' + sgn(wd, 2, '', ' kg') + '</b></div>' +
-      '<div class="rp-row"><span>Antrenamente bifate</span><b>' + W.hab.training + ' / ' + W.n + '</b></div></div>';
+      '<div class="rp-row"><span>Schimbare în săptămână</span><b class="' + (wd == null || !wd ? '' : (gainGoal ? wd > 0 : wd < 0) ? 'rp-good' : nu.goal === 'maintain' ? '' : 'rp-bad') + '">' + sgn(wd, 2, '', ' kg') + '</b></div>' +
+      ((rpTrain || zMod('sport')) ? '<div class="rp-row"><span>Zile cu antrenament</span><b>' + rpWo + ' / ' + W.n + '</b></div>' : '') + '</div>';
     if(W.fit){
       var pf = P.fit;
       h += '<div class="rp-sec"><h4>❤️ Fitness (din Sănătate)</h4><div class="rp-row"><span>Pași pe zi (medie)</span><b>' + Math.round(W.fit.steps).toLocaleString('ro-RO') + (pf ? ' <span class="' + (W.fit.steps >= pf.steps ? 'rp-good' : 'rp-bad') + '" style="font-size:10.5px">' + sgn(W.fit.steps - pf.steps, 0) + '</span>' : '') + '</b></div>' +
@@ -3717,7 +3803,7 @@
     document.getElementById('rpCopy').addEventListener('click', function(){
       var t = 'By ZyP · Raport ' + fmt(W.ws) + ' – ' + fmt(W.we) + '\nScor: ' + sc + '% (' + msg[0] + ')\n' +
         HABITS.map(function(x){ return x.ic + ' ' + x.label + ': ' + W.hab[x.key] + '/' + W.n; }).join('\n') +
-        '\nZile perfecte: ' + W.perfect + ' · fără țigări la rând: ' + W.streak +
+        '\nZile perfecte: ' + W.perfect + (rpSmoke ? ' · fără țigări la rând: ' + W.streak : '') +
         '\nGreutate: ' + (W.wEnd != null ? fmtKg(W.wEnd) + ' kg (' + sgn(wd, 2, '', ' kg') + ')' : '–') +
         '\nAvere: ' + (W.worthEnd != null ? '€' + Math.round(W.worthEnd) + ' (' + sgn(dw, 0, '€') + ')' : '–') +
         (W.fit ? '\nFitness: ' + Math.round(W.fit.steps) + ' pași/zi, ' + Math.round(W.fit.kcal) + ' kcal, ' + Math.round(W.fit.exMin) + ' min exercițiu' : '') +
@@ -3773,13 +3859,17 @@
       ['food', ['am mancat curat','am mancat sanatos','mancare curata','bifeaza mancare']]
     ];
     var done = [], already = [];
-    if(!jHas(t, ['cate','cat','cum','ce '])) ticks.forEach(function(tk){ if(jHas(t, tk[1])){ var r = jTick(tk[0]); var lbl = HABITS.filter(function(x){ return x.key === tk[0]; })[0].label.toLowerCase(); if(r === 'already') already.push(lbl); else if(r) done.push(lbl); } });
+    if(!jHas(t, ['cate','cat','cum','ce '])) ticks.forEach(function(tk){ if(jHas(t, tk[1])){ var hb = HABITS.filter(function(x){ return x.key === tk[0]; })[0]; if(!hb) return; var r = jTick(tk[0]); var lbl = hb.label.toLowerCase(); if(r === 'already') already.push(lbl); else if(r) done.push(lbl); } });
     if(done.length || already.length){
       var left = jLeft().filter(function(x){ return done.indexOf(x.label.toLowerCase()) < 0; });
       var msg = zN() + '' + (done.length ? 'am bifat ' + done.join(' și ') + '. ' : '') + (already.length ? (already.join(' și ') + ' era deja bifat. ') : '');
       msg += left.length ? 'Mai ai ' + left.length + ': ' + left.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai bifat tot azi. Zi perfectă, bravo! 🔥';
       return msg;
     }
+    // --- bani / aur / trading: doar pentru cine are modulul Bani pornit ---
+    var jMon = zMod('money') && !root.classList.contains('pf-nomoney');
+    if(!jMon && (jHas(t, ['terminal','mod trader','seif','lingou','tradingview','trading view','linie de trend','linii de trend','trendline','aurul','gold','xau','strategii','mt5','metatrader','trading','avere','cati bani','investit','etf','bitcoin','stiri','stirea']) || /\b(aur|eth|ethereum|bani|stire)\b/.test(t))) return zN() + 'partea de bani nu e pornită în aplicația ta. Te pot ajuta cu ' + jTopics() + '.';
+    if(jMon){
     // --- open views ---
     if(jHas(t, ['terminal','mod trader','ecran de trader'])){ setTimeout(openTerminal, 400); return zN() + 'deschid terminalul de trader.'; }
     if(jHas(t, ['seif','lingou','lingouri','vault'])){ setTimeout(openVault, 400); var w0 = jWorth(); return zN() + 'deschid seiful. ' + (w0 ? 'Ai ' + Math.floor(w0.now / 100) + ' lingouri, adică ' + jNum(w0.now) + ' euro.' : ''); }
@@ -3835,7 +3925,7 @@
     }
     // --- MT5 account ---
     if(jHas(t, ['mt5','metatrader','contul meu','cont real','pozitiile mele','equity','balanta','contul de trading'])){
-      var S5 = mt5State; if(!S5 || !S5.info) return zN() + 'contul MT5 nu e conectat încă. După ce punem cheile MetaApi, îți spun tot despre el.';
+      var S5 = mt5State; if(!S5 || !S5.info) return zN() + 'contul MT5 nu e conectat.';
       var ps5 = S5.positions || [], fl5 = ps5.map(mt5Live).reduce(function(a, x){ return a + (x.profit || 0); }, 0);
       var c5 = S5.info.currency === 'USD' ? ' dolari' : ' ' + (S5.info.currency || '');
       return zN() + 'în contul MT5 ai o balanță de ' + jNum(S5.info.balance, 2) + c5 + ' și equity ' + jNum(S5.info.balance + fl5, 2) + '. ' +
@@ -3853,20 +3943,22 @@
     }
     if(jHas(t, ['investit','investitii','etf','bitcoin'])){
       var tot = investments.reduce(function(a, x){ return a + (+x.amount || 0); }, 0);
-      return zN() + 'ai investit în total ' + jNum(tot) + ' euro, în ' + investments.length + ' luni. Continuă cu 500 pe lună și banii lucrează pentru tine.';
+      return zN() + 'ai investit în total ' + jNum(tot) + ' euro, în ' + investments.length + ' luni.';
+    }
     }
     // --- habits / streaks ---
-    if(jHas(t, ['motiveaza','pofta','greu','nu mai pot','ajuta','ajutor'])){
+    if(jHas(t, ['motiveaza','pofta','greu','nu mai pot','ajuta'])){
       return zN() + 'ascultă-mă: pofta trece în trei până la cinci minute. Respiră adânc de patru ori, bea un pahar de apă și mergi zece pași. Ai ajuns la ziua ' + jDayNum() + '. Nu da totul înapoi pentru cinci minute.';
     }
     if(jHas(t, ['tigari','fumat','fumez','tigara'])){
+      if(!Z_SMOKE) return zN() + 'nu urmărești țigările în aplicație. Te pot ajuta cu obiceiurile tale, sala și mâncarea.';
       var sf = jSmokeFree(); return zN() + 'ai ' + sf + (sf === 1 ? ' zi' : ' zile') + ' la rând fără țigări. ' + (sf >= 7 ? 'Plămânii tăi deja respiră mai bine. Nu da totul înapoi pentru una singură.' : 'Fiecare zi contează. Dacă vine pofta, trece în câteva minute: bea un pahar de apă.');
     }
     if(jHas(t, ['ce mai am','ce am de bifat','obiceiuri','bifat','ce am facut','cum stau azi'])){
       var lf = jLeft(), dnN = HABITS.length - lf.length;
       return zN() + 'azi ai bifat ' + dnN + ' din ' + HABITS.length + '. ' + (lf.length ? 'Mai ai: ' + lf.map(function(x){ return x.label.toLowerCase(); }).join(', ') + '.' : 'Ai terminat tot. Zi perfectă! 🔥');
     }
-    if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ return zN() + 'azi e ziua ' + jDayNum() + ' din viața ta nouă. Ai ' + jSmokeFree() + ' zile la rând fără țigări.'; }
+    if(jHas(t, ['ziua','cate zile','viata noua','de cand'])){ var sfz = jSmokeFree(); return zN() + 'azi e ziua ' + jDayNum() + ' din viața ta nouă.' + (Z_SMOKE ? ' Ai ' + sfz + (sfz === 1 ? ' zi' : ' zile') + ' la rând fără țigări.' : ''); }
     if(jHas(t, ['greutate','kg','kilograme','cantaresc'])){
       var ws = Object.keys(data).sort().filter(function(k){ return data[k] && data[k].weight != null; });
       if(!ws.length) return zN() + 'n-ai notat încă greutatea. O poți scrie pe fila Azi, la jurnalul zilei.';
@@ -3877,7 +3969,8 @@
     if(jHas(t, ['sala','sport','antrenament azi','ce am azi','planul','azi ce'])){
       var code = woOfDay(wIdx), md = document.querySelectorAll('.mm-day')[wIdx], lunch = '';
       if(md){ var fs = md.querySelectorAll('.mm-food'); lunch = fs[1] ? fs[1].textContent : ''; }
-      return zN() + '' + (/odihn/i.test(woLabel(code)) ? 'azi e zi de odihnă, fără sală.' : 'azi la sport ai ' + woLabel(code) + '.') + (lunch ? ' La prânz: ' + lunch + '.' : '') + (newsTarget ? ' Următoarea știre importantă e la ' + hhmm(newsTarget.t) + '.' : '') + ' Mai ai ' + jLeft().length + ' obiceiuri de bifat.';
+      var jl = jLeft().length; if(!zMod('food') || root.classList.contains('pf-nofood')) lunch = '';
+      return zN() + '' + ((!zMod('sport') || root.classList.contains('pf-nosport')) ? '' : /odihn/i.test(woLabel(code)) ? 'azi e zi de odihnă, fără antrenament.' : 'azi la sport ai ' + woLabel(code) + '.') + (lunch ? ' La prânz: ' + lunch + '.' : '') + (jMon && newsTarget ? ' Următoarea știre importantă e la ' + hhmm(newsTarget.t) + '.' : '') + (jl ? ' Mai ai ' + jl + (jl === 1 ? ' obicei' : ' obiceiuri') + ' de bifat.' : ' Ai bifat toate obiceiurile de azi.');
     }
     if(jHas(t, ['mananc','mancare','pranz','cina','meniu'])){
       var md2 = document.querySelectorAll('.mm-day')[wIdx]; var f2 = md2 ? Array.from(md2.querySelectorAll('.mm-food')).map(function(x){ return x.textContent; }) : [];
@@ -3887,10 +3980,12 @@
       var W = (typeof weekStats === 'function') ? weekStats(0) : null;
       return W ? zN() + 'săptămâna asta ai bifat ' + W.pct + ' la sută din obiceiuri, cu ' + W.perfect + ' zile perfecte.' + (W.tw ? ' La trading: ' + W.tw + ' tranzacții, ' + (W.pnl >= 0 ? 'plus ' : 'minus ') + jNum(Math.abs(W.pnl), 2) + ' euro.' : '') : zN() + 'raportul se află la Profil.';
     }
-    if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + zS() + '! Sunt aici. Întreabă-mă de aur, intrări, știri, bani, sală sau obiceiuri.'; }
-    if(jHas(t, ['ce poti','ajutor comenzi','ce stii','comenzi'])){ return zN() + 'mă poți întreba: cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, câte zile fără țigări, ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune: am băut apă, am fost la sală, deschide terminalul, deschide seiful.'; }
-    return zN() + 'n-am înțeles exact. Poți să mă întrebi de aur, intrări, știri, bani, trading, țigări, obiceiuri, sală sau mâncare.';
+    if(jHas(t, ['salut','buna','hey','hei','servus','ce faci'])){ return hi + zS() + '! Sunt aici. Întreabă-mă de ' + jTopics() + '.'; }
+    if(jHas(t, ['ce poti','ajutor','ce stii','comenzi'])){ var jm = jMon; return zN() + 'mă poți întreba: ' + (jm ? 'cum stă aurul, ce intrări sunt deschise, care e cea mai bună strategie, când e următoarea știre, câți bani am, cum merge tradingul, ' : '') + (Z_SMOKE ? 'câte zile fără țigări, ' : '') + 'ce mai am de bifat, ce am azi la sală, ce mănânc azi, cum a fost săptămâna. Sau spune ce ai făcut, de exemplu: ' + (HABITS[0] ? 'bifează ' + ({ nosmoke:'țigări', nosugar:'zahăr', water:'apa', training:'sala', food:'mâncare' }[HABITS[0].key] || 'obiceiul') : 'ce mai am de bifat') + (jm ? ', deschide terminalul, deschide seiful.' : '.'); }
+    if(jHas(t, ['supliment','vitamin','creatin','magneziu'])){ return zN() + (zMod('supp') ? 'suplimentele tale sunt pe fila Azi, la cardul Suplimente: acolo vezi ce iei și la ce oră, și le bifezi.' : 'partea de suplimente nu e pornită. O poți porni din Profil, la „Ce vrei în aplicație”.'); }
+    return zN() + 'n-am înțeles exact. Poți să mă întrebi de ' + jTopics() + '.';
   }
+  function jTopics(){ var a = []; if(zMod('money') && !root.classList.contains('pf-nomoney')) a.push('bani', 'Ethereum'); if(Z_SMOKE) a.push('țigări'); a.push('obiceiuri'); if(zMod('sport')) a.push('sală'); if(zMod('food')) a.push('mâncare'); a.push('greutate'); return a.slice(0, -1).join(', ') + ' sau ' + a[a.length - 1]; }
 
   var jRec = null, jListening = false;
   function jSpeak(text){
@@ -3915,7 +4010,7 @@
       ov.innerHTML = '<div class="jv-card"><button class="td-x jv-close" aria-label="Închide">✕</button>' +
         '<div class="jv-orb" id="jvOrb"><span></span><span></span><span></span></div>' +
         '<div class="jv-status" id="jvStatus">Atinge sfera și vorbește</div>' +
-        '<div class="jv-sugg">' + ['Cum stă aurul?','Ce intrări sunt deschise?','Câți bani am?','Ce am azi?','Am băut apă','Câte zile fără țigări?'].map(function(s){ return '<button>' + s + '</button>'; }).join('') + '</div>' +
+        '<div class="jv-sugg">' + (zMod('money') && !root.classList.contains('pf-nomoney') ? (window.SHOW_GOLD ? ['Cum stă aurul?','Ce intrări sunt deschise?'] : ['Cât e Ethereum?']).concat(['Câți bani am?']) : (zMod('sport') ? ['Ce am azi la sală?'] : []).concat(zMod('food') ? ['Ce mănânc azi?'] : []).concat(['Cum a fost săptămâna?'])).concat(['Ce mai am de bifat?']).concat(HABITS.some(function(x){ return x.key === 'water'; }) ? ['Am băut apă'] : []).concat(Z_SMOKE ? ['Câte zile fără țigări?'] : []).map(function(s){ return '<button>' + s + '</button>'; }).join('') + '</div>' +
         '<div class="jv-type"><input id="jvInput" placeholder="…sau scrie aici" autocomplete="off"><button id="jvSend">➤</button></div>' +
         '<div class="jv-log" id="jvLog"></div></div>';
       document.body.appendChild(ov);

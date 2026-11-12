@@ -11,7 +11,7 @@
   function b64ToU8(b){ var pad = '='.repeat((4 - b.length % 4) % 4); var raw = atob((b + pad).replace(/-/g,'+').replace(/_/g,'/')); var a = new Uint8Array(raw.length); for(var i=0;i<raw.length;i++) a[i] = raw.charCodeAt(i); return a; }
   var reg = null;
   var cloudNote = document.createElement('div'); cloudNote.className = 'hint'; cloudNote.style.cssText = 'margin:8px 0 0;'; hint.parentNode.insertBefore(cloudNote, hint);
-  var lastSaved = '';
+  var lastSaved = '', saving = '';
   function saveSub(sub){      // the robot reads it from the account: after a reinstall you only tap "Activează" — no copy/paste into GitHub
     if(!sub || !window.__byzypDb) return;
     var tz = ''; try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){}
@@ -21,9 +21,10 @@
     var stats = null; try{ var wk = window.__zWeek && window.__zWeek(), zs = window.__zStats && window.__zStats();
       if(wk) stats = { w: wk.cur.w, s: wk.cur.s, pw: wk.prev.w, ps: wk.prev.s, rec: wk.cur.rec, la: wk.last || '', st: zs ? (zs.streak|0) : 0, sc: zs ? (zs.score|0) : 0 }; }catch(e){}
     var supps = null; try{ supps = window.__zSupps && window.__zSupps(); }catch(e){}
-    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods) + '|' + JSON.stringify(stats) + '|' + JSON.stringify(supps); if(txt === lastSaved) return;
+    var txt = JSON.stringify(obj) + '|' + tz + '|' + JSON.stringify(mods) + '|' + JSON.stringify(stats) + '|' + JSON.stringify(supps); if(txt === lastSaved || txt === saving) return;   // salvat o singură dată; din nou doar când se schimbă ceva
+    saving = txt;
     try{ var pr = window.__byzypDb.doc('settings/push').set({ sub: obj, tz: tz, mods: mods, stats: stats, supps: supps, at: new Date().toISOString() });
-      Promise.resolve(pr).then(function(){ lastSaved = txt; cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){}); }catch(e){}
+      Promise.resolve(pr).then(function(){ lastSaved = txt; saving = ''; if(DEV) cloudNote.innerHTML = '☁️ Codul telefonului e salvat <b>automat</b> în contul tău. Robotul îl ia singur de acolo.'; }).catch(function(){ saving = ''; }); }catch(e){ saving = ''; }
   }
   window.__syncPush = function(){ if(!('serviceWorker' in navigator) || !('Notification' in window) || Notification.permission !== 'granted') return;
     navigator.serviceWorker.ready.then(function(r){ return r.pushManager.getSubscription(); }).then(saveSub).catch(function(){}); };
@@ -37,11 +38,16 @@
   function refresh(){
     if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)){
       st.innerHTML = iOS && !standalone
-        ? 'Pe iPhone, notificările merg doar din aplicația de pe <b>ecranul principal</b>. În Safari: Share ⬆️ → „Adaugă pe ecranul principal”, apoi deschide By ZyP de acolo.'
-        : 'Browserul acesta nu suportă notificări. Pe iPhone ai nevoie de iOS 16.4+ și aplicația adăugată pe ecranul principal.';
+        ? 'Pe iPhone, notificările merg doar din aplicația pusă pe <b>ecranul principal</b>. Apasă pe butonul de trimitere ⬆️ de jos, alege „Adaugă pe ecranul principal”, apoi deschide By ZyP de acolo.'
+        : (iOS ? 'Telefonul acesta nu poate primi notificări de la aplicație. Actualizează iPhone-ul din Setări → General → Actualizare software, apoi încearcă din nou.'
+               : 'Aici nu se pot primi notificări. Deschide aplicația în browserul obișnuit al telefonului și pune-o pe ecranul principal.');
+      en.style.display = 'none'; te.style.display = 'none';
       return;
     }
-    if(Notification.permission === 'denied'){ st.innerHTML = 'Notificările sunt blocate. Setări iPhone → Notificări → By ZyP → Permite.'; return; }
+    if(Notification.permission === 'denied'){
+      st.innerHTML = iOS ? 'Notificările sunt blocate. Deschide Setările telefonului → Notificări → By ZyP și pornește „Permite notificări”, apoi revino aici.'
+                         : 'Notificările sunt blocate. Deschide setările telefonului → Aplicații → By ZyP (sau browserul) → Notificări și permite-le, apoi revino aici.';
+      en.style.display = 'none'; te.style.display = 'none'; return; }
     navigator.serviceWorker.ready.then(function(r){ reg = r; return r.pushManager.getSubscription(); }).then(function(sub){
       if(sub && Notification.permission === 'granted'){
         st.innerHTML = '<b>✅ Notificările sunt active</b> pe acest telefon.';
@@ -54,14 +60,14 @@
     });
   }
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').then(refresh).catch(function(e){ st.textContent = 'Nu s-a putut porni serviciul de notificări: ' + e.message; });
+    navigator.serviceWorker.register('sw.js').then(refresh).catch(function(e){ try{ console.error(e); }catch(x){} st.textContent = 'Notificările nu pot fi pornite acum. Verifică internetul, închide aplicația și deschide-o din nou.'; });
   } else refresh();
   en.addEventListener('click', function(){
     Notification.requestPermission().then(function(p){
       if(p !== 'granted'){ refresh(); return; }
       return navigator.serviceWorker.ready.then(function(r){ return r.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC) }); })
         .then(function(sub){ showSub(sub); refresh(); if(reg) reg.showNotification('By ZyP 🔔', { body:'Notificările sunt pornite!', icon:'icon.png' }); });
-    }).catch(function(e){ st.textContent = 'Eroare: ' + e.message; });
+    }).catch(function(e){ try{ console.error(e); }catch(x){} if(Notification.permission === 'denied'){ refresh(); return; } st.textContent = 'Nu am putut porni notificările. Verifică internetul și apasă din nou pe buton.'; });
   });
   te.addEventListener('click', function(){ if(reg) reg.showNotification('By ZyP ✅', { body:'Așa arată o notificare de la aplicația ta.', icon:'icon.png' }); });
   // delivery log written by the push robot (sent.json, same site)
