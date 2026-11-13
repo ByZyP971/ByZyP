@@ -33,6 +33,7 @@
   function stats(){ try{ return window.__zStats ? window.__zStats() : {score:0,streak:0}; }catch(e){ return {score:0,streak:0}; } }
 
   var me = null, board = null, seg = 'rank', lastId = 0, chatGen = 0, chatTimer = null, scoreTimer = null, isAdmin = false, loaded = false, busy = false, period = 'week', thumbTried = false;
+  var chatMode = 'list', dmWith = null, dmLast = 0, dmLoaded = false, dmLastDay = '', dmUnread = 0, dmOff = false, dmLv = Object.create(null), dmBadgeTimer = null;
   var blocked = []; try{ blocked = JSON.parse(localStorage.getItem('zyp_blocked')||'[]')||[]; }catch(e){}
   function saveBlocked(){ try{ localStorage.setItem('zyp_blocked', JSON.stringify(blocked.slice(-200))); }catch(e){} }
   function active(){ var v = document.getElementById('view-top'); return !!(v && v.classList.contains('active')); }
@@ -108,10 +109,10 @@
       '<div class="sn-bar"><i style="width:' + progress(me.score, lv) + '%;background:' + t[2] + '"></i></div>' +
       '<div class="sn-stats"><div><b>#' + me.rank + '</b><span>Locul tău</span></div><div><b>' + me.score + '</b><span>Puncte</span></div><div><b>' + (me.streak || 0) + '🔥</b><span>Zile la rând</span></div></div>' +
       '<div class="sn-acts"><button class="sn-b" data-prof="' + esc(me.nick) + '">✏️ Profil</button><button class="sn-b alt" id="snAvt">🧑‍🎨 Avatar</button></div></div>' +
-      '<div class="sn-nav" id="topSeg"><button class="' + (seg==='rank'?'on':'') + '" data-tseg="rank"><i>🏆</i>Clasament</button><button class="' + (seg==='chat'?'on':'') + '" data-tseg="chat"><i>💬</i>Chat</button><button class="' + (seg==='fr'?'on':'') + '" data-tseg="fr"><i>📍</i>Prieteni</button></div>' +
+      '<div class="sn-nav" id="topSeg"><button class="' + (seg==='rank'?'on':'') + '" data-tseg="rank"><i>🏆</i>Clasament</button><button class="' + (seg==='chat'?'on':'') + '" data-tseg="chat"><i>💬</i>Chat' + (dmUnread ? '<b class="dm-badge">' + (dmUnread > 99 ? '99+' : dmUnread) + '</b>' : '') + '</button><button class="' + (seg==='fr'?'on':'') + '" data-tseg="fr"><i>📍</i>Prieteni</button></div>' +
       '<div id="topBody"></div>' +
       '<div class="top-foot">Puncte: obiceiuri bifate, antrenamente făcute, zile perfecte. Poți câștiga cel mult 600 pe zi.</div>';
-    root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('on', x===b); }); showSeg(); }); });
+    root.querySelectorAll('[data-tseg]').forEach(function(b){ b.addEventListener('click', function(){ seg = b.getAttribute('data-tseg'); if(seg === 'chat') chatMode = 'list'; root.querySelectorAll('[data-tseg]').forEach(function(x){ x.classList.toggle('on', x===b); }); showSeg(); }); });
     var ab = document.getElementById('snAvt'); if(ab) ab.addEventListener('click', function(){
       if(!window.zAvatar){ toast('Avatarul nu e disponibil'); return; }
       rpc('get_public_profile', { p_nick: me.nick }).then(function(p){ window.zAvatar.open(function(d){
@@ -121,7 +122,7 @@
     showSeg();
     startScoreTimer();
   }
-  function showSeg(){ stopChat(); if(window.zFriends) window.zFriends.leave(); if(seg === 'chat') renderChat(); else if(seg === 'fr' && window.zFriends){ var fb = document.getElementById('topBody'); if(fb) window.zFriends.render(fb); } else renderBoard(); }
+  function showSeg(){ stopChat(); root.classList.toggle('dm-mode', seg === 'chat'); if(window.zFriends) window.zFriends.leave(); if(seg === 'chat') renderChat(); else if(seg === 'fr' && window.zFriends){ var fb = document.getElementById('topBody'); if(fb) window.zFriends.render(fb); } else renderBoard(); }
 
   // ---------- clasament ----------
   function row(r){
@@ -184,10 +185,16 @@
   }
   function renderChat(){
     var b = document.getElementById('topBody'); if(!b) return;
+    if(chatMode === 'room') return renderRoom(b);
+    if(chatMode === 'dm' && dmWith) return renderDm(b);
+    chatMode = 'list'; renderChatList(b);
+  }
+  function renderRoom(b){
     lastId = 0; chatGen++;
-    b.innerHTML = '<div class="sn-chat"><div class="sn-msgs top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
+    b.innerHTML = '<div class="dm-head"><button class="dm-back" id="dmBack" aria-label="Înapoi la conversații">‹</button><div class="dm-hn"><b>Sala comună</b><small>Aici scrie toată lumea</small></div></div><div class="sn-chat"><div class="sn-msgs top-msgs" id="topMsgs"><div class="top-load">Se încarcă mesajele…</div></div>' +
       '<div class="sn-send"><input id="topMsgIn" maxlength="300" autocomplete="off" placeholder="Trimite un mesaj…"><button id="topSend" aria-label="Trimite">➤</button></div>' +
       '<div class="top-err" id="topCErr"></div><div class="top-hint">Fără link-uri. Vorbește frumos. 🚩 raportează, 🚫 blochează un utilizator.</div></div>';
+    document.getElementById('dmBack').addEventListener('click', function(){ chatMode = 'list'; showSeg(); });
     var box = document.getElementById('topMsgs');
     box.addEventListener('click', function(ev){
       var el = ev.target.closest('button'); if(!el) return;
@@ -207,7 +214,8 @@
     pull(true);
     startChat();
   }
-  function startChat(){ stopChat(); chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) pull(false); }, 10000); }
+  function startChat(){ stopChat(); chatTimer = setInterval(function(){ if(active() && seg === 'chat' && !document.hidden) chatTick(); }, 10000); }
+  function chatTick(){ if(chatMode === 'room') pull(false); else if(chatMode === 'dm') dmPull(false); else { var g = chatGen; dmCount().then(function(ch){ if(ch && g === chatGen && chatMode === 'list' && seg === 'chat') loadList(g); }); } }
   function pull(scroll){
     var box = document.getElementById('topMsgs'); if(!box) return;
     var gen = chatGen, after = lastId;
@@ -223,6 +231,107 @@
       box.insertAdjacentHTML('beforeend', html);
       if(scroll || near) box.scrollTop = box.scrollHeight; avHydrate(box);
     }).catch(function(e){ if(gen === chatGen && lastId === 0 && box.isConnected) box.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '</div>'; });
+  }
+
+  // ---------- conversații private (listă + 1-la-1) ----------
+  function setBadge(){
+    var n = dmUnread > 99 ? '99+' : String(dmUnread), tgt = [tab, root.querySelector('[data-tseg="chat"]')];
+    tgt.forEach(function(t){ if(!t) return; var el = t.querySelector('.dm-badge');
+      if(!dmUnread){ if(el) el.remove(); return; }
+      if(!el){ el = document.createElement('b'); el.className = 'dm-badge'; el.setAttribute('aria-label', 'mesaje necitite'); t.appendChild(el); }
+      el.textContent = n; }); }
+  // numărul de mesaje necitite; întoarce true dacă s-a schimbat față de data trecută
+  function dmCount(){
+    if(dmOff || !window.__sb) return Promise.resolve(false);
+    return rpc('dm_unread_count').then(function(n){ var v = num(typeof n === 'number' ? n : 0), ch = v !== dmUnread; dmUnread = v; setBadge(); return ch; })
+      .catch(function(e){ if(e && (e.code === 'PGRST202' || /could not find the function/i.test(e.message || ''))) dmOff = true; return false; }); }
+  function ago(at){
+    var s = (Date.now() - new Date(at).getTime()) / 1000; if(!isFinite(s)) return '';
+    if(s < 90) return 'acum'; if(s < 3600) return Math.round(s / 60) + ' min'; if(s < 86400) return Math.floor(s / 3600) + ' h';
+    var d = Math.floor(s / 86400); return d + (d === 1 ? ' zi' : ' zile'); }
+  function dayLabel(at){
+    try{ var d = new Date(at), n = new Date(), k = function(x){ return x.getFullYear() + '-' + x.getMonth() + '-' + x.getDate(); }, y = new Date(n.getTime() - 86400000);
+      if(k(d) === k(n)) return 'Azi'; if(k(d) === k(y)) return 'Ieri'; return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long' }); }catch(e){ return ''; } }
+  function dmRow(c){
+    var st, cls = '';
+    if(c.unread > 0){ st = c.unread === 1 ? 'Mesaj nou' : c.unread + ' mesaje noi'; cls = ' unread'; }
+    else if(c.last_at) st = (c.last_mine ? 'Trimis · ' : 'Primit · ') + ago(c.last_at);
+    else st = 'Atinge pentru a conversa';
+    return '<button type="button" class="dm-row' + cls + '" data-dm="' + esc(c.nick) + '">' + avEl(c.nick, c.lvl, 52) +
+      '<span class="dm-t"><b>' + esc(c.nick) + '</b><small>' + esc(st) + '</small></span>' +
+      '<span class="dm-r">' + (c.streak >= 2 ? '<span class="dm-sk" title="Zile la rând în care v-ați scris">' + c.streak + '🔥</span>' : '') +
+      (c.unread > 0 ? '<span class="dm-un" aria-hidden="true">' + (c.unread > 99 ? '99+' : c.unread) + '</span>' : '') + '<span class="dm-go" aria-hidden="true">➤</span></span></button>';
+  }
+  function roomRow(){
+    return '<button type="button" class="dm-row" data-room="1"><span class="sn-av dm-room" style="--px:52px;--c:#A3FF12" aria-hidden="true">👥</span>' +
+      '<span class="dm-t"><b>Sala comună</b><small>Atinge pentru a conversa</small></span><span class="dm-r"><span class="dm-go" aria-hidden="true">➤</span></span></button>'; }
+  function renderChatList(b){
+    chatGen++; var gen = chatGen;
+    b.innerHTML = '<div class="dm-wrap"><h2 class="dm-title">Chat</h2><div class="dm-list" id="dmList">' + roomRow() + '<div id="dmFr"><div class="top-load">Se încarcă conversațiile…</div></div></div></div>';
+    document.getElementById('dmList').addEventListener('click', function(ev){
+      var r = ev.target.closest('[data-dm]'), rm = ev.target.closest('[data-room]');
+      if(r){ dmWith = r.getAttribute('data-dm'); chatMode = 'dm'; showSeg(); }
+      else if(rm){ chatMode = 'room'; showSeg(); }
+      else if(ev.target.closest('[data-dmretry]')){ var f = document.getElementById('dmFr'); if(f) f.innerHTML = '<div class="top-load">Se încarcă conversațiile…</div>'; loadList(gen); }
+      else if(ev.target.closest('[data-gofr]')){ var fb = root.querySelector('[data-tseg="fr"]'); if(fb) fb.click(); } });
+    loadList(gen); startChat();
+  }
+  function loadList(gen){
+    rpc('dm_list').then(function(d){
+      var f = document.getElementById('dmFr'); if(gen !== chatGen || !f) return;
+      var list = (Array.isArray(d) ? d : []).filter(function(c){ return c && c.nick != null; }).map(function(c){
+        var o = { nick: String(c.nick), lvl: num(c.lvl) || 1, unread: Math.max(0, num(c.unread)), streak: num(c.streak), last_at: c.last_at || null, last_mine: !!c.last_mine };
+        avSeed(o.nick, c.av); dmLv[o.nick.toLowerCase()] = o.lvl; return o; });
+      dmUnread = list.reduce(function(s, c){ return s + c.unread; }, 0); setBadge();
+      f.innerHTML = list.length ? list.map(dmRow).join('') : '<div class="dm-empty">Încă nu ai prieteni cu care să vorbești în privat.<br><button type="button" class="sn-b alt" data-gofr="1" style="margin-top:12px">📍 Adaugă prieteni</button></div>';
+      avHydrate(f);
+    }).catch(function(e){ var f = document.getElementById('dmFr'); if(gen === chatGen && f) f.innerHTML = '<div class="dm-empty">' + esc(errMsg(e)) + '<br><button type="button" class="sn-b alt" data-dmretry="1" style="margin-top:12px">Încearcă din nou</button></div>'; });
+  }
+  function renderDm(b){
+    chatGen++; dmLast = 0; dmLoaded = false; dmLastDay = ''; var nick = dmWith, gen = chatGen;
+    b.innerHTML = '<div class="dm-head"><button class="dm-back" id="dmBack" aria-label="Înapoi la conversații">‹</button><span data-prof="' + esc(nick) + '">' + avEl(nick, dmLv[nick.toLowerCase()] || 1, 40) + '</span>' +
+      '<div class="dm-hn" data-prof="' + esc(nick) + '"><b>' + esc(nick) + '</b><small id="dmSub">Conversație privată</small></div><span class="dm-sk" id="dmStr"></span></div>' +
+      '<div class="dm-msgs" id="dmMsgs" aria-live="polite"><div class="top-load">Se încarcă mesajele…</div></div>' +
+      '<div class="dm-err" id="dmErr" role="alert"><span id="dmErrT"></span> <button type="button" class="sn-b" id="dmRetry" hidden>Încearcă din nou</button></div>' +
+      '<div class="sn-send dm-send"><input id="dmIn" maxlength="500" autocomplete="off" enterkeyhint="send" aria-label="Mesaj" placeholder="Scrie un mesaj…"><button id="dmSend" aria-label="Trimite">➤</button></div>';
+    avHydrate(b);
+    document.getElementById('dmBack').addEventListener('click', function(){ chatMode = 'list'; dmWith = null; showSeg(); });
+    var inp = document.getElementById('dmIn'), btn = document.getElementById('dmSend'), et = document.getElementById('dmErrT'), rb = document.getElementById('dmRetry');
+    function showErr(m, retry){ et.textContent = m || ''; rb.hidden = !(m && retry); }
+    function send(){
+      var v = inp.value.trim(); if(!v || btn.disabled) return; showErr('');
+      btn.disabled = true;
+      rpc('dm_send', { p_to: nick, p_body: v }).then(function(){ if(gen !== chatGen) return; if(inp.value.trim() === v) inp.value = ''; btn.disabled = false; dmPull(true); })
+        .catch(function(e){ btn.disabled = false; if(gen === chatGen) showErr(errMsg(e), !(e && e.code)); }); }
+    btn.addEventListener('click', send);
+    rb.addEventListener('click', send);
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); send(); } });
+    dmPull(true); startChat();
+  }
+  function dmPull(scroll){
+    var box = document.getElementById('dmMsgs'); if(!box) return;
+    var gen = chatGen, after = dmLast, nick = dmWith;
+    return rpc('dm_get', { p_with: nick, p_after: after }).then(function(d){
+      if(gen !== chatGen || !box.isConnected) return;
+      d = d || {}; var msgs = (Array.isArray(d.msgs) ? d.msgs : []).filter(function(m){ return m && num(m.id) > dmLast && m.body != null; });
+      var sk = num(d.streak), se = document.getElementById('dmStr'); if(se) se.textContent = sk >= 2 ? sk + '🔥' : '';
+      if(!dmLoaded){ box.innerHTML = ''; dmLoaded = true; dmCount(); }
+      if(!msgs.length){ if(!box.querySelector('.dm-b')) box.innerHTML = '<div class="top-load">Niciun mesaj încă. Scrie primul! 👋</div>'; return; }
+      var emp = box.querySelector('.top-load'); if(emp) emp.remove();
+      var near = box.scrollHeight - box.scrollTop - box.clientHeight < 80, html = '', incoming = false;
+      msgs.forEach(function(m){
+        var dl = dayLabel(m.at); if(dl && dl !== dmLastDay){ dmLastDay = dl; html += '<div class="dm-day">' + esc(dl) + '</div>'; }
+        if(!m.mine) incoming = true;
+        html += '<div class="dm-b ' + (m.mine ? 'mine' : 'theirs') + '"><div class="dm-bub">' + esc(m.body) + '</div><small>' + esc(fmtT(m.at)) + '</small></div>'; });
+      dmLast = num(msgs[msgs.length - 1].id);
+      box.insertAdjacentHTML('beforeend', html);
+      while(box.children.length > 400) box.removeChild(box.firstChild);
+      if(scroll || near) box.scrollTop = box.scrollHeight;
+      if(incoming) dmCount();
+    }).catch(function(e){
+      if(gen !== chatGen || dmLoaded || !box.isConnected) return;
+      box.innerHTML = '<div class="top-load">' + esc(errMsg(e)) + '<br><button type="button" class="sn-b alt" id="dmLoadRetry" style="margin-top:10px">Încearcă din nou</button></div>';
+      var r = document.getElementById('dmLoadRetry'); if(r) r.addEventListener('click', function(){ box.innerHTML = '<div class="top-load">Se încarcă mesajele…</div>'; dmPull(true); }); });
   }
   function stopChat(){ if(chatTimer){ clearInterval(chatTimer); chatTimer = null; } }
 
@@ -339,9 +448,12 @@
     }).catch(function(e){ root.innerHTML = '<div class="card top-join"><h3>Clasamentul nu e disponibil acum</h3><p class="top-hint">' + esc(errMsg(e)) + '</p><button class="top-btn" id="topRetry">Încearcă din nou</button></div>'; var rb = document.getElementById('topRetry'); if(rb) rb.addEventListener('click', function(){ setTimeout(open, 0); }); }).then(function(){ busy = false; });
   }
   var tab = document.querySelector('.tab[data-view="top"]');
+  // număr de mesaje necitite pe fila Top (o dată pe minut, doar când pagina e vizibilă și nu ești în Chat)
+  function badgeTick(){ if(!document.hidden && !(active() && seg === 'chat')) dmCount(); }
+  dmBadgeTimer = setInterval(badgeTick, 60000); setTimeout(badgeTick, 4000);
   if(tab) tab.addEventListener('click', function(){ setTimeout(open, 60); });
   document.querySelectorAll('.tab[data-view]').forEach(function(t){ if(t !== tab) t.addEventListener('click', leaveTop); });
   document.addEventListener('visibilitychange', function(){
     if(document.hidden){ stopChat(); return; }
-    if(active() && seg === 'chat' && document.getElementById('topMsgs')){ pull(false); startChat(); } });
+    if(active() && seg === 'chat'){ chatTick(); startChat(); } });
 })();
