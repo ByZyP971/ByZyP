@@ -33,7 +33,7 @@
   function lockd(ph,lv){ return LR[lv]<PHL[ph]; }
   function dbox(m,on,lk){ return '<label class="onb-opt"'+(lk?' style="opacity:.4"':'')+'><span class="ic">'+(lk?'🔒':(m.ph===6?'🏠':'📅'))+'</span><div><b>'+m.t+(m.ph===6?'':' pe săptămână')+'</b><span>'+(lk?'Se deblochează la un nivel mai mare':m.d)+'</span></div><input type="radio" name="onbdays" data-ph="'+m.ph+'"'+(on?' checked':'')+(lk?' disabled':'')+'></label>'; }
   function load(){ try{ var p=JSON.parse(localStorage.getItem(KEY)||'null'); if(p&&p.mods) return p; }catch(e){} return null; }
-  function save(p){ try{ localStorage.setItem(KEY,JSON.stringify(p)); }catch(e){} }
+  function save(p){ try{ localStorage.setItem(KEY,JSON.stringify(p)); }catch(e){} try{ if(window.__syncPush) setTimeout(window.__syncPush, 300); }catch(e){} }   /* robotul de notificări află imediat ce module sunt pornite */
   function apply(p){ var r=document.documentElement; MODS.forEach(function(m){ r.classList.toggle('pf-no'+m.k, !(p&&p.mods[m.k])); });
     var act=document.querySelector('.tab.active'); if(act&&act.offsetParent===null){ var t=document.querySelector('.tab[data-view="today"]'); if(t) t.click(); } }
   var cur=load(); if(cur) apply(cur);

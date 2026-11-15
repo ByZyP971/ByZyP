@@ -1,4 +1,5 @@
 // By ZyP — push bot, run by GitHub Actions every ~10 minutes (the cron can be several minutes late: every window below is wider than that).
+// Money module: Ethereum price / news / big moves, gold news and strategy alerts go ONLY to phones whose account has the module „Bani și Ethereum” switched on (Profil → Personalizează aplicația).
 // Sends: motivation at 08:30 / 14:30 / 21:30, supplements at 09:00 / 20:00 / 22:00, Ethereum summary 10:00 / 18:00 + news (local time) and a warning before every red (High) news.
 import webpush from 'web-push';
 import fs from 'fs';
@@ -32,6 +33,7 @@ try { webpush.setVapidDetails('mailto:byzyp@users.noreply.github.com', PUBLIC, P
 catch (e) { bail('VAPID_PRIVATE nu e valid sau nu se potrivește cu cheia publică din aplicație.'); }
 // subscriptions: (1) the phone saves its own code in the account (Supabase) — read here with the private key BYZYP_KEY; (2) fallback: the PUSH_SUB secret
 let subs = [];
+const accEp = new Set();   // endpoints that came from the owner's ACCOUNT (not from the PUSH_SUB secret)
 const PUSH_HOSTS = ['push.apple.com', 'fcm.googleapis.com', 'updates.push.services.mozilla.com', 'notify.windows.com'];
 const okSub = (x) => { try { if (!x || !x.endpoint || !x.keys) return false; const u = new URL(String(x.endpoint)); return u.protocol === 'https:' && (process.env.ALLOW_ANY_PUSH_HOST === '1' || PUSH_HOSTS.some(h => u.hostname === h || u.hostname.endsWith('.' + h))); } catch (e) { return false; } };
 const KEY = process.env.BYZYP_KEY;
@@ -39,7 +41,7 @@ if (KEY) {
   try {
     const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_push_subs', { method: 'POST', signal: AbortSignal.timeout(15000),
       headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
-    if (r.ok) { const j = await r.json(); subs = (Array.isArray(j) ? j : []).filter(okSub); console.log('subscriptions from account:', subs.length); }
+    if (r.ok) { const j = await r.json(); subs = (Array.isArray(j) ? j : []).filter(okSub); subs.forEach(x => accEp.add(x.endpoint)); console.log('subscriptions from account:', subs.length); }
     else console.log('account lookup failed: HTTP', r.status);
   } catch (e) { console.log('account lookup failed:', e.message); }
 }
@@ -58,21 +60,55 @@ if (!subs.length) {
 const OWNER = subs.length > 0;
 let nOk = 0, nFail = 0;   // totals for the last log line
 
+// every account's phone code + time zone + chosen modules (read once; used for the money module check and for the other users below)
+let all = [];
+if (KEY) {
+  try {
+    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_all_push', { method: 'POST', signal: AbortSignal.timeout(15000),
+      headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
+    if (r.ok) { const j = await r.json(); all = Array.isArray(j) ? j : []; } else console.log('all-users lookup failed: HTTP', r.status);
+  } catch (e) { console.log('all-users lookup failed:', e.message); }
+}
+// ---------- module „Bani și Ethereum”: who may get money notifications ----------
+// The phone saves its modules in the account (settings/push → mods). Rule, the same as in the app:
+//   mods saved            -> on only if mods.money is switched on
+//   saved, but no choices -> on (an old install that never opened „Personalizează”: the app itself shows the Bani tab)
+//   nothing saved for this phone (code only in the PUSH_SUB secret, or the account could not be read now) -> the owner's account choice if known, otherwise OFF
+const recOf = (ep) => all.find(u => u && u.sub && typeof u.sub === 'object' && u.sub.endpoint === ep);
+const ownerRec = all.find(u => u && u.sub && typeof u.sub === 'object' && accEp.has(u.sub.endpoint));
+const moneyOn = (s) => {
+  const rec = recOf(s.endpoint) || ownerRec;
+  if (!rec) return false;
+  const m = rec.mods;
+  if (m === undefined || m === null) return true;
+  return typeof m === 'object' && !Array.isArray(m) && !!m.money && +m.money !== 0;
+};
+const moneySubs = subs.filter(moneyOn), plainSubs = subs.filter(s => !moneySubs.includes(s));
+const MONEY = moneySubs.length > 0;
+console.log('money module (Bani și Ethereum): on for', moneySubs.length, 'of', subs.length, 'owner phones');
+
 function local(d) {
   const p = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false })
     .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
   return { date: `${p.year}-${p.month}-${p.day}`, hm: (+p.hour % 24) * 60 + +p.minute, wd: p.weekday, hhmm: `${p.hour}:${p.minute}` };
 }
-async function send(title, body, tag, url) {
+async function send(title, body, tag, url, list = subs) {
   let ok = false;
-  if (!subs.length) return false;
-  for (const s of subs) {
+  if (!list.length) return false;
+  for (const s of list) {
     try { const r = await webpush.sendNotification(s, JSON.stringify({ title, body, tag, url: url || './' }), { TTL: 1800, urgency: 'high', timeout: 8000 });
       ok = true; nOk++; console.log('sent:', title, r && r.statusCode); status.push({ t: new Date().toISOString(), title, ok: true, code: r && r.statusCode }); }
     catch (e) { nFail++; console.log('OWNER push FAILED:', title, '| code', e.statusCode || 0, '|', String(e.body || e.message).slice(0, 200)); status.push({ t: new Date().toISOString(), title, ok: false, code: e.statusCode || 0, err: String(e.body || e.message).slice(0, 120) }); }
   }
   changed = true;
   return ok;
+}
+const sendMoney = (title, body, tag, url) => send(title, body, tag, url, moneySubs);   // only phones with the money module on
+// a text that talks about money: phones without the money module get the neutral text instead
+async function sendSplit(title, body, plainBody, tag, url) {
+  if (body === plainBody) return send(title, body, tag, url);
+  const a = await send(title, body, tag, url, moneySubs), b = await send(title, plainBody, tag, url, plainSubs);
+  return a || b;
 }
 
 const now = new Date();
@@ -109,6 +145,7 @@ const MOT = {
   Sat: ['💪 Sâmbătă. Antrenament sau odihnă planificată — oricare ar fi, rămâi pe drum.', '🫁 Cu fiecare săptămână fără fum respiri mai ușor la efort.', '💤 Somn devreme, ZyP. Mușchii și voința se refac noaptea.'],
   Sun: ['🌿 Duminică liniștită. Odihnă, nu scuze. Fără țigări și azi.', '🔥 Nu da tot înapoi pentru o singură țigară. Ai ajuns prea departe.', '🗓️ Pregătește săptămâna: antrenamente, mâncare, obiective.']
 };
+const MOT_PLAIN = ['🌙 Încă o zi bifată. Somn devreme, mâine o luăm de la capăt.', '✅ Deschide aplicația și bifează ce ai făcut azi. Două minute și gata.', '💤 Telefonul jos, perna sus. Mușchii și voința se refac noaptea.'];   // for phones without the money module
 const SLOTS = [8 * 60 + 30, 14 * 60 + 30, 21 * 60 + 30];
 for (let i = 0; i < SLOTS.length; i++) {
   const key = `m-${L.date}-${i}`;
@@ -124,7 +161,8 @@ for (let i = 0; i < SLOTS.length; i++) {
     ];
     const title = gym ? pick(['🏋️ La sală, ZyP!', '💪 Hercule, trezirea!', '🦍 Maimuța de sală te cheamă', '🔥 Ora de fier a sosit'], 1) : (i === 1 ? pick(['😂 By ZyP', '🤣 Pauză de râs', '🧐 Gândul zilei', '🥴 Povestea zilei'], 2) : 'By ZyP');
     const body = gym ? pick(GYMV)(GYM[L.wd]) : (i === 1 ? pick(FUN) : MOT[L.wd][i]);
-    if (await send(title, body, gym ? 'sala' : 'motivatie')) { sent[key] = Date.now(); changed = true; }
+    const plain = /\bbani|trading|financiar/i.test(body) ? pick(MOT_PLAIN, i) : body;
+    if (await sendSplit(title, body, plain, gym ? 'sala' : 'motivatie')) { sent[key] = Date.now(); changed = true; }
   }
 }
 
@@ -144,7 +182,7 @@ for (const s of SUPP) {
 
 
 // ---------- Ethereum: price + your gain, news (needs no keys; position comes inside the phone code) ----------
-const ETHPOS = subs.map(x => x.eth).find(e => e && +e.invested > 0 && +e.qty > 0);
+const ETHPOS = moneySubs.map(x => x.eth).find(e => e && +e.invested > 0 && +e.qty > 0);
 const eur = (n, d = 2) => n.toLocaleString('ro-RO', { minimumFractionDigits: d, maximumFractionDigits: d }) + ' €';
 const sgnE = (n, d = 2) => (n >= 0 ? '+' : '−') + Math.abs(n).toLocaleString('ro-RO', { minimumFractionDigits: d, maximumFractionDigits: d });
 async function getJson(url) { const r = await fetch(url, { signal: AbortSignal.timeout(9000), headers: { 'User-Agent': 'ByZyP-bot' } }); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
@@ -167,8 +205,8 @@ async function ethNews() {
   } catch (e) { console.log('eth news:', e.message); return []; }
 }
 {
-  const inDay = OWNER && L.hm >= 8 * 60 && L.hm <= 22 * 60 + 30;
-  const px = (inDay || (TEST && OWNER)) ? await ethPrice() : null;
+  const inDay = OWNER && MONEY && L.hm >= 8 * 60 && L.hm <= 22 * 60 + 30;
+  const px = (inDay || (TEST && OWNER && MONEY)) ? await ethPrice() : null;
   const news = inDay ? await ethNews() : [];
   let sentNow = false;
   if (px) {
@@ -183,14 +221,14 @@ async function ethNews() {
       const key = `eth-${L.date}-${k}`;
       if (L.hm >= h && L.hm < h + 50 && !sent[key]) {
         const top = news[0] ? `\n📰 ${news[0].title}` : '';
-        if (await send(`Ξ Ethereum ${eur(px.p, 0)}${chTxt}`, (pos || 'Pune suma investită în aplicație (Bani) ca să-ți arăt și câștigul.') + top, 'eth', './#eth')) { sent[key] = Date.now(); changed = true; sentNow = true; }
+        if (await sendMoney(`Ξ Ethereum ${eur(px.p, 0)}${chTxt}`, (pos || 'Pune suma investită în aplicație (Bani) ca să-ți arăt și câștigul.') + top, 'eth', './#eth')) { sent[key] = Date.now(); changed = true; sentNow = true; }
       }
     }
     // big move: 24h change of 4% or more (once a day per direction)
     if (inDay && px.ch != null && Math.abs(px.ch) >= 4) {
       const key = `eth-mv-${L.date}-${px.ch > 0 ? 'up' : 'dn'}`;
       if (!sent[key]) {
-        if (await send(`${px.ch > 0 ? pick(['🚀 Ethereum zboară', '🤑 Banii tăi dansează', '📈 Ethereum a luat-o razna'], 3) : pick(['⚠️ Ethereum a căzut', '😬 Ethereum a alunecat', '📉 Aer tare la Ethereum'], 3)} ${sgnE(px.ch, 1)}% în 24h`, `Acum ${eur(px.p, 0)}. ` + pos, 'eth-mv', './#eth')) { sent[key] = Date.now(); changed = true; }
+        if (await sendMoney(`${px.ch > 0 ? pick(['🚀 Ethereum zboară', '🤑 Banii tăi dansează', '📈 Ethereum a luat-o razna'], 3) : pick(['⚠️ Ethereum a căzut', '😬 Ethereum a alunecat', '📉 Aer tare la Ethereum'], 3)} ${sgnE(px.ch, 1)}% în 24h`, `Acum ${eur(px.p, 0)}. ` + pos, 'eth-mv', './#eth')) { sent[key] = Date.now(); changed = true; }
       }
     }
   }
@@ -198,7 +236,7 @@ async function ethNews() {
   const slots = [1, 2].map(i => `enw-${L.date}-${i}`), used = slots.filter(k => sent[k]).length;
   if (news.length && used < 2 && !sentNow) {
     const nw = news.find(n => now.getTime() - n.t < 2 * 3600000 && now.getTime() - n.t > -600000 && !sent['en-' + n.link]);
-    if (nw && await send('📰 Știre Ethereum', nw.title, 'eth-news', nw.link)) { sent['en-' + nw.link] = Date.now(); sent[slots[used]] = Date.now(); changed = true; }
+    if (nw && await sendMoney('📰 Știre Ethereum', nw.title, 'eth-news', nw.link)) { sent['en-' + nw.link] = Date.now(); sent[slots[used]] = Date.now(); changed = true; }
   }
 }
 
@@ -206,13 +244,13 @@ async function ethNews() {
 {
   const key = `w-${L.date}`, slot = 20 * 60;
   if (L.wd === 'Sun' && L.hm >= slot && L.hm < slot + 60 && !sent[key]) {
-    if (await send('📊 Raportul săptămânii e gata', 'Vezi cum a mers săptămâna: obiceiuri, greutate, bani, trading și strategiile pe aur. Plus obiectivul pentru săptămâna viitoare.', 'raport', './#raport')) { sent[key] = Date.now(); changed = true; }
+    if (await sendSplit('📊 Raportul săptămânii e gata', 'Vezi cum a mers săptămâna: obiceiuri, greutate, bani, trading și strategiile pe aur. Plus obiectivul pentru săptămâna viitoare.', 'Vezi cum a mers săptămâna: obiceiuri, greutate și antrenamente. Plus obiectivul pentru săptămâna viitoare.', 'raport', './#raport')) { sent[key] = Date.now(); changed = true; }
   }
 }
 
 // ---------- red news, ~10 min before ----------
 let news = []; try { news = JSON.parse(fs.readFileSync('news.json', 'utf8')); } catch (e) {}
-const soon = !GOLD_PUSH ? [] : news.filter(e => e.impact === 'High' || (e.impact === 'Medium' && e.country === 'USD')).map(e => ({ ...e, t: new Date(e.date) }))
+const soon = !(GOLD_PUSH && MONEY) ? [] : news.filter(e => e.impact === 'High' || (e.impact === 'Medium' && e.country === 'USD')).map(e => ({ ...e, t: new Date(e.date) }))
   .filter(e => { const m = (e.t - now) / 60000; return m >= -1 && m <= 13; });
 const groups = {};
 soon.forEach(e => { const k = e.date; (groups[k] = groups[k] || []).push(e); });
@@ -223,12 +261,12 @@ for (const k of Object.keys(groups)) {
   const red = g.some(e => e.impact === 'High'), ic = red ? '🔴' : '🟠', kind = red ? 'roșie' : 'portocalie (USD)';
   const title = mins > 0 ? `${ic} Știre ${kind} în ${mins} min · ${local(g[0].t).hhmm}` : `${ic} Știre ${kind} ACUM`;
   const body = g.map(e => `${e.impact === 'High' ? '🔴' : '🟠'} ${e.country} — ${e.title}` + (e.forecast ? ` (prognoză ${e.forecast})` : '')).join('\n') + '\nAurul se poate mișca brusc. Atenție la tranzacții.';
-  if (await send(title, body, 'stire-' + k)) { sent[key] = Date.now(); changed = true; }
+  if (await sendMoney(title, body, 'stire-' + k)) { sent[key] = Date.now(); changed = true; }
 }
 
 // ---------- strategy paper-trade events (written by analyze.py) ----------
 let gold = {}; try { gold = JSON.parse(fs.readFileSync('xauusd.json', 'utf8')); } catch (e) {}
-const evs = !GOLD_PUSH ? [] : (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
+const evs = !(GOLD_PUSH && MONEY) ? [] : (gold.events || []).filter(e => e && e.id && !sent['e-' + e.id] && (Date.now() - new Date(e.t).getTime()) < 3 * 3600000);
 const MAXN = 5;
 // every alert says WHEN the price was read and from where (the analysis time), and how late it reaches you if the queue was slow
 const stamp = (iso) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(iso));
@@ -239,10 +277,10 @@ function withStamp(e) {
 }
 evs.sort((a, b) => (b.id.startsWith('lvl|') ? 1 : 0) - (a.id.startsWith('lvl|') ? 1 : 0));   // support/resistance alerts first: they are the most time-sensitive
 for (const e of evs.slice(0, MAXN)) {
-  if (await send(e.title, withStamp(e), 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
+  if (await sendMoney(e.title, withStamp(e), 'strat-' + e.sid)) { sent['e-' + e.id] = Date.now(); changed = true; }
 }
 if (evs.length > MAXN) {
-  if (await send('🧪 Strategii XAUUSD', `Încă ${evs.length - MAXN} actualizări la tranzacțiile de test. Deschide fila Aur → Istoric.`, 'strat-more')) {
+  if (await sendMoney('🧪 Strategii XAUUSD', `Încă ${evs.length - MAXN} actualizări la tranzacțiile de test. Deschide fila Aur → Istoric.`, 'strat-more')) {
     for (const e of evs.slice(MAXN)) sent['e-' + e.id] = Date.now(); changed = true;
   }
 }
@@ -346,12 +384,6 @@ function localTz(d, tz) {
 }
 
 if (KEY) {
-  let all = [];
-  try {
-    const r = await fetch('https://bskujbfaynbeqjonqydb.supabase.co/rest/v1/rpc/get_all_push', { method: 'POST', signal: AbortSignal.timeout(15000),
-      headers: { apikey: 'sb_publishable_iFv52BsojpLXTxuBzqGU1Q_cCFVZUAX', 'Content-Type': 'application/json' }, body: JSON.stringify({ p_secret: KEY.trim() }) });
-    if (r.ok) { const j = await r.json(); all = Array.isArray(j) ? j : []; } else console.log('all-users lookup failed: HTTP', r.status);
-  } catch (e) { console.log('all-users lookup failed:', e.message); }
   const mine = new Set(subs.map(x => x.endpoint));
   const dead = sent._dead && typeof sent._dead === 'object' && !Array.isArray(sent._dead) ? sent._dead : {};
   for (const k of Object.keys(dead)) if (Date.now() - dead[k] > 30 * 86400000) delete dead[k];
