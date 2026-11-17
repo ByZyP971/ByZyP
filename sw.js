@@ -1,5 +1,5 @@
 /* By ZyP — service worker: shows push notifications */
-var CACHE = 'byzyp-v4';
+var CACHE = 'byzyp-v5';
 /* La instalare: pagina și fișierele ei (cu versiunea din pagină) se pun deoparte, ca aplicația să pornească fără internet chiar după o singură deschidere. */
 function precache(){
   return fetch('./', { cache: 'no-cache' }).then(function(res){

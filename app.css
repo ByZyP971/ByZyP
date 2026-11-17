@@ -1599,3 +1599,6 @@
   @media (max-width:350px){ .dm-title{ font-size:26px; } .dm-row{ gap:10px; padding:10px 10px; } .dm-b{ max-width:88%; } }
   :root[data-theme="light"] .dm-b.mine .dm-bub, :root[data-theme="light"] .dm-un, :root[data-theme="light"] .dm-send button{ color:#fff; }
   :root[data-theme="light"] .dm-un{ box-shadow:none; }
+
+/* seriile nu se mai turtesc pe ecrane înguste: rămân cercuri de 44px, iar butonul de pauză trece pe rândul următor dacă nu mai e loc */
+.ex-sets{ flex-wrap:wrap; } .ex-sets .set-b{ flex:0 0 44px; }

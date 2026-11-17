@@ -744,7 +744,9 @@
   FIGS.facepull = { t:'Face pull', s:['Scripetele la nivelul feței, cu coarda. Ține capetele corzii, fă un pas în spate, brațele întinse.','Trage coarda spre față, cu coatele sus și în lateral, până când mâinile ajung lângă urechi. Strânge omoplații 1 secundă și revino încet.','Greutate mică. Nu te lăsa pe spate și nu trage cu avânt.'] };
   FIGS.hyper = { t:'Hiperextensii', s:['Pe banca romană, cu perna sub șolduri și picioarele fixate. Brațele încrucișate la piept, spatele drept.','Coboară trunchiul încet, din șold, apoi urcă până când corpul e din nou drept. Strânge fesele sus.','Nu urca mai sus de linia dreaptă a corpului și nu arcui spatele. Mișcare lentă, fără avânt.'] };
   FIGS.superman = { t:'Superman', s:['Culcat pe burtă, pe saltea, cu brațele întinse în față și picioarele întinse.','Ridică în același timp brațele, pieptul și picioarele câțiva centimetri de la podea. Ține 2 secunde, apoi coboară încet.','Privește în jos, nu da capul pe spate. Ridică puțin, fără să forțezi spatele.'] };
+  var XFIG = {};   // nume de exercițiu → desenul lui, pentru antrenamentul separat „Picioare doar cu gantere”
   function patOf(name){
+    if(XFIG[name]) return XFIG[name];
     var n = name.toLowerCase();
     var R = [[/flotări pe bancă|dips/, 'dips'],[/flotări/, 'pushup'],[/fandări/, 'lunge'],[/ridicări pe vârfuri/, 'calf'],[/leg press/, 'legpress'],
       [/flexii picioare|flexii culcat/, 'lcurl'],[/extensii (picioare|cu coborâre|cu pauză|pe un picior)/, 'lext'],
@@ -764,7 +766,7 @@
     core:['Concentrare','calm','118','core']
   };
   function musicFor(pat){
-    var g = /^(bench|incline|press|squat|legpress|hinge|row|pulldown|sarm)$/.test(pat) ? 'heavy' : /^(plank|crunch)$/.test(pat) ? 'core' : /^(lcurl|lext|calf|hip|lunge|adduct)$/.test(pat) ? 'legs' : 'pump';
+    var g = /^(bench|incline|press|squat|legpress|hinge|row|pulldown|sarm)$/.test(pat) ? 'heavy' : /^(plank|crunch)$/.test(pat) ? 'core' : /^(lcurl|lext|calf|hip|lunge|adduct)$|^xd\d/.test(pat) ? 'legs' : 'pump';
     return MUS[g];
   }
   function musicBtn(pat){ var m = musicFor(pat); return '<button class="yt-btn" style="margin-top:6px;width:100%;text-align:left" data-songs="' + m[3] + '">🎤 Piese cu voce: ' + m[0] + ' · ' + m[2] + ' BPM</button><button class="yt-btn" style="margin-top:6px;width:100%;text-align:left;opacity:.8" data-mus="' + m[3] + '">🎧 Doar instrumental, în aplicație</button>'; }
@@ -1085,6 +1087,118 @@
     { code:'h3', name:'Acasă · Picioare, Fesieri', focus:'Picioare și fesieri', img:'', off:2, slots:[['hquad','c',3,'10–12',0],['hquad','c',3,'10–12',2],['hhip','c',3,'10–12',0],['hhip','c',3,'10–12',2],['hcalf','i',3,'15–20',0]] },
     { code:'h4', name:'Acasă · Tot corpul', focus:'Tot corpul', img:'', off:3, slots:[['hchest','c',3,'10–12',2],['hrow','c',3,'10–12',1],['hshoul','c',3,'10–12',2],['hquad','c',3,'10–12',1],['hhip','c',3,'10–12',1],['hcore','t',2,'30–40 s',2]] }
   ], rest:[2,5,6] };
+  /* ===== antrenament separat: picioare doar cu gantere (apare mereu în Sală, la orice program și nivel) ===== */
+  function xS(dy){ dy = dy || 0; return { H:[58,12-dy], S:[58,24-dy], P:[58,46-dy], K:[59,58-dy], A:[58,70-dy] }; }
+  // brațe pentru figura din lateral: 'g' = gantera la piept, 's' = gantere pe lângă corp
+  function xArm(o, kind){
+    var S = o.S, h;
+    if(kind === 'g'){ h = [S[0] + 9, S[1] + 3]; o.arm = [[S[0] + 4, S[1] + 11], h]; }
+    else { h = [S[0] + 1, S[1] + 23]; o.arm = [[S[0], S[1] + 12], h]; }
+    o.eq = (o.eq || '') + DB(h); return fg(o);
+  }
+  // figură din față cu picioarele unde vrem: x mijlocul corpului, hy șoldul, L = [genunchi, talpă] stânga (dreapta se oglindește dacă lipsește R)
+  function xF(o){
+    var x = o.x || 60, hy = o.hy, sy = hy - 22, m = function(p){ return [2 * x - p[0], p[1]]; };
+    var R = o.R || [m(o.L[0]), m(o.L[1])];
+    var s = Cp(x, sy - 10, 5, 'b') + Lp([[x, sy - 4], [x, hy]], 'b') + Lp([[x - 12, sy], [x + 12, sy]], 'b') + Lp([[x - 6, hy], [x + 6, hy]], 'b') +
+      Lp([[x - 6, hy], o.L[0], o.L[1]], 'b') + Lp([[x + 6, hy], R[0], R[1]], 'b');
+    if(o.arm) s += Lp([[x - 12, sy], o.arm[0], o.arm[1]], 'a') + Lp([[x + 12, sy], m(o.arm[0]), m(o.arm[1])], 'a');
+    return s + (o.eq || '');
+  }
+  var X_HEEL = Lp([[50,69],[62,69]], 'e'), X_STEP = Lp([[50,69],[74,69]], 'e'), X_TWO = Lp([[28,69],[46,69]], 'e') + Lp([[74,69],[92,69]], 'e');
+  var X_BENCH = Lp([[30,58],[50,58]], 'e') + Lp([[33,58],[33,70]], 'e') + Lp([[47,58],[47,70]], 'e');
+  var X_BOX = Lp([[62,58],[88,58],[88,70],[62,70],[62,58]], 'e'), X_FLOOR = Lp([[6,68],[110,68]], 'e');
+  function xHeelUp(){ var o = xS(4); o.fy = 4; o.eq = X_HEEL; return o; }
+  function xHeelDown(){ return { H:[63,23], S:[60,34], P:[50,55], K:[67,52], A:[58,66], fy:4, eq:X_HEEL }; }
+  function xFlatDown(){ return { H:[64,27], S:[61,38], P:[49,58], K:[66,56], A:[58,70] }; }
+  function xLungeDown(){ return { H:[46,26], S:[46,38], P:[46,58], K:[60,58], A:[59,70], K2:[38,68], A2:[27,70] }; }
+  var X_SAFE = 'Dacă te doare genunchiul sau spatele, oprește-te.';
+  // fiecare loc din antrenament: prima variantă e cea din program, restul sunt înlocuitorii de la „Schimbă exercițiul”
+  var XPOOL = {
+    x1:[
+      { n:'Fandare înapoi cu gantera la piept', q:'goblet reverse lunge form', tip:'6–8 pe fiecare picior. Pas mare în spate; piciorul din față rămâne cu toată talpa pe sol.',
+        f:[xArm(xS(), 'g'), xArm(xLungeDown(), 'g')],
+        s:['În picioare, tălpile la lățimea șoldurilor. Ține o ganteră cu ambele mâini, lipită de piept, coatele în jos.','Fă un pas mare în spate și coboară drept în jos, până când genunchiul din spate ajunge aproape de sol. Împinge în talpa din față și revino. Fă toate repetările pe un picior, apoi schimbă.','Călcâiul din față nu se ridică de pe sol, iar genunchiul din față nu cade spre interior. Trunchiul rămâne drept. ' + X_SAFE] },
+      { n:'Fandare înapoi cu gantere pe lângă corp', q:'dumbbell reverse lunge form', tip:'6–8 pe fiecare picior. Câte o ganteră în fiecare mână, brațele relaxate.',
+        f:[xArm(xS(), 's'), xArm(xLungeDown(), 's')],
+        s:['În picioare, câte o ganteră în fiecare mână, brațele întinse pe lângă corp, umerii trași în spate.','Fă un pas mare în spate și coboară drept în jos, până când genunchiul din spate ajunge aproape de sol. Împinge în talpa din față și revino lângă celălalt picior.','Nu te apleca în față și nu lăsa ganterele să te tragă de umeri. Călcâiul din față rămâne pe sol. ' + X_SAFE] },
+      { n:'Fandare pe loc cu gantera la piept', q:'goblet split squat form', tip:'6–8 pe fiecare picior. Picioarele rămân pe loc, doar urci și cobori. Mai ușor de ținut echilibrul.',
+        f:[xArm({ H:[52,14], S:[52,26], P:[52,46], K:[62,57], A:[62,70], K2:[44,58], A2:[36,70] }, 'g'), xArm({ H:[50,26], S:[50,38], P:[50,58], K:[63,58], A:[62,70], K2:[42,68], A2:[32,70] }, 'g')],
+        s:['Un picior în față și unul în spate, la un pas mare distanță. Gantera la piept, trunchiul drept.','Coboară drept în jos până când genunchiul din spate ajunge aproape de sol, apoi urcă. Picioarele nu se mută din loc. Fă toate repetările, apoi schimbă piciorul din față.','Greutatea stă pe toată talpa din față. Nu te împinge în vârful piciorului din față. ' + X_SAFE] }],
+    x2:[
+      { n:'Genuflexiune laterală cu gantera la piept', q:'goblet cossack squat form', tip:'7–10 pe fiecare parte. Picioare larg depărtate; cobori pe un picior, celălalt rămâne întins.',
+        f:[xF({ hy:46, L:[[46,58],[36,70]], arm:[[50,34],[57,29]], eq:DB([60,29]) }), xF({ x:46, hy:58, L:[[31,56],[36,70]], R:[[68,65],[84,70]], arm:[[36,46],[43,41]], eq:DB([46,41]) })],
+        s:['Picioarele mult mai larg decât umerii, vârfurile ușor în afară. Gantera la piept, pieptul sus.','Mută greutatea pe un picior și coboară pe el cât poți de jos, cu celălalt picior întins. Urcă înapoi la mijloc și coboară pe partea cealaltă.','Călcâiul piciorului pe care cobori rămâne pe sol, iar genunchiul merge în direcția vârfului. Coboară doar cât poți fără să rotunjești spatele. ' + X_SAFE] },
+      { n:'Fandare laterală cu gantera la piept', q:'goblet lateral lunge form', tip:'7–10 pe fiecare parte. Pas în lateral, cobori, apoi te împingi înapoi la mijloc. Mai ușoară decât genuflexiunea laterală.',
+        f:[xF({ hy:46, L:[[53,58],[53,70]], arm:[[50,34],[57,29]], eq:DB([60,29]) }), xF({ x:46, hy:54, L:[[32,54],[35,70]], R:[[64,62],[76,70]], arm:[[36,42],[43,37]], eq:DB([46,37]) })],
+        s:['În picioare, tălpile apropiate, gantera la piept.','Fă un pas mare în lateral, împinge șoldurile în spate și coboară pe piciorul cu care ai pășit. Celălalt picior rămâne întins. Împinge în talpă și revino la mijloc.','Ambele tălpi rămân lipite de sol. Spatele drept, pieptul sus. ' + X_SAFE] },
+      { n:'Genuflexiune laterală fără greutate', q:'bodyweight cossack squat form', tip:'7–10 pe fiecare parte. Fără ganteră, cu mâinile în față pentru echilibru. Bună ca să înveți mișcarea.',
+        f:[xF({ hy:46, L:[[46,58],[36,70]], arm:[[50,34],[57,29]] }), xF({ x:46, hy:58, L:[[31,56],[36,70]], R:[[68,65],[84,70]], arm:[[36,46],[43,41]] })],
+        s:['Picioarele mult mai larg decât umerii, mâinile împreunate în fața pieptului.','Mută greutatea pe un picior și coboară pe el cât poți, cu celălalt picior întins. Urcă la mijloc și coboară pe partea cealaltă.','Dacă pierzi echilibrul, ține-te cu o mână de ceva stabil. Călcâiul rămâne pe sol. ' + X_SAFE] }],
+    x3:[
+      { n:'Genuflexiune cu călcâiele pe disc, greutatea la piept', q:'heel elevated goblet squat form', disc:1, tip:'Călcâiele pe un disc, o ganteră sau un disc ținut la piept. Cobori drept în jos, cu trunchiul drept.',
+        f:[xArm(xHeelUp(), 'g'), xArm(xHeelDown(), 'g')],
+        s:['Călcâiele pe marginea unui disc așezat pe sol, vârfurile pe podea, tălpile la lățimea șoldurilor. Ține o ganteră sau un disc lipit de piept.','Coboară drept în jos, lăsând genunchii să meargă în față, cât de jos poți cu spatele drept. Împinge în tălpi și urcă.','Discul trebuie să stea fix, pe o podea care nu alunecă. Genunchii merg în direcția vârfurilor, nu spre interior. ' + X_SAFE] },
+      { n:'Genuflexiune cu gantera la piept, tălpile pe sol', q:'goblet squat form', tip:'Fără disc sub călcâie. Varianta potrivită ca să înveți mișcarea.',
+        f:[xArm(xS(), 'g'), xArm(xFlatDown(), 'g')],
+        s:['Tălpile la lățimea umerilor, vârfurile ușor în afară. Gantera lipită de piept, coatele în jos.','Împinge șoldurile puțin în spate și coboară până când coapsele sunt cel puțin paralele cu solul. Urcă împingând în toată talpa.','Călcâiele rămân pe sol, pieptul sus, genunchii nu cad spre interior. ' + X_SAFE] },
+      { n:'Genuflexiune până la bancă, cu gantera la piept', q:'goblet box squat form', tip:'Cobori până atingi ușor o bancă sau un scaun, apoi urci. Te ajută să nu îți fie teamă să cobori.',
+        f:[X_BENCH + xArm(xS(), 'g'), X_BENCH + xArm({ H:[58,22], S:[55,33], P:[46,54], K:[63,55], A:[61,70] }, 'g')],
+        s:['În picioare, cu spatele la o bancă sau un scaun stabil, la o palmă distanță. Gantera la piept.','Împinge șoldurile în spate și coboară încet până când atingi ușor banca. Nu te lăsa să cazi pe ea. Urcă imediat, împingând în tălpi.','Atinge banca, nu te așeza cu toată greutatea. Spatele drept, călcâiele pe sol. ' + X_SAFE] }],
+    x4:[
+      { n:'Genuflexiune cu călcâiele pe disc, gantere pe lângă corp', q:'heel elevated dumbbell squat form', disc:1, tip:'Călcâiele pe un disc, câte o ganteră în fiecare mână, pe lângă corp.',
+        f:[xArm(xHeelUp(), 's'), xArm(xHeelDown(), 's')],
+        s:['Călcâiele pe marginea unui disc, vârfurile pe podea. Câte o ganteră în fiecare mână, brațele întinse pe lângă corp.','Coboară drept în jos, cu genunchii în față și trunchiul cât mai drept. Ganterele coboară pe lângă glezne. Împinge în tălpi și urcă.','Nu rotunji spatele ca să ajungi mai jos. Discul trebuie să stea fix. ' + X_SAFE] },
+      { n:'Genuflexiune cu gantere pe lângă corp, tălpile pe sol', q:'dumbbell squat form', tip:'Fără disc sub călcâie. Ganterele atârnă pe lângă corp.',
+        f:[xArm(xS(), 's'), xArm(xFlatDown(), 's')],
+        s:['Tălpile la lățimea umerilor. Câte o ganteră în fiecare mână, brațele întinse pe lângă corp, pieptul sus.','Împinge șoldurile în spate și coboară până când coapsele sunt aproape paralele cu solul. Urcă împingând în toată talpa.','Călcâiele rămân pe sol. Privește înainte, nu în jos, ca să ții spatele drept. ' + X_SAFE] },
+      { n:'Urcări pe o treaptă joasă, cu gantere', q:'dumbbell step up form', tip:'6 pe fiecare picior. Urci pe o treaptă sau o bancă joasă și cobori încet.',
+        f:[X_BOX + xArm({ H:[54,12], S:[54,24], P:[54,46], K:[67,47], A:[66,57], K2:[53,58], A2:[54,70] }, 's'), X_BOX + xArm({ H:[72,0], S:[72,12], P:[72,34], K:[73,46], A:[72,57], K2:[67,46], A2:[62,54] }, 's')],
+        s:['În fața unei trepte sau a unei bănci joase și stabile. Pune o talpă întreagă pe ea. Ganterele pe lângă corp.','Împinge în piciorul de sus și urcă până când stai drept pe treaptă. Coboară încet, în 2–3 secunde, cu același picior rămas sus. Fă toate repetările, apoi schimbă piciorul.','Nu te împinge cu piciorul de jos. Treapta nu trebuie să se miște. ' + X_SAFE] }],
+    x5:[
+      { n:'Genuflexiune sumo cu o ganteră, pe două discuri', q:'deficit dumbbell sumo squat form', disc:1, tip:'Câte o talpă pe fiecare disc, ca gantera să poată coborî mai jos, între discuri.',
+        f:[xF({ hy:42, L:[[45,54],[37,66]], arm:[[52,31],[58,42]], eq:X_TWO + DB([60,46]) }), xF({ hy:56, L:[[34,54],[37,66]], arm:[[52,45],[58,58]], eq:X_TWO + DB([60,63]) })],
+        s:['Două discuri pe sol, la distanță mare unul de altul. Stai cu câte o talpă pe fiecare, vârfurile în afară. Ține o ganteră de un capăt, cu ambele mâini, cu brațele întinse în jos.','Coboară drept în jos, cu genunchii împinși în afară, până când gantera ajunge între discuri, mai jos de tălpi. Urcă strângând fesele.','Discurile trebuie să fie la fel de înalte și să nu alunece. Spatele drept, nu te apleca peste ganteră. ' + X_SAFE] },
+      { n:'Genuflexiune sumo cu o ganteră, pe sol', q:'dumbbell sumo squat form', tip:'Fără discuri sub tălpi. Picioare larg depărtate, gantera atârnă între ele.',
+        f:[xF({ hy:46, L:[[45,58],[37,70]], arm:[[52,35],[58,46]], eq:DB([60,50]) }), xF({ hy:58, L:[[34,56],[37,70]], arm:[[52,47],[58,60]], eq:DB([60,64]) })],
+        s:['Picioarele mult mai larg decât umerii, vârfurile în afară. Ține o ganteră de un capăt, cu ambele mâini, cu brațele întinse în jos.','Coboară drept în jos, cu genunchii împinși în afară, până când gantera ajunge aproape de sol. Urcă strângând fesele.','Genunchii merg în direcția vârfurilor. Spatele drept, pieptul sus. ' + X_SAFE] }],
+    x6:[
+      { n:'Îndreptări românești cu gantere, stând pe un disc', q:'deficit dumbbell romanian deadlift form', disc:1, tip:'Stai pe un disc, ca ganterele să poată coborî mai jos. Simți întinderea în spatele coapselor.',
+        f:[(function(){ var o = xS(4); o.eq = X_STEP; return xArm(o, 's'); })(), fg({ H:[81,30], S:[75,34], P:[52,43], K:[58,54], A:[57,66], arm:[[76,46],[76,58]], eq:X_STEP + DB([76,60]) })],
+        s:['În picioare pe un disc, cu toată talpa pe el. Ganterele în fața coapselor, brațele întinse, genunchii puțin îndoiți.','Împinge șoldurile în spate, ca și cum ai închide o ușă cu fundul. Ganterele coboară aproape de picioare, cât poți cu spatele drept. Urcă strângând fesele.','Spatele rămâne drept tot timpul. Coboară doar până simți întinderea în spatele coapselor, nu mai jos. ' + X_SAFE] },
+      { n:'Îndreptări românești cu gantere, pe sol', q:'dumbbell romanian deadlift form', tip:'Fără disc sub tălpi. Aceeași mișcare, cu ganterele până sub genunchi.',
+        f:[xArm(xS(), 's'), fg({ H:[79,31], S:[73,35], P:[52,46], K:[58,58], A:[57,70], arm:[[74,46],[74,57]], eq:DB([74,57]) })],
+        s:['În picioare, tălpile la lățimea șoldurilor. Ganterele în fața coapselor, brațele întinse, genunchii puțin îndoiți.','Împinge șoldurile în spate și lasă ganterele să alunece pe lângă picioare până sub genunchi. Urcă strângând fesele.','Spatele drept, ganterele aproape de picioare. Nu îndoi genunchii mai mult pe măsură ce cobori. ' + X_SAFE] },
+      { n:'Pod pentru fesieri cu gantera pe șolduri', q:'dumbbell glute bridge floor form', tip:'Culcat pe spate. Bun dacă îndreptările îți obosesc spatele.',
+        f:[X_FLOOR + lyingBody([26,63],[50,63],[64,48],[74,65],[17,62]) + DB([50,58]), X_FLOOR + lyingBody([26,63],[50,50],[66,46],[72,65],[17,62]) + DB([49,45])],
+        s:['Culcat pe spate, genunchii îndoiți, tălpile pe sol aproape de fese. Ține gantera pe șolduri, cu ambele mâini.','Împinge în călcâie și ridică șoldurile până când corpul e drept de la umeri la genunchi. Strânge fesele 1 secundă și coboară încet.','Nu arcui spatele sus. Dacă simți efortul în spate, nu în fese, adu tălpile mai aproape. ' + X_SAFE] }],
+    x7:[
+      { n:'Genuflexiune cu ganterele la umeri, picioare depărtate', q:'dumbbell front rack squat wide stance form', tip:'Multe repetări cu greutate mai mică. Câte o ganteră sprijinită pe fiecare umăr.',
+        f:[xF({ hy:46, L:[[46,58],[38,70]], arm:[[43,35],[49,25]], eq:DB([49,22]) + DB([71,22]) }), xF({ hy:59, L:[[35,57],[38,70]], arm:[[43,48],[49,38]], eq:DB([49,35]) + DB([71,35]) })],
+        s:['Picioarele mai larg decât umerii, vârfurile ușor în afară. Câte un capăt de ganteră sprijinit pe fiecare umăr, coatele în față.','Coboară până când coapsele sunt cel puțin paralele cu solul, apoi urcă fără pauză lungă. Ritm egal, respiră la fiecare repetare.','Coatele rămân ridicate, ca să nu îți cadă ganterele în față. Călcâiele pe sol. ' + X_SAFE] },
+      { n:'Genuflexiune cu gantera la piept, picioare depărtate', q:'wide stance goblet squat form', tip:'O singură ganteră, ținută la piept. Mai ușor de ținut decât două la umeri.',
+        f:[xF({ hy:46, L:[[46,58],[38,70]], arm:[[50,34],[57,29]], eq:DB([60,29]) }), xF({ hy:59, L:[[35,57],[38,70]], arm:[[50,47],[57,42]], eq:DB([60,42]) })],
+        s:['Picioarele mai larg decât umerii, vârfurile ușor în afară. O ganteră lipită de piept, coatele în jos.','Coboară până când coapsele sunt cel puțin paralele cu solul, apoi urcă. Ritm egal, fără pauze lungi.','Pieptul sus, genunchii în direcția vârfurilor, călcâiele pe sol. ' + X_SAFE] },
+      { n:'Genuflexiune fără greutate, picioare depărtate', q:'bodyweight wide stance squat form', tip:'Fără gantere, mâinile în față. Potrivită la început sau când picioarele sunt deja obosite.',
+        f:[xF({ hy:46, L:[[46,58],[38,70]], arm:[[50,34],[57,29]] }), xF({ hy:59, L:[[35,57],[38,70]], arm:[[50,47],[57,42]] })],
+        s:['Picioarele mai larg decât umerii, vârfurile ușor în afară, mâinile împreunate în fața pieptului.','Coboară până când coapsele sunt cel puțin paralele cu solul, apoi urcă. Ritm egal.','Călcâiele rămân pe sol și genunchii nu cad spre interior. ' + X_SAFE] }]
+  };
+  // loc, serii, repetări (cele cerute; la nivelul Ușor se face cu o serie mai puțin, ca la restul programelor)
+  var XDB = { code:'xdb', pill:'🦵 Picioare · doar gantere', name:'Picioare doar cu gantere', focus:'Picioare și fesieri',
+    slots:[['x1',4,'12–16'],['x2',4,'14–20'],['x3',4,'10'],['x4',3,'12'],['x5',4,'10'],['x6',4,'10'],['x7',3,'20']] };
+  Object.keys(XPOOL).forEach(function(k){ XPOOL[k].forEach(function(v, i){ v.k = 'xd' + k.slice(1) + i; FIGS[v.k] = { t:v.n, f:v.f, s:v.s }; XFIG[v.n] = v.k; }); });
+  function buildX(sw){
+    var lvl = sp.level || 'mid', ex = [];
+    XDB.slots.forEach(function(s, si){
+      var L = XPOOL[s[0]], vi = 0;
+      if(sw && sw[si] != null && L[+sw[si]]) vi = +sw[si];   // schimbat de utilizator, doar pentru azi
+      var v = L[vi], n = lvl === 'easy' ? Math.max(2, s[1] - 1) : s[1];
+      var tip = v.tip + (lvl === 'easy' && v.disc ? ' · La început fă-l fără disc, cu tălpile pe sol, până înveți mișcarea.' : '');
+      ex.push([v.n, n, s[2], '90', tip, '', v.k, ytUrl(v.q), 'c', vi, 0, s[0], si < 2 ? 1 : 0]);
+    });
+    return { name: XDB.name, focus: XDB.focus, ex: ex, img: '', code: XDB.code, extra: 1 };
+  }
+  window.__xBuild = buildX;
   var WO = {}, WEEK = { 1:buildWEEK(1), 2:buildWEEK(2), 3:buildWEEK(3), 4:buildWEEK(4), 5:buildWEEK(5), 6:buildWEEK(6) };
   var WEEK_INFO = { rest:['Odihnă','Corpul crește în zilele de pauză. Somn bun, proteine, plimbare ușoară dacă vrei.'] };
   var PHASE_HINT = { 1:'Program clasic Push / Pull / Legs: Luni Push (piept, umeri, triceps), Marți Pull (spate, biceps), Miercuri Picioare, Joi Upper (sus), Vineri Lower (jos + lombar). Weekend odihnă.',
@@ -1115,7 +1229,7 @@
   var selDay = wIdx;
   var curWo = null;
   var viewW = progWeek();
-  function refreshWO(){ WO = buildWO(sp.phase, progWeek(), todayKey); }
+  function refreshWO(){ WO = buildWO(sp.phase, progWeek(), todayKey); WO[XDB.code] = buildX(sp.swap ? sp.swap[todayKey + '|' + XDB.code] : null); }
   refreshWO();
 
   function woOfDay(i){ return WEEK[sp.phase][i][0]; }
@@ -1208,10 +1322,10 @@
   });
 
   function renderWoPills(){
-    var codes = woGymCodes();
+    var codes = woGymCodes().concat([XDB.code]);
     if(!curWo || codes.indexOf(curWo) < 0){ var t = woOfDay(wIdx); curWo = codes.indexOf(t) >= 0 ? t : codes[0]; }
     var pills = document.getElementById('woPills');
-    pills.innerHTML = codes.map(function(c){ var nm = WO[c].name.replace(/^Ziua \d · /, ''); return '<button class="day-pill' + (c===curWo?' active':'') + '" data-wo="' + c + '">' + nm + '</button>'; }).join('');
+    pills.innerHTML = codes.map(function(c){ var nm = c === XDB.code ? XDB.pill : WO[c].name.replace(/^Ziua \d · /, ''); return '<button class="day-pill' + (c===curWo?' active':'') + '" data-wo="' + c + '">' + nm + '</button>'; }).join('');
     pills.querySelectorAll('.day-pill').forEach(function(b){ b.addEventListener('click', function(){ curWo = b.getAttribute('data-wo'); renderWo(); }); });
   }
   var woOpen = {};
@@ -1263,7 +1377,7 @@
   function weekCard(){ var a = wkStats(0), b = wkStats(-1); if(!b.s && !a.s) return '';
     function dl(x, y){ var d = x - y; return d > 0 ? ' <i class="up">▲ +' + d + '</i>' : d < 0 ? ' <i class="dn">▼ ' + d + '</i>' : ' <i>=</i>'; }
     return '<div class="wk-rep"><b>📊 Raportul tău</b><div>Săptămâna trecută: <b>' + b.w + '</b> antrenamente · <b>' + b.s + '</b> serii</div><div>Săptămâna asta: <b>' + a.w + '</b> antrenamente' + dl(a.w, b.w) + ' · <b>' + a.s + '</b> serii' + dl(a.s, b.s) + '</div>' + (a.rec ? '<div>🏆 Recorduri noi: <b>' + a.rec + '</b></div>' : '') + '</div>'; }
-  function plannedSets(){ var t = 0; Object.keys(WO).forEach(function(c){ WO[c].ex.forEach(function(e){ t += e[1]; }); }); return t; }
+  function plannedSets(){ var t = 0; Object.keys(WO).forEach(function(c){ if(WO[c].extra) return; WO[c].ex.forEach(function(e){ t += e[1]; }); }); return t; }
   var LV_NEXT = { easy:'mid', mid:'hard' }, LV_NAME = { easy:'Ușor', mid:'Mediu', hard:'Greu' };
   function lvlWeeks(){ return Math.max(0, sp.lvlAt ? weeksBetween(sp.lvlAt, new Date()) : progWeek() - 1); }
   function lvlCard(){
@@ -1320,11 +1434,14 @@
     var total = w.ex.reduce(function(a,e){ return a+e[1]; },0);
     var done = Object.keys(st).filter(function(k){ return st[k]; }).length;
     var pw = progWeek(), wvT = waveTxt(pw);
-    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">Săptămâna ' + pw + ' · ' + wvT[0] + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
+    var html = '<div class="wo-head"><div><div class="wo-name">' + w.name + '</div><div class="wo-focus">' + (w.extra ? 'Doar cu gantere' : 'Săptămâna ' + pw + ' · ' + wvT[0]) + ' · ' + w.ex.length + ' exerciții · ' + total + ' serii</div></div><div class="wo-prog">' + done + '/' + total + '</div></div>' +
       '<div class="wo-bar"><i style="width:' + (done/total*100) + '%"></i></div>' +
       weekCard() + lvlCard() +
-      '<div class="wo-warm">' + wvT[1] + '</div>' +
-      '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>';
+      (w.extra ? '<div class="wo-warm">🧰 <b>Ce îți trebuie:</b> gantere și 1–2 discuri de greutate (pentru sub călcâie sau sub tălpi). Îl poți face în orice zi, în locul zilei de picioare sau când aparatele sunt ocupate.</div>' +
+        '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau mers alert, 10 balansări de picioare pe fiecare parte, 10 rotiri de șolduri, 10 genuflexiuni fără greutate, apoi 1–2 serii ușoare din primul exercițiu.</div>' +
+        '<div class="wo-warm">🛟 <b>Siguranță:</b> dacă ești la început, fă doar <b>2–3 serii</b> la fiecare exercițiu și lucrează <b>fără disc</b> sub călcâie sau sub tălpi până înveți mișcarea. Alege o greutate cu care îți mai rămân <b>1–2 repetări în rezervă</b>. <b>Oprește-te dacă te doare genunchiul sau spatele.</b></div>'
+      : '<div class="wo-warm">' + wvT[1] + '</div>' +
+      '<div class="wo-warm">🔥 <b>Încălzire 5–8 min:</b> bicicletă sau bandă ușor, 10 rotiri de brațe, 10 balansări de picioare, apoi 2 serii ușoare din primul exercițiu. <b>1–2 repetări în rezervă</b> la fiecare serie de lucru.</div>');
     var nowEi = -1;
     w.ex.forEach(function(e,ei){ var d0 = 0; for(var q=0;q<e[1];q++){ if(st[ei + '-' + q]) d0++; } if(nowEi < 0 && d0 < e[1]) nowEi = ei; });
     w.ex.forEach(function(e,ei){
@@ -1346,7 +1463,7 @@
         (fin ? '<button class="ex-fin undo" data-ei="' + ei + '" data-undo="1">↩ Nu e terminat</button>' : '<button class="ex-fin" data-ei="' + ei + '">✅ Am terminat exercițiul · următorul →</button>') + '</div>';
     });
     if(done === total) html += '<div class="wo-done">🏆 Antrenament complet!' + (HABITS.some(function(h){ return h.key === 'training'; }) ? ' L-am bifat și pe fila Azi.' : '') + '</div>';
-    html += '<div class="hint">Atinge fiecare serie după ce o termini (pornește pauza) sau apasă „Am terminat exercițiul” ca să treci la următorul. Bifele se resetează în fiecare zi. Primele două exerciții rămân aceleași 6 săptămâni, ca să le înveți și să vezi cum cresc kilogramele; celelalte se mai schimbă de la o săptămână la alta, ca să nu te plictisești.</div>';
+    html += '<div class="hint">Atinge fiecare serie după ce o termini (pornește pauza) sau apasă „Am terminat exercițiul” ca să treci la următorul. Bifele se resetează în fiecare zi. ' + (w.extra ? 'Exercițiile de aici rămân mereu aceleași, ca să le înveți și să vezi cum cresc kilogramele. Cu „Schimbă exercițiul” pui, doar pentru azi, o variantă mai ușoară.' : 'Primele două exerciții rămân aceleași 6 săptămâni, ca să le înveți și să vezi cum cresc kilogramele; celelalte se mai schimbă de la o săptămână la alta, ca să nu te plictisești.') + '</div>';
     var card = document.getElementById('woCard');
     card.innerHTML = html;
     bindImgs(card);
@@ -1394,9 +1511,9 @@
       klogMark(w, key); spSave(); }); });
     card.querySelectorAll('[data-swap]').forEach(function(b){ b.addEventListener('click', function(){
       var ei = +b.getAttribute('data-swap'), e = w.ex[ei]; if(!e) return;
-      var al = slotAllowed(PLANS[sp.phase], e[11]), used = {}, nv = -1, st0 = al.indexOf(e[9]);
+      var xp = XPOOL[e[11]], al = xp ? xp.map(function(v, i){ return i; }) : slotAllowed(PLANS[sp.phase], e[11]), used = {}, nv = -1, st0 = al.indexOf(e[9]);
       w.ex.forEach(function(x, xi){ if(xi !== ei) used[x[0]] = 1; });
-      for(var j = 1; j <= al.length && nv < 0; j++){ var cv = al[(st0 + j) % al.length]; if(cv !== e[9] && !used[POOL[e[11]][cv].split('|')[0]]) nv = cv; }
+      for(var j = 1; j <= al.length && nv < 0; j++){ var cv = al[(st0 + j) % al.length]; if(cv !== e[9] && !used[xp ? xp[cv].n : POOL[e[11]][cv].split('|')[0]]) nv = cv; }
       if(nv < 0){ zToast('Nu am altă variantă potrivită pentru acest exercițiu.'); return; }
       var m = sp.swap[key] || {}; if(nv === e[10]) delete m[ei]; else m[ei] = nv;
       if(Object.keys(m).length) sp.swap[key] = m; else delete sp.swap[key];
